@@ -4,4 +4,4 @@
 sudo service docker start
 
 # VSCodeのworkspaceを開く
-code ./wsHCPLens.code-workspace
+code ./wsHCPWorks.code-workspace
