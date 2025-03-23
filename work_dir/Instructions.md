@@ -73,3 +73,29 @@ $
     ? Initialize a git repository? No
     ? Which bundler to use? webpack
     ? Which package manager to use? npm
+
+## Githubからcloneしてきた場合の手順
+
+1. exec.shを実行する  
+    - dockerのサービス起動
+    - VSCodeのworkspace起動
+1. VSCodeの拡張機能を利用してworkspaceをコンテナ上で開き直す  
+    - dockerfileからDockerImageのビルド
+1. npm iコマンドを実行する
+    - package.jsonに記載の依存パッケージダウンロード
+
+## 挙動確認
+
+コンテナ上でworkspaceを表示出来たら、動作確認する。
+
+以下拡張機能を有効化しておく。
+
+    amodio.tsl-problem-matcher
+
+F5もしくはデバッグタブから、Run Extensionを実行する
+
+専用のVSCodeが起動したらコマンドパレット(ctrl+shift+P)にて、"Hello World"と入力
+
+ウィンドウ右下に以下表示さればOK
+
+    Hello World from HCPLens!
