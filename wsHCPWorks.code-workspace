@@ -6,7 +6,7 @@
 		{
 			// Yeoman extension generator
 			"name": "Extension generator",
-			"path": "./hcplens"
+			"path": "./hcpworks"
 		}
 	],
 	"settings": {
