@@ -88,7 +88,7 @@ F5もしくはデバッグタブから、Run Extensionを実行する
 
 ウィンドウ右下に以下表示さればOK
 
-    Hello World from HCPLens!
+    Hello World from HCPWorks!
 
 ## 初回に限らない手順
 
@@ -239,3 +239,49 @@ HCPWorks向けに記載すると以下のようになる。
     },
 }
 ```
+
+### 実装側
+
+とにかく必要なのは、TreeDataProviderである。  
+このproviderには、必須APIが存在する。
+
+- getChildren(element?: T): ProviderResult<T[]>
+- getTreeItem(element: T): TreeItem | Thenable<TreeItem>
+
+この2つのAPIを実装するためには、elementも必要となる。
+
+よって、以下手順で作業することになる。
+
+1. elementクラスの作成
+2. vscode.TreeDataProviderの実装
+    1. getTreeItemの実装
+    2. getChildrenの実装
+3. 作成したproviderを登録してVSCodeさんが呼び出せるようにする
+
+#### TreeDataProviderについて
+
+[Tree view API](https://code.visualstudio.com/api/extension-guides/tree-view)
+
+前述の手順で登録したビューにデータを提供して、VSCodeがデータを表示できるようにする。
+
+まずTreeDataProviderの実装が必要。これには、2つの必須メソッドが存在する。
+
+- getChildren(element?: T): ProviderResult<T[]>  
+  Implement this to return the children for the given element or root (if no element is passed).  
+  指定された要素の子、もしくはルートの子を取得するのに必要。
+- getTreeItem(element: T): TreeItem | Thenable<TreeItem>  
+  Implement this to return the UI representation (TreeItem) of the element that gets displayed in the view.  
+  ビューに表示される要素のUI表現を取得するのに必要。
+
+ユーザがツリービューを開いたとき、要素無しでgetChildrenが呼ばれる。つまり、ルート要素を要求されることになる。
+
+### providerの登録
+
+[Registering the TreeDataProvider](https://code.visualstudio.com/api/extension-guides/tree-view#registering-the-treedataprovider)
+
+手段は2つある模様
+
+- vscode.window.registerTreeDataProvider: package.jsonで登録済みのIDと実装したproviderを登録する
+- vscode.window.createTreeView:  package.jsonで登録済みのIDと実装したproviderでtree viewを作成する。TreeViewAPIが必要な場合はこちらを使用する。
+
+サンプルで動かす程度ならregisterTreeDataProviderで問題なさそう。動作確認を済ませて柔軟な実装をしようと思ったらcreateTreeViewを使った方がいい。
