@@ -52,8 +52,24 @@ DockerImageが存在しないときに必要となる手順。
 
 ```
 $ node -v
-v21.7.3
+v22.14.0
 $ npm -v
-10.5.0
+11.2.0
 $
 ```
+
+### プロジェクト作成
+
+プロジェクトのテンプレとなる環境を作成する
+
+    yo code
+
+選択肢は以下とした。
+
+    ? What type of extension do you want to create? New Extension (TypeScript)
+    ? What's the name of your extension? HCPWorks
+    ? What's the identifier of your extension? hcpworks
+    ? What's the description of your extension? This extension displays HCP chart.
+    ? Initialize a git repository? No
+    ? Which bundler to use? webpack
+    ? Which package manager to use? npm
