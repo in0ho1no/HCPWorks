@@ -19,10 +19,47 @@
   "activationEvents": [],
   "main": "./dist/extension.js",
   "contributes": {
+    "languages": [
+      {
+        "id": "hcp",
+        "extensions": [".hcp"]
+      }
+    ],
     "commands": [
       {
         "command": "hcpworks.helloWorld",
         "title": "Hello World"
+      },
+      {
+        "command": "hcpworks.listingModule",
+        "title": "HCPWorks: Listing Modules",
+        "when": "editorLangId == hcp"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "hcpworks-container",
+          "title": "HCP Works",
+          "icon": "resources/icon/icon.png"
+        }
+      ]
+    },
+    "views": {
+      "hcpworks-container": [
+        {
+          "id": "hcpworks-View",
+          "name": "Module List",
+          "icon": "resources/icon/icon.png"
+        }
+      ]
+    },
+    "keybindings": [
+      {
+        "command": "hcpworks.listingModule",
+        "key": "ctrl+alt+q",
+        "mac": "cmd+alt+q",
+        "when": "editorTextFocus"
       }
     ]
   },

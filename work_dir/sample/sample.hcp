@@ -1,0 +1,34 @@
+\module モジュ1
+    \data データ1
+        \data データ1-1
+        \data データ(AAA)
+        \data データ(種類)
+    \data データ2
+    \data データ3
+
+    処理開始
+    処理レベル0-1
+    処理レベル0-2
+        必要な情報を揃える
+            排他を取得
+            \repeat DBから取得 \in データ1 \out データ2 \out データ(AAA)
+            排他を解放
+            機能Bの実行
+                機能Bの前処理
+                機能Bの後処理
+                \return 2
+        処理終了
+            戻り値を返す
+                \return TRUE(成功値) 固定
+
+\module モジュ2
+    \data bbb
+    \data データaaa
+
+    シンプルな処理
+        初期化
+            \mod 何もしない \in bbb 
+        メイン処理
+            何もしない \out データaaa
+        後処理
+            何もしない
