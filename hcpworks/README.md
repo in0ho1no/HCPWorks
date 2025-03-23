@@ -1,6 +1,7 @@
 # hcpworks README
 
-This is the README for your extension "hcpworks". After writing up a brief description, we recommend including the following sections.
+HCPWorks is a VSCode extension that allows you to preview text files written in the HCP chart format.
+It aims to streamline the HCP chart creation process by enabling you to complete it entirely within VSCode.
 
 ## Features
 
