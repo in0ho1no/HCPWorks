@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import {ModuleTreeProvider} from './tree_provider';
+import {SvgContent} from './svg_content';
 
 const TIMEOUT = 300;
 const HCP_ID = "hcp";
@@ -15,9 +16,42 @@ export function activate(context: vscode.ExtensionContext) {
     })
   );
 
+  // パネルを保持
+  let previewPanel: vscode.WebviewPanel | undefined;
+
   // tree viewを保持
   const moduleTreeProvider = new ModuleTreeProvider();
   const moduleTreeView = vscode.window.createTreeView('hcpworks-View', { treeDataProvider: moduleTreeProvider });
+
+  // viewの選択イベントを用意
+  moduleTreeView.onDidChangeSelection((e) => {
+    const selectedItem = e.selection[0];
+    if (selectedItem) {
+      vscode.window.showInformationMessage(`Selected Module: ${selectedItem.name}`);
+
+      // パネルが存在しない場合は新規作成
+      if (!previewPanel) {
+        previewPanel = vscode.window.createWebviewPanel(
+          'hcpPreview',  // 識別子
+          'HCPWorks: Panel', // タイトル
+          vscode.ViewColumn.Beside,  // 表示位置
+          {
+            enableScripts: true,  // スクリプトを有効化
+            retainContextWhenHidden: true  // 非表示時にコンテキストを保持
+          }
+        );
+
+        // パネルが閉じられたときの処理
+        previewPanel.onDidDispose(() => {
+          previewPanel = undefined;
+        });
+      }
+
+      // パネルコンテンツを更新
+      const svgContent = new SvgContent(selectedItem.name);
+      previewPanel.webview.html = svgContent.getHtmlWrappedSvg();
+    }
+  });
 
   // モジュール一覧表示のイベント登録
   context.subscriptions.push(
