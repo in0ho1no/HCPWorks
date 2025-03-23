@@ -32,8 +32,8 @@ export function activate(context: vscode.ExtensionContext) {
       // 拡張子判定
       const fileName = editor.document.fileName;
       const fileExtension = fileName.split('.').pop()?.toLowerCase();
-      if (fileExtension !== 'hcp') {
-        vscode.window.showInformationMessage('Current file is not an HCP file');
+      if (fileExtension !== HCP_ID) {
+        vscode.window.showInformationMessage(`Current file is not ${HCP_ID.toUpperCase()} file`);
         return;
       }
 
