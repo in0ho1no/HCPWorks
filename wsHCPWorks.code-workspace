@@ -1,0 +1,40 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			// Yeoman extension generator
+			"name": "Extension generator",
+			"path": "./hcplens"
+		}
+	],
+	"settings": {
+		// ミニマップを非表示にする
+		"editor.minimap.enabled": false,
+		// カラーカスタマイズ
+		"workbench.colorCustomizations": {
+			"activityBarTop.background": "#e2df16b4",
+			"activityBarTop.foreground": "#06065df5",
+		},
+
+		"editor.fontFamily": "Consolas, 'Meiryo UI','Courier New', monospace",
+
+		"[markdown]": {
+			"editor.wordWrap":"on",
+			"editor.wordSeparators": "./\\()\"'-:,.;<>~!@# ○$%^&*|+=[]{}`~?．。，、（）「」［］｛｝《》『』【】てにをはがのともへでや",
+			"editor.quickSuggestions": {
+				"other": true,
+				"comments": false,
+				"strings": false
+			},
+			"editor.snippetSuggestions": "top",
+			"editor.scrollBeyondLastLine": false,
+			"editor.padding.bottom": 250,
+		},
+
+		"[typescript]": {
+			"editor.tabSize": 2
+		}
+	}
+}
