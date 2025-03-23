@@ -74,17 +74,7 @@ $
     ? Which bundler to use? webpack
     ? Which package manager to use? npm
 
-## Githubからcloneしてきた場合の手順
-
-1. exec.shを実行する  
-    - dockerのサービス起動
-    - VSCodeのworkspace起動
-1. VSCodeの拡張機能を利用してworkspaceをコンテナ上で開き直す  
-    - dockerfileからDockerImageのビルド
-1. npm iコマンドを実行する
-    - package.jsonに記載の依存パッケージダウンロード
-
-## 挙動確認
+### 挙動確認
 
 コンテナ上でworkspaceを表示出来たら、動作確認する。
 
@@ -100,7 +90,9 @@ F5もしくはデバッグタブから、Run Extensionを実行する
 
     Hello World from HCPLens!
 
-## ビルド手順
+## 初回に限らない手順
+
+### ビルド手順
 
 1. build.shに実行権限を付与しておく
 1. コンテナ上のターミナルで build.shを実行する  
@@ -108,3 +100,13 @@ F5もしくはデバッグタブから、Run Extensionを実行する
 1. *.vsixファイルが出力される
 1. 適当な環境(windows sandbox等)へVSCodeインストールして、vsixファイルから拡張機能をインストール
 1. 目的の機能を実行できればOK
+
+### Githubからcloneしてきた場合の手順
+
+1. exec.shを実行する  
+    - dockerのサービス起動
+    - VSCodeのworkspace起動
+1. VSCodeの拡張機能を利用してworkspaceをコンテナ上で開き直す  
+    - dockerfileからDockerImageのビルド
+1. npm iコマンドを実行する
+    - package.jsonに記載の依存パッケージダウンロード
