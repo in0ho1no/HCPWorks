@@ -22,7 +22,8 @@
     "languages": [
       {
         "id": "hcp",
-        "extensions": [".hcp"]
+        "extensions": [".hcp"],
+        "aliases": ["HCP"]
       }
     ],
     "commands": [
@@ -61,7 +62,28 @@
         "mac": "cmd+alt+q",
         "when": "editorTextFocus"
       }
-    ]
+    ],
+    "grammars": [
+      {
+        "language": "hcp",
+        "scopeName": "source.hcp",
+        "path": "./syntaxes/hcp.tmLanguage.json"
+      }
+    ],
+    "configurationDefaults": {
+      "editor.tokenColorCustomizations": {
+        "textMateRules": [
+          {
+            "scope": "keyword.control.module.hcp",
+            "settings": { "foreground": "#FF0000" }
+          },
+          {
+            "scope": "keyword.control.data.hcp",
+            "settings": { "foreground": "#ffb92d" }
+          }
+        ]
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run package",

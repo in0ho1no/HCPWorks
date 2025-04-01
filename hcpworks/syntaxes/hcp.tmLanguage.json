@@ -1,0 +1,13 @@
+{
+    "scopeName": "source.hcp",
+    "patterns": [
+        {
+            "match": "\\\\module ",
+            "name": "keyword.control.module.hcp"
+        },
+        {
+            "match": "\\\\data ",
+            "name": "keyword.control.data.hcp"
+        }
+    ]
+}
