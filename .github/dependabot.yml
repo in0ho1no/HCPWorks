@@ -22,3 +22,5 @@ updates:
     commit-message:
       prefix: "npm"
       include: "scope"
+
+    target-branch: "develop"
