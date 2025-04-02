@@ -1,0 +1,49 @@
+{
+    "scopeName": "source.hcp",
+    "patterns": [
+        {
+            "match": "\\\\module ",
+            "name": "keyword.control.module.hcp"
+        },
+        {
+            "match": "\\\\data ",
+            "name": "keyword.control.data.hcp"
+        },
+        {
+            "match": "\\\\fork ",
+            "name": "keyword.control.fork.hcp"
+        },
+        {
+            "match": "\\\\true ",
+            "name": "keyword.control.true.hcp"
+        },
+        {
+            "match": "\\\\false ",
+            "name": "keyword.control.false.hcp"
+        },
+        {
+            "match": "\\\\branch ",
+            "name": "keyword.control.branch.hcp"
+        },
+        {
+            "match": "\\\\repeat ",
+            "name": "keyword.control.repeat.hcp"
+        },
+        {
+            "match": "\\\\mod ",
+            "name": "keyword.control.mod.hcp"
+        },
+        {
+            "match": "\\\\return ",
+            "name": "keyword.control.return.hcp"
+        },
+        {
+            "match": "\\\\in ",
+            "name": "keyword.control.in.hcp"
+        },
+        {
+            "match": "\\\\out ",
+            "name": "keyword.control.out.hcp"
+        }
+    ]
+}

@@ -22,7 +22,8 @@
     "languages": [
       {
         "id": "hcp",
-        "extensions": [".hcp"]
+        "extensions": [".hcp"],
+        "aliases": ["HCP"]
       }
     ],
     "commands": [
@@ -61,7 +62,64 @@
         "mac": "cmd+alt+q",
         "when": "editorTextFocus"
       }
-    ]
+    ],
+    "grammars": [
+      {
+        "language": "hcp",
+        "scopeName": "source.hcp",
+        "path": "./syntaxes/hcp.tmLanguage.json"
+      }
+    ],
+    "configurationDefaults": {
+      "editor.tokenColorCustomizations": {
+        "textMateRules": [
+          {
+            "scope": "keyword.control.module.hcp",
+            "settings": { "foreground": "#4dabf7" }
+          },
+          {
+            "scope": "keyword.control.data.hcp",
+            "settings": { "foreground": "#ffb92d" }
+          },
+          {
+            "scope": "keyword.control.fork.hcp",
+            "settings": { "foreground": "#a64aca" }
+          },
+          {
+            "scope": "keyword.control.branch.hcp",
+            "settings": { "foreground": "#cc5de8" }
+          },
+          {
+            "scope": "keyword.control.true.hcp",
+            "settings": { "foreground": "#40c057" }
+          },
+          {
+            "scope": "keyword.control.false.hcp",
+            "settings": { "foreground": "#fa5252" }
+          },
+          {
+            "scope": "keyword.control.repeat.hcp",
+            "settings": { "foreground": "#20c997" }
+          },
+          {
+            "scope": "keyword.control.mod.hcp",
+            "settings": { "foreground": "#339af0" }
+          },
+          {
+            "scope": "keyword.control.return.hcp",
+            "settings": { "foreground": "#f783ac" }
+          },
+          {
+            "scope": "keyword.control.in.hcp",
+            "settings": { "foreground": "#ffa94d" }
+          },
+          {
+            "scope": "keyword.control.out.hcp",
+            "settings": { "foreground": "#e67700" }
+          }
+        ]
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run package",
