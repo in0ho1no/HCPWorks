@@ -28,7 +28,6 @@ export class SvgContent {
             align-items: center;
             height: 100vh;
             margin: 0;
-            background-color: #f5f5f5;
           }
         </style>
       </head>
@@ -42,7 +41,7 @@ export class SvgContent {
   private getSvgContent(): string {
     return `
       <svg width="200" height="100" xmlns="http://www.w3.org/2000/svg">
-        <rect width="100%" height="100%" fill="#ffffff" stroke="#000000" stroke-width="2"/>
+        <rect width="100%" height="100%" fill="#808d81"/>
         <text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" font-family="Arial" font-size="32" font-weight="bold">${this._name}</text>
         <!-- fileContentに基づいて生成される追加のSVG要素をここに配置 -->
       </svg>
