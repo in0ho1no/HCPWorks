@@ -50,3 +50,31 @@ export function parseModules(fileContent: string): Module[] {
   
   return modules;
 }
+
+/**
+ * テキストデータから不要な情報を除去する
+ * 
+ * 以下取り除く
+ * - コメント("#"に続く文字列)
+ * - 空行
+ * @param textLines 変換元のテキストデータ
+ * @returns 不要な情報を除いたテキストデータ
+ */
+export function cleanTextLines(textLines:string[]): string[] {
+  const cleanedLines: string[] = [];
+
+  for (const text of textLines) {
+    // コメントを削除する
+    const uncommentedLine = text.split("#")[0];
+
+    // 空行を無視する
+    if (uncommentedLine.trim().length === 0) {
+      continue;
+    }
+
+    // 残った文字列をリストに追加する
+    cleanedLines.push(uncommentedLine);
+  }
+
+  return cleanedLines;
+}

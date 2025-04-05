@@ -34,7 +34,10 @@
 		},
 
 		"[typescript]": {
-			"editor.tabSize": 2
-		}
+			"editor.tabSize": 2,
+			"editor.formatOnSave": true,
+			"prettier.semi": true,
+		},
+		"gitlens.ai.generateCommitMessage.customInstructions": "簡潔に英語のコミットメッセージを1行で作成してください。",
 	}
 }

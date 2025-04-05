@@ -1,16 +1,16 @@
 
 export class SvgContent {
   private _name: string;
-  private _org_text: string;
+  private _text_content: string[];
   private _svg_content: string;
   constructor(name: string) {
     this._name = name;
-    this._org_text = "";
+    this._text_content = [];
     this._svg_content = "";
   }
 
-  setOrgText(text: string): void {
-    this._org_text = text;
+  setTextContent(sourceTexts: string[]): void {
+    this._text_content = sourceTexts;
   }
 
   getHtmlWrappedSvg(): string {
@@ -42,8 +42,8 @@ export class SvgContent {
     return `
       <svg width="200" height="100" xmlns="http://www.w3.org/2000/svg">
         <rect width="100%" height="100%" fill="#808d81"/>
-        <text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" font-family="Arial" font-size="32" font-weight="bold">${this._name}</text>
-        <!-- fileContentに基づいて生成される追加のSVG要素をここに配置 -->
+        <text x=5 y=10 text-anchor="start" dominant-baseline="middle" font-family="Consolas, Courier New, monospace" font-size="12">${this._name}</text>
+        <text x=10 y=25 text-anchor="start" dominant-baseline="middle" font-family="Consolas, Courier New, monospace" font-size="12">${this._text_content[0]}</text>
       </svg>
     `;
   }
