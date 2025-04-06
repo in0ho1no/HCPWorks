@@ -20,7 +20,7 @@ export class LineLevel {
    * 
    * 行頭は タブ*n個 もしくは 半角空白m個 で、任意の文字が続いて行末 となるパターン
    * 
-   * @param tabCount タブの数
+   * @param tabCount - タブの数
    * @returns 生成したインデントパターンの正規表現
    * @throws Error tab_countが負の数の場合
    */
@@ -42,7 +42,7 @@ export class LineLevel {
    * 
    * インデントの記載に誤りがあればエラーを返す
    * 
-   * @param line レベルを取得したい行
+   * @param line - レベルを取得したい行
    * @returns タブの数(半角空白なら4文字)をレベルとして返す
    */
   static getLineLevel(line: string): number {
