@@ -49,8 +49,9 @@ export function activate(context: vscode.ExtensionContext) {
       }
 
       // パネルコンテンツを更新
-      const svgContent = new SvgContent(selectedItem.name);
-      svgContent.setTextContent(cleanTextLines(selectedItem.content));
+      const svgContent = new SvgContent()
+        .setName(selectedItem.name)
+        .setTextContent(cleanTextLines(selectedItem.content));
       previewPanel.webview.html = svgContent.getHtmlWrappedSvg();
     }
   });
