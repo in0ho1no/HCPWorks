@@ -40,4 +40,18 @@ jobs:
         uses: GabrielBB/xvfb-action@v1
         with:
           working-directory: ./hcpworks
-          run: npm test -- --reporter spec
+          run: |
+            echo "::group::テスト実行"
+            npm test
+            TEST_EXIT_CODE=$?
+            echo "::endgroup::"
+            
+            echo "::group::テスト結果サマリー"
+            if [ $TEST_EXIT_CODE -eq 0 ]; then
+                echo "✅ すべてのテストが成功しました"
+            else
+                echo "❌ テストに失敗があります"
+            fi
+            echo "::endgroup::"
+            
+            exit $TEST_EXIT_CODE
