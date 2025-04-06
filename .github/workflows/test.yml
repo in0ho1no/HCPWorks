@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [ main]
 
+permissions:
+    contents: read
+    checks: write    # テスト結果を書き込むために必要
+
 jobs:
   test:
     strategy:
