@@ -15,6 +15,7 @@ suite('File Parse Test Suite', () => {
 					content: ['line1', 'line2', 'line3']
 				}
 			];
+
 			assert.deepStrictEqual(parseModules(input), expected);
 		});
 
@@ -30,10 +31,12 @@ suite('File Parse Test Suite', () => {
 					content: ['line3', 'line4']
 				}
 			];
+
 			assert.deepStrictEqual(parseModules(input), expected);
 		});
 
 		test('Should return empty array for empty file', () => {
+
 			assert.deepStrictEqual(parseModules(''), []);
 		});
 
@@ -45,6 +48,7 @@ suite('File Parse Test Suite', () => {
 					content: []
 				}
 			];
+
 			assert.deepStrictEqual(parseModules(input), expected);
 		});
 
@@ -56,6 +60,7 @@ suite('File Parse Test Suite', () => {
 					content: ['line1']
 				}
 			];
+
 			assert.deepStrictEqual(parseModules(input), expected);
 		});
 
@@ -67,8 +72,57 @@ suite('File Parse Test Suite', () => {
 					content: ['line1']
 				}
 			];
+
 			assert.deepStrictEqual(parseModules(input), expected);
 		});
 
+	});
+
+	suite('cleanTextLines function', () => {
+		test('Should remove comments', () => {
+			const input = ['line1 # comment', 'line2# comment', 'line3 #comment'];
+			const expected = ['line1 ', 'line2', 'line3 '];
+
+			assert.deepStrictEqual(cleanTextLines(input), expected);
+		});
+
+		test('Should ignore empty lines', () => {
+			const input = ['line1', '', '   ', 'line2'];
+			const expected = ['line1', 'line2'];
+
+			assert.deepStrictEqual(cleanTextLines(input), expected);
+		});
+
+		test('Should ignore comment-only lines', () => {
+			const input = ['line1', '# comment only', 'line2'];
+			const expected = ['line1', 'line2'];
+
+			assert.deepStrictEqual(cleanTextLines(input), expected);
+		});
+
+		test('Should ignore lines with only spaces and comments', () => {
+			const input = ['line1', '  # comment with spaces', 'line2'];
+			const expected = ['line1', 'line2'];
+
+			assert.deepStrictEqual(cleanTextLines(input), expected);
+		});
+
+		test('Should preserve leading whitespace', () => {
+			const input = ['  line1', '\tline2', ' \t line3'];
+			const expected = ['  line1', '\tline2', ' \t line3'];
+
+			assert.deepStrictEqual(cleanTextLines(input), expected);
+		});
+
+		test('Should handle multiple # characters', () => {
+			const input = ['line with # comment # and more #', 'line2 ## double hash'];
+			const expected = ['line with ', 'line2 '];
+
+			assert.deepStrictEqual(cleanTextLines(input), expected);
+		});
+
+		test('Should return empty array for empty input', () => {
+			assert.deepStrictEqual(cleanTextLines([]), []);
+		});
 	});
 });
