@@ -55,4 +55,4 @@ jobs:
         with:
           name: Mocha Tests
           path: ./hcpworks/test-results/*.xml
-          reporter: mocha-junit
+          reporter: java-junit
