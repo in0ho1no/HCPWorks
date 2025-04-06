@@ -1,29 +1,45 @@
+/**
+ * モジュール定義のプレフィックス
+ * モジュール開始行を識別するために使用する文字列
+ */
 const MODULE_PREFIX = '\\module ';
 
+/**
+ * モジュール情報を表すインターフェース
+ */
 export interface Module {
+  /** モジュールの名前 */
   name: string;
+
+  /** モジュールの内容を表す行の配列 */
   content: string[];
 }
 
+/**
+ * ファイルコンテンツからモジュール情報を解析する
+ * 
+ * @param fileContent - 解析するファイルの内容
+ * @returns 抽出されたモジュールの配列
+ */
 export function parseModules(fileContent: string): Module[] {
   const lines = fileContent.split('\n');
   const modules: Module[] = [];
   
   let currentModule: Module | null = null;
-  let lineIndex = 0;
   
-  while (lineIndex < lines.length) {
-    const line = lines[lineIndex];
+  for (const line of lines) {
+    const trimmedLine = line.trim();
     
     // モジュール開始行を検出
-    if (line.trim().startsWith(MODULE_PREFIX)) {
+    if (trimmedLine.startsWith(MODULE_PREFIX)) {
       // 前のモジュールが存在する場合は配列に追加
       if (currentModule !== null) {
         modules.push(currentModule);
       }
       
       // モジュール名を抽出
-      const moduleName = line.trim().substring(MODULE_PREFIX.length);
+      // 「\module  xxx」 のようなケースを想定して再度trimしておく
+      const moduleName = trimmedLine.substring(MODULE_PREFIX.length).trim();
       
       // 新しいモジュールを作成
       currentModule = {
@@ -36,11 +52,9 @@ export function parseModules(fileContent: string): Module[] {
         // 現在のモジュールにコンテンツを追加
         currentModule.content.push(line);
       } else {
-        // MODULE_PREFIXを保持する前に現れた文字列
+        // MODULE_PREFIXを保持する前に現れた文字列は無視する
       }
     }
-    
-    lineIndex++;
   }
   
   // 最後のモジュールを追加
@@ -57,10 +71,10 @@ export function parseModules(fileContent: string): Module[] {
  * 以下取り除く
  * - コメント("#"に続く文字列)
  * - 空行
- * @param textLines 変換元のテキストデータ
- * @returns 不要な情報を除いたテキストデータ
+ * @param textLines - 変換元のテキストデータ配列
+ * @returns 不要な情報を除いたテキストデータ配列
  */
-export function cleanTextLines(textLines:string[]): string[] {
+export function cleanTextLines(textLines: string[]): string[] {
   const cleanedLines: string[] = [];
 
   for (const text of textLines) {
@@ -68,6 +82,7 @@ export function cleanTextLines(textLines:string[]): string[] {
     const uncommentedLine = text.split("#")[0];
 
     // 空行を無視する
+    // 保持する行は、行頭のタブ・空白を残す必要があるのでtrimした文字列は再利用しない
     if (uncommentedLine.trim().length === 0) {
       continue;
     }
