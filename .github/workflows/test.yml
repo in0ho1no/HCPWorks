@@ -40,18 +40,20 @@ jobs:
         uses: GabrielBB/xvfb-action@v1
         with:
           working-directory: ./hcpworks
-          run: |
-            echo "::group::テスト実行"
-            npm test
-            TEST_EXIT_CODE=$?
-            echo "::endgroup::"
-            
-            echo "::group::テスト結果サマリー"
-            if [ $TEST_EXIT_CODE -eq 0 ]; then
-                echo "✅ すべてのテストが成功しました"
-            else
-                echo "❌ テストに失敗があります"
-            fi
-            echo "::endgroup::"
-            
-            exit $TEST_EXIT_CODE
+          run: npm test
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results
+          path: ./hcpworks/test-results
+
+      - name: Test Report
+        uses: dorny/test-reporter@v1
+        if: success() || failure()
+        with:
+          name: Mocha Tests
+          path: ./hcpworks/test-results/*.xml
+          reporter: mocha-junit
+          

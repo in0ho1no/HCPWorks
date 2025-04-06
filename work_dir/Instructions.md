@@ -301,3 +301,27 @@ treeview上に表示した要素をクリックしたときのイベントは以
 - onDidOpenTextDocument: 新規でパネルを開いたことを検知するイベント
 - onDidChangeActiveTextEditor: エディタ(タブ)を切り替えたことを検知するイベント
 - if (vscode.window.activeTextEditor) {} : 起動時のアクティブエディタからhcpファイルを検知する
+
+## テスト環境の整備
+
+テストコードを以下に追加しておく。
+
+  /workspaces/HCPWorks/hcpworks/src/test/file_parse.test.ts
+
+github actionsでユニットテストを実行するためのworkflowを追加しておく。
+
+  /workspaces/HCPWorks/.github/workflows/test.yml
+
+github actions上で結果を確認しやすいようにする。  
+※ package.jsonへ追記しておけばci的に環境構築できるので、dockerfileへ追記する必要はない。  
+
+  npm install --save-dev mocha-github-actions-reporter
+
+github actions上で結果を確認しやすいようにする。  
+※ package.jsonへ追記しておけばci的に環境構築できるので、dockerfileへ追記する必要はない。  
+
+  npm install --save-dev mocha-junit-reporter
+
+テスト結果をxml出力するように設定しておく
+
+  .vscode-test.mjs
