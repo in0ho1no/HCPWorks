@@ -2,7 +2,7 @@ name: VSCode Extension Test
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main , 行のparse]
   pull_request:
     branches: [ main]
 
