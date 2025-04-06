@@ -2,9 +2,9 @@ name: VSCode Extension Test
 
 on:
   push:
-    branches: [ main, master, unittest]
+    branches: [ main, unittest]
   pull_request:
-    branches: [ main, master ]
+    branches: [ main]
 
 jobs:
   test:
@@ -22,17 +22,22 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
+          cache-dependency-path: hcpworks/package-lock.json
           
       - name: Install dependencies
+        working-directory: ./hcpworks
         run: npm ci
         
       - name: Lint
+        working-directory: ./hcpworks
         run: npm run lint
         
       - name: Compile
+        working-directory: ./hcpworks
         run: npm run compile
         
       - name: Run tests
         uses: GabrielBB/xvfb-action@v1
         with:
+          working-directory: ./hcpworks
           run: npm test
