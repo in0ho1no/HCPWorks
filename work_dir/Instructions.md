@@ -325,3 +325,6 @@ github actions上で結果を確認しやすいようにする。
 テスト結果をxml出力するように設定しておく
 
   .vscode-test.mjs
+
+結果ページを開いたJobsにMocha Testsと表示される。  
+ページを開くと実行結果を視覚的に確認できる。
