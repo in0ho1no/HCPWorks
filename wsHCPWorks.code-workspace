@@ -11,9 +11,12 @@
 		"workbench.colorCustomizations": {
 			"activityBarTop.background": "#e2df16b4",
 			"activityBarTop.foreground": "#06065df5",
+
+			"editor.lineHighlightBackground":"#453ae1bb"
 		},
 
 		"editor.fontFamily": "Consolas, 'Meiryo UI','Courier New', monospace",
+		"editor.renderLineHighlight": "all",
 
 		"[markdown]": {
 			"editor.wordWrap":"on",

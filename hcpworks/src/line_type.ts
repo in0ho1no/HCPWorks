@@ -92,9 +92,11 @@ export class LineType {
     }
 
     // 行の先頭要素と残りの文字列を保持する
-    const parts = strip_line.split(" ", 2);
+    const parts = strip_line.split(" ");
     const first_elem = parts[0];
-    const remainder = parts.length > 1 ? parts[1] : "";
+    const remainder = parts.length > 1
+      ? parts.slice(1).join(" ")
+      : "";
 
     // 種別指定のない行は無視する
     if (!first_elem.startsWith("\\")) {
