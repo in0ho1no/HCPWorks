@@ -2,7 +2,7 @@ name: VSCode Extension Test
 
 on:
   push:
-    branches: [ main, add-unittest-existing-code ]
+    branches: [ main ]
   pull_request:
     branches: [ main]
 
