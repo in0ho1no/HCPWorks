@@ -24,8 +24,12 @@
     "languages": [
       {
         "id": "hcp",
-        "extensions": [".hcp"],
-        "aliases": ["HCP"]
+        "extensions": [
+          ".hcp"
+        ],
+        "aliases": [
+          "HCP"
+        ]
       }
     ],
     "commands": [
@@ -77,47 +81,69 @@
         "textMateRules": [
           {
             "scope": "keyword.control.module.hcp",
-            "settings": { "foreground": "#4dabf7" }
+            "settings": {
+              "foreground": "#4dabf7"
+            }
           },
           {
             "scope": "keyword.control.data.hcp",
-            "settings": { "foreground": "#ffb92d" }
+            "settings": {
+              "foreground": "#ffb92d"
+            }
           },
           {
             "scope": "keyword.control.fork.hcp",
-            "settings": { "foreground": "#a64aca" }
+            "settings": {
+              "foreground": "#a64aca"
+            }
           },
           {
             "scope": "keyword.control.branch.hcp",
-            "settings": { "foreground": "#cc5de8" }
+            "settings": {
+              "foreground": "#cc5de8"
+            }
           },
           {
             "scope": "keyword.control.true.hcp",
-            "settings": { "foreground": "#40c057" }
+            "settings": {
+              "foreground": "#40c057"
+            }
           },
           {
             "scope": "keyword.control.false.hcp",
-            "settings": { "foreground": "#fa5252" }
+            "settings": {
+              "foreground": "#fa5252"
+            }
           },
           {
             "scope": "keyword.control.repeat.hcp",
-            "settings": { "foreground": "#20c997" }
+            "settings": {
+              "foreground": "#20c997"
+            }
           },
           {
             "scope": "keyword.control.mod.hcp",
-            "settings": { "foreground": "#339af0" }
+            "settings": {
+              "foreground": "#339af0"
+            }
           },
           {
             "scope": "keyword.control.return.hcp",
-            "settings": { "foreground": "#f783ac" }
+            "settings": {
+              "foreground": "#f783ac"
+            }
           },
           {
             "scope": "keyword.control.in.hcp",
-            "settings": { "foreground": "#ffa94d" }
+            "settings": {
+              "foreground": "#ffa94d"
+            }
           },
           {
             "scope": "keyword.control.out.hcp",
-            "settings": { "foreground": "#e67700" }
+            "settings": {
+              "foreground": "#e67700"
+            }
           }
         ]
       }
@@ -135,17 +161,19 @@
     "test": "vscode-test"
   },
   "devDependencies": {
-    "@types/vscode": "^1.98.0",
     "@types/mocha": "^10.0.10",
     "@types/node": "22.x",
+    "@types/vscode": "^1.98.0",
     "@typescript-eslint/eslint-plugin": "^8.29.0",
     "@typescript-eslint/parser": "^8.29.0",
-    "eslint": "^9.21.0",
-    "typescript": "^5.7.3",
-    "ts-loader": "^9.5.2",
-    "webpack": "^5.98.0",
-    "webpack-cli": "^6.0.1",
     "@vscode/test-cli": "^0.0.10",
-    "@vscode/test-electron": "^2.4.1"
+    "@vscode/test-electron": "^2.4.1",
+    "eslint": "^9.21.0",
+    "mocha-github-actions-reporter": "^0.2.3",
+    "mocha-junit-reporter": "^2.2.1",
+    "ts-loader": "^9.5.2",
+    "typescript": "^5.7.3",
+    "webpack": "^5.98.0",
+    "webpack-cli": "^6.0.1"
   }
 }

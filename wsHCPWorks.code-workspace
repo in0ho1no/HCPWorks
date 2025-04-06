@@ -2,11 +2,6 @@
 	"folders": [
 		{
 			"path": "."
-		},
-		{
-			// Yeoman extension generator
-			"name": "Extension generator",
-			"path": "./hcpworks"
 		}
 	],
 	"settings": {
@@ -38,6 +33,5 @@
 			"editor.formatOnSave": true,
 			"prettier.semi": true,
 		},
-		"gitlens.ai.generateCommitMessage.customInstructions": "簡潔に英語のコミットメッセージを1行で作成してください。",
 	}
 }
