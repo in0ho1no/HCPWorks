@@ -1,7 +1,9 @@
 import * as vscode from 'vscode';
-import {ModuleTreeProvider} from './tree_provider';
-import {SvgContent} from './svg_content';
-import {cleanTextLines} from './file_parse';
+import { ModuleTreeProvider } from './tree_provider';
+import { SvgContent } from './svg_content';
+import { cleanTextLines } from './file_parse';
+import { LineInfo } from './line_info';
+
 
 const TIMEOUT = 300;
 const HCP_ID = "hcp";
@@ -52,6 +54,17 @@ export function activate(context: vscode.ExtensionContext) {
       const svgContent = new SvgContent()
         .setName(selectedItem.name)
         .setTextContent(cleanTextLines(selectedItem.content));
+
+      const lineInfoList: LineInfo[] = [];
+      for (const getText of svgContent.getTextContent()) {
+        const lineInfo = new LineInfo()
+          .setTextOrg(getText)
+          .updateLineLevel()
+          .updateLineType();
+
+        lineInfoList.push(lineInfo);
+      }
+
       previewPanel.webview.html = svgContent.getHtmlWrappedSvg();
     }
   });
@@ -65,7 +78,7 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.window.showInformationMessage('No active editor found');
         return;
       }
-      
+
       // 拡張子判定
       const fileName = editor.document.fileName;
       const fileExtension = fileName.split('.').pop()?.toLowerCase();
@@ -86,9 +99,9 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.workspace.onDidOpenTextDocument((e) => {
       // イベント発生直後は状態が完全でないため、一定時間待機する
       setTimeout(() => {
-          if (e.languageId === HCP_ID || e.fileName.endsWith(HCP_SUFFIX)) {
-            vscode.commands.executeCommand('hcpworks.listingModule');
-          }
+        if (e.languageId === HCP_ID || e.fileName.endsWith(HCP_SUFFIX)) {
+          vscode.commands.executeCommand('hcpworks.listingModule');
+        }
       }, TIMEOUT);
     })
   );
@@ -114,4 +127,4 @@ export function activate(context: vscode.ExtensionContext) {
   }
 }
 
-export function deactivate() {}
+export function deactivate() { }
