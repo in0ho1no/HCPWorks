@@ -1,6 +1,7 @@
 import { NONAME } from 'dns';
 import { LineLevel } from './line_level';
-import { LineType, LineTypeFormat } from './line_type';
+import { LineType } from './line_type';
+import { LineTypeFormat } from './line_define';
 
 export class LineInfo {
   static readonly DEFAULT_VALUE = -1;
