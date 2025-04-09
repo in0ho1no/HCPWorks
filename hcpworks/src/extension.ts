@@ -3,6 +3,7 @@ import { ModuleTreeProvider } from './tree_provider';
 import { SvgContent } from './svg_content';
 import { cleanTextLines } from './file_parse';
 import { LineInfo } from './line_info';
+import { LineProcessor } from './line_info_list';
 
 
 const TIMEOUT = 300;
@@ -65,6 +66,17 @@ export function activate(context: vscode.ExtensionContext) {
 
         lineInfoList.push(lineInfo);
       }
+
+      const processInfoList = new LineProcessor();
+      processInfoList.createProcessInfoList(lineInfoList)
+        .setInfoListNo()
+        .assignLineRelationships();
+
+      const dataInfoList = new LineProcessor();
+      dataInfoList.createDataInfoList(lineInfoList)
+        .setInfoListNo()
+        .removeDuplicate()
+        .assignLineRelationships();
 
       previewPanel.webview.html = svgContent.getHtmlWrappedSvg();
     }

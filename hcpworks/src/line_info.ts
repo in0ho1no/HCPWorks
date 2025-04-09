@@ -15,6 +15,10 @@ export class LineInfo {
   private _InOutData: InOutData | null;
   private _textTypeIOless: string;
 
+  private _no: number;
+  private _beforeNo: number;
+  private _nextNo: number;
+
   constructor() {
     this._textOriginal = '';
     this._level = 0;
@@ -22,6 +26,10 @@ export class LineInfo {
     this._textTypeless = '';
     this._InOutData = null;
     this._textTypeIOless = '';
+
+    this._no = 0;
+    this._beforeNo = 0;
+    this._nextNo = 0;
   }
 
   setTextOrg(text: string): LineInfo {
@@ -29,16 +37,19 @@ export class LineInfo {
     return this;
   }
 
+  getLineLevel(): number { return this._level; }
   updateLineLevel(): LineInfo {
     this._level = LineLevel.getLineLevel(this._textOriginal);
     return this;
   }
 
+  getLineType(): LineTypeFormat { return this._type; }
   updateLineType(): LineInfo {
     [this._type, this._textTypeless] = LineType.get_line_type(this._textOriginal);
     return this;
   }
 
+  getTextLessTypeIO(): string { return this._textTypeIOless; }
   updateLineIO(): LineInfo {
     // inとoutの正規表現を用意
     const common_ptn = "\\s+(\\S+)?";
@@ -59,6 +70,24 @@ export class LineInfo {
     this._InOutData = new InOutData(inDataList, outDataList);
     this._textTypeIOless = cleanedText;
 
+    return this;
+  }
+
+  getLineNo(): number { return this._no; }
+  setLineNo(no: number): LineInfo {
+    this._no = no;
+    return this;
+  }
+
+  getBeforeLineNo(): number { return this._beforeNo; }
+  setBeforeLineNo(no: number): LineInfo {
+    this._beforeNo = no;
+    return this;
+  }
+
+  getNextLineNo(): number { return this._nextNo; }
+  setNextLineNo(no: number): LineInfo {
+    this._nextNo = no;
     return this;
   }
 }
