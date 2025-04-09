@@ -1,4 +1,4 @@
-import { Process2Data } from './connector';
+import { Process2Data } from './wire';
 
 /**
  * データ情報を表すクラス

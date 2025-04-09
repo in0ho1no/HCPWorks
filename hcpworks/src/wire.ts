@@ -10,7 +10,7 @@ export interface Coordinate {
 /**
  * 線を表すクラス
  */
-export class Line {
+export class Wire {
   start: Coordinate;
   end: Coordinate;
 
@@ -23,7 +23,7 @@ export class Line {
    * 線の幅を計算する
    * @returns 線の幅
    */
-  lineWidth(): number {
+  wireWidth(): number {
     return Math.abs(this.start.x - this.end.x);
   }
 
@@ -31,7 +31,7 @@ export class Line {
    * 線の高さを計算する
    * @returns 線の高さ
    */
-  lineHeight(): number {
+  wireHeight(): number {
     return Math.abs(this.start.y - this.end.y);
   }
 }
@@ -41,9 +41,9 @@ export class Line {
  * 処理からデータへの接続を表すインターフェース
  */
 export class Process2Data {
-  exitFromProcess: Line | null;
-  betweenProcessData: Line | null;
-  enterToData: Line | null;
+  exitFromProcess: Wire | null;
+  betweenProcessData: Wire | null;
+  enterToData: Wire | null;
   color: string;
 
   constructor() {

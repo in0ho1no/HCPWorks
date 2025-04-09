@@ -1,14 +1,14 @@
 import * as assert from 'assert';
 import { LineLevel } from '../line_level';
 
-suite('line_level - Class', () => {
+suite('LineLevel - Class', () => {
   test('constructor should initialize value to LEVEL_MIN', () => {
     const lineLevel = new LineLevel();
     // @ts-ignore: privateプロパティにアクセスするため
     assert.strictEqual(lineLevel._level, LineLevel.LEVEL_MIN);
   });
 
-  suite('line_level - Method - createIndentPattern', () => {
+  suite('LineLevel - Method - createIndentPattern', () => {
     test('should create correct pattern for tab count 0', () => {
       const pattern = LineLevel.createIndentPattern(0);
       assert.strictEqual(pattern, '^(?:[ ]{0}|\\t{0})\\S.*$');
@@ -50,7 +50,7 @@ suite('line_level - Class', () => {
     });
   });
 
-  suite('line_level - Method - getLineLevel', () => {
+  suite('LineLevel - Method - getLineLevel', () => {
     test('should return LEVEL_NONE for empty lines', () => {
       assert.strictEqual(LineLevel.getLineLevel(''), LineLevel.LEVEL_NONE);
       assert.strictEqual(LineLevel.getLineLevel('  '), LineLevel.LEVEL_NONE);
