@@ -60,7 +60,8 @@ export function activate(context: vscode.ExtensionContext) {
         const lineInfo = new LineInfo()
           .setTextOrg(getText)
           .updateLineLevel()
-          .updateLineType();
+          .updateLineType()
+          .updateLineIO();
 
         lineInfoList.push(lineInfo);
       }

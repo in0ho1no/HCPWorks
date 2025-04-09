@@ -15,7 +15,7 @@ export class LineTypeFormat {
  * 行の種別を表す列挙型
  */
 export enum LineTypeEnum {
-  NORMAL = 1,
+  NORMAL = 0,
   FORK,
   REPEAT,
   MOD,
@@ -24,7 +24,7 @@ export enum LineTypeEnum {
   FALSE,
   BRANCH,
   DATA,
-  MODULE
+  MODULE,
 }
 
 /**
