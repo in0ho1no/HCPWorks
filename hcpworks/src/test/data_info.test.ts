@@ -41,53 +41,74 @@ suite('DataInfo - Class', () => {
 });
 
 suite('InOutData - Class', () => {
-  test('should create a new InOutData instance with the given input and output data lists', () => {
-    // 準備
-    const inData1 = new DataInfo('input1');
-    const inData2 = new DataInfo('input2');
-    const outData1 = new DataInfo('output1');
-    const inDataList = [inData1, inData2];
-    const outDataList = [outData1];
+  test('should create a new InOutData instance with empty data lists', () => {
+    const inOutData = new InOutData();
 
-    const inOutData = new InOutData(inDataList, outDataList);
-
-    assert.strictEqual(inOutData.inDataList, inDataList, 'inDataList should match the provided input data list');
-    assert.strictEqual(inOutData.outDataList, outDataList, 'outDataList should match the provided output data list');
+    assert.deepStrictEqual(inOutData.getInDataList(), [], 'inDataList should be initialized as an empty array');
+    assert.deepStrictEqual(inOutData.getOutDataList(), [], 'outDataList should be initialized as an empty array');
   });
 
-  test('should create an InOutData instance with empty arrays', () => {
-    const emptyInDataList: DataInfo[] = [];
-    const emptyOutDataList: DataInfo[] = [];
+  test('should set and get input data list correctly', () => {
+    const inData1 = new DataInfo('input1');
+    const inData2 = new DataInfo('input2');
+    const inDataList = [inData1, inData2];
+    const inOutData = new InOutData();
 
-    const inOutData = new InOutData(emptyInDataList, emptyOutDataList);
+    const result = inOutData.setInDataList(inDataList);
 
-    assert.deepStrictEqual(inOutData.inDataList, [], 'inDataList should be an empty array');
-    assert.deepStrictEqual(inOutData.outDataList, [], 'outDataList should be an empty array');
+    assert.strictEqual(result, inOutData, 'setInDataList should return this for method chaining');
+    assert.strictEqual(inOutData.getInDataList(), inDataList, 'getInDataList should return the set data list');
+    assert.strictEqual(inOutData.getInDataList().length, 2, 'inDataList should have 2 items');
+  });
+
+  test('should set and get output data list correctly', () => {
+    const outData1 = new DataInfo('output1');
+    const outDataList = [outData1];
+    const inOutData = new InOutData();
+
+    const result = inOutData.setOutDataList(outDataList);
+
+    assert.strictEqual(result, inOutData, 'setOutDataList should return this for method chaining');
+    assert.strictEqual(inOutData.getOutDataList(), outDataList, 'getOutDataList should return the set data list');
+    assert.strictEqual(inOutData.getOutDataList().length, 1, 'outDataList should have 1 item');
+  });
+
+  test('should allow method chaining for setting data lists', () => {
+    const inData = new DataInfo('input');
+    const outData = new DataInfo('output');
+    const inDataList = [inData];
+    const outDataList = [outData];
+    const inOutData = new InOutData();
+
+    inOutData.setInDataList(inDataList).setOutDataList(outDataList);
+
+    assert.strictEqual(inOutData.getInDataList()[0], inData, 'Input data should be set correctly');
+    assert.strictEqual(inOutData.getOutDataList()[0], outData, 'Output data should be set correctly');
   });
 
   test('should maintain references to the original DataInfo objects', () => {
     const inData = new DataInfo('input');
     const outData = new DataInfo('output');
-    const inOutData = new InOutData([inData], [outData]);
+    const inOutData = new InOutData();
+    inOutData.setInDataList([inData]).setOutDataList([outData]);
 
     inData.name = 'modifiedInput';
     outData.name = 'modifiedOutput';
 
-    assert.strictEqual(inOutData.inDataList[0].name, 'modifiedInput', 'Changes to original inData should affect inOutData');
-    assert.strictEqual(inOutData.outDataList[0].name, 'modifiedOutput', 'Changes to original outData should affect inOutData');
+    assert.strictEqual(inOutData.getInDataList()[0].name, 'modifiedInput', 'Changes to original inData should affect inOutData');
+    assert.strictEqual(inOutData.getOutDataList()[0].name, 'modifiedOutput', 'Changes to original outData should affect inOutData');
   });
 
-  test('should handle modifications to the data lists', () => {
+  test('should handle modifications to the retrieved data lists', () => {
     const inData1 = new DataInfo('input1');
     const inData2 = new DataInfo('input2');
-    const outData1 = new DataInfo('output1');
-    const inDataList = [inData1];
-    const outDataList = [outData1];
-    const inOutData = new InOutData(inDataList, outDataList);
+    const inOutData = new InOutData();
+    inOutData.setInDataList([inData1]);
 
-    inOutData.inDataList.push(inData2);
+    const retrievedList = inOutData.getInDataList();
+    retrievedList.push(inData2);
 
-    assert.strictEqual(inOutData.inDataList.length, 2, 'inDataList should have 2 items after push');
-    assert.strictEqual(inOutData.inDataList[1], inData2, 'Second item in inDataList should be inData2');
+    assert.strictEqual(inOutData.getInDataList().length, 2, 'Internal inDataList should be modified when the retrieved list is modified');
+    assert.strictEqual(inOutData.getInDataList()[1], inData2, 'Second item in internal inDataList should be inData2');
   });
 });

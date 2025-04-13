@@ -17,11 +17,23 @@ export class DataInfo {
  * 入出力データを表すクラス
  */
 export class InOutData {
-  inDataList: DataInfo[];
-  outDataList: DataInfo[];
+  private _inDataList: DataInfo[];
+  private _outDataList: DataInfo[];
 
-  constructor(inDataList: DataInfo[], outDataList: DataInfo[]) {
-    this.inDataList = inDataList;
-    this.outDataList = outDataList;
+  constructor() {
+    this._inDataList = [];
+    this._outDataList = [];
+  }
+
+  getInDataList(): DataInfo[] { return this._inDataList; }
+  setInDataList(dataList: DataInfo[]): InOutData {
+    this._inDataList = dataList;
+    return this;
+  }
+
+  getOutDataList(): DataInfo[] { return this._outDataList; }
+  setOutDataList(dataList: DataInfo[]): InOutData {
+    this._outDataList = dataList;
+    return this;
   }
 }
