@@ -42,7 +42,9 @@
 			"prettier.semi": true,
 		},
 		"cSpell.words": [
-			"hcpworks"
+			"amodio",
+			"hcpworks",
+			"treeview"
 		],
 	}
 }

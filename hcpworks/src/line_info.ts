@@ -11,9 +11,9 @@ export class LineInfo {
   private _textOriginal: string;
   private _level: number;
   private _type: LineTypeFormat;
-  private _textTypeless: string;
+  private _textLessType: string;
   private _InOutData: InOutData;
-  private _textTypeIOless: string;
+  private _textLessTypeIo: string;
 
   private _no: number;
   private _beforeNo: number;
@@ -23,9 +23,9 @@ export class LineInfo {
     this._textOriginal = '';
     this._level = 0;
     this._type = new LineTypeFormat();
-    this._textTypeless = '';
+    this._textLessType = '';
     this._InOutData = new InOutData();
-    this._textTypeIOless = '';
+    this._textLessTypeIo = '';
 
     this._no = 0;
     this._beforeNo = 0;
@@ -46,12 +46,12 @@ export class LineInfo {
 
   getType(): LineTypeFormat { return this._type; }
   updateType(): LineInfo {
-    [this._type, this._textTypeless] = LineType.get_line_type(this._textOriginal);
+    [this._type, this._textLessType] = LineType.get_line_type(this._textOriginal);
     return this;
   }
 
-  getTextLessTypeIO(): string { return this._textTypeIOless; }
-  setTextLessTypeIO(text: string): LineInfo { this._textTypeIOless = text; return this; }
+  getTextLessTypeIO(): string { return this._textLessTypeIo; }
+  setTextLessTypeIO(text: string): LineInfo { this._textLessTypeIo = text; return this; }
   getInOutData(): InOutData { return this._InOutData; }
   updateLineIO(): LineInfo {
     // inとoutの正規表現を用意
@@ -60,18 +60,18 @@ export class LineInfo {
     const out_ptn = new RegExp("\\" + IOTypeDefine.get_format_by_type(IOTypeEnum.OUT).type_format + common_ptn, 'g');
 
     // inとoutのデータ名を抽出
-    const inMatches = Array.from(this._textTypeless.matchAll(in_ptn));
-    const outMatches = Array.from(this._textTypeless.matchAll(out_ptn));
+    const inMatches = Array.from(this._textLessType.matchAll(in_ptn));
+    const outMatches = Array.from(this._textLessType.matchAll(out_ptn));
 
     // データを対応するリストに格納
     const inDataList = inMatches.map(match => new DataInfo(match[1]));
     const outDataList = outMatches.map(match => new DataInfo(match[1]));
 
     // inとout要素を取り除いた行を取得
-    const cleanedText = this._textTypeless.replace(in_ptn, "").replace(out_ptn, "").trim();
+    const cleanedText = this._textLessType.replace(in_ptn, "").replace(out_ptn, "").trim();
 
     this._InOutData = new InOutData().setInDataList(inDataList).setOutDataList(outDataList);
-    this._textTypeIOless = cleanedText;
+    this._textLessTypeIo = cleanedText;
 
     return this;
   }
