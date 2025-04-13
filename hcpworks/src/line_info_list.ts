@@ -1,11 +1,12 @@
 import { LineInfo } from './line_info';
-import { LineTypeDefine, LineTypeEnum } from './line_define';
 import { LineLevel } from './line_level';
 
-
-export class LineProcessor {
-  private _lineInfoList: LineInfo[];
-  private _minLevel: number;
+/**
+ * LineProcessorの基底クラス
+ */
+export abstract class BaseLineProcessor {
+  protected _lineInfoList: LineInfo[];
+  protected _minLevel: number;
 
   constructor() {
     this._lineInfoList = [];
@@ -13,32 +14,19 @@ export class LineProcessor {
   }
 
   /**
-   * 処理部の情報をリストにする
+   * 情報リストを作成する（サブクラスで実装する）
+   * @param lineInfoList 処理対象のラインリスト
    * @returns このインスタンスへの参照（メソッドチェーン用）
    */
-  public createProcessInfoList(lineInfoList: LineInfo[]): LineProcessor {
-    const processInfoList = [];
-    for (const lineInfo of lineInfoList) {
-      if (lineInfo.getType().type_value !== LineTypeDefine.get_format_by_type(LineTypeEnum.DATA).type_value) {
-        processInfoList.push(lineInfo);
-      }
-    }
-    this._lineInfoList = processInfoList;
-    return this;
-  }
+  public abstract createInfoList(lineInfoList: LineInfo[]): BaseLineProcessor;
 
   /**
-   * データ部の情報をリストにする
+   * ラインリストを設定する
+   * @param lineInfoList 設定するラインリスト
    * @returns このインスタンスへの参照（メソッドチェーン用）
    */
-  public createDataInfoList(lineInfoList: LineInfo[]): LineProcessor {
-    const dataInfoList = [];
-    for (const line_info of lineInfoList) {
-      if (line_info.getType().type_value === LineTypeDefine.get_format_by_type(LineTypeEnum.DATA).type_value) {
-        dataInfoList.push(line_info);
-      }
-    }
-    this._lineInfoList = dataInfoList;
+  public setLineInfoList(lineInfoList: LineInfo[]): BaseLineProcessor {
+    this._lineInfoList = lineInfoList;
     return this;
   }
 
@@ -46,7 +34,7 @@ export class LineProcessor {
    * 行番号を設定する
    * @returns このインスタンスへの参照（メソッドチェーン用）
    */
-  public setInfoListNo(): LineProcessor {
+  public setInfoListNo(): BaseLineProcessor {
     // forEachを使用して各要素に処理を適用
     this._lineInfoList.forEach((lineInfo, index) => {
       lineInfo.setLineNo(index);
@@ -58,7 +46,7 @@ export class LineProcessor {
    * 各行のレベルに応じた前後関係を決定する
    * @returns このインスタンスへの参照（メソッドチェーン用）
    */
-  public assignLineRelationships(): LineProcessor {
+  public assignLineRelationships(): BaseLineProcessor {
     // 昇順で前後関係を決める
     for (let currentIndex = 0; currentIndex < this._lineInfoList.length; currentIndex++) {
       const currentLine = this._lineInfoList[currentIndex];
@@ -90,7 +78,7 @@ export class LineProcessor {
    * リストから重複した要素を除外する
    * @returns このインスタンスへの参照（メソッドチェーン用）
    */
-  public removeDuplicate(): LineProcessor {
+  public removeDuplicate(): BaseLineProcessor {
     const removedDuplicateList: LineInfo[] = [];
     const checkedTextList: string[] = [];
 
@@ -111,7 +99,7 @@ export class LineProcessor {
    * リスト内の最小レベルを取得する
    * @returns このインスタンスへの参照（メソッドチェーン用）
    */
-  public setMinLevel(): LineProcessor {
+  public setMinLevel(): BaseLineProcessor {
     let minLevel: number = LineLevel.LEVEL_MAX;
 
     for (const lineInfo of this._lineInfoList) {
@@ -121,4 +109,5 @@ export class LineProcessor {
     this._minLevel = minLevel;
     return this;
   }
+  public getMinLevel(): number { return this._minLevel; }
 }
