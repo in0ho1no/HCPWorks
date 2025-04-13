@@ -13,7 +13,6 @@ export class DataInfo {
   }
 }
 
-
 /**
  * 入出力データを表すクラス
  */

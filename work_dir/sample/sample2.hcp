@@ -22,13 +22,13 @@
                 \return TRUE(成功値) 固定
 
 \module モジュ2-2
-    \data bbb
+\data bbb
     \data データaaa
 
-    シンプルな処理
-        初期化
-            \mod 何もしない \in bbb 
-        メイン処理
-            何もしない \out データaaa
-        後処理
-            何もしない
+シンプルな処理
+    初期化
+        \mod 何もしない \in bbb 
+    メイン処理
+        何もしない \out データaaa
+    後処理
+        何もしない
