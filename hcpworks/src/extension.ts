@@ -56,12 +56,13 @@ export function activate(context: vscode.ExtensionContext) {
         .setName(selectedItem.name)
         .setTextContent(cleanTextLines(selectedItem.content));
 
+      // テキストファイルをパース
       const lineInfoList: LineInfo[] = [];
       for (const getText of svgContent.getTextContent()) {
         const lineInfo = new LineInfo()
           .setTextOrg(getText)
-          .updateLineLevel()
-          .updateLineType()
+          .updateLevel()
+          .updateType()
           .updateLineIO();
 
         lineInfoList.push(lineInfo);
@@ -70,13 +71,15 @@ export function activate(context: vscode.ExtensionContext) {
       const processInfoList = new LineProcessor();
       processInfoList.createProcessInfoList(lineInfoList)
         .setInfoListNo()
-        .assignLineRelationships();
+        .assignLineRelationships()
+        .setMinLevel();
 
       const dataInfoList = new LineProcessor();
       dataInfoList.createDataInfoList(lineInfoList)
         .setInfoListNo()
         .removeDuplicate()
-        .assignLineRelationships();
+        .assignLineRelationships()
+        .setMinLevel();
 
       previewPanel.webview.html = svgContent.getHtmlWrappedSvg();
     }

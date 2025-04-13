@@ -37,14 +37,14 @@ export class LineInfo {
     return this;
   }
 
-  getLineLevel(): number { return this._level; }
-  updateLineLevel(): LineInfo {
+  getLevel(): number { return this._level; }
+  updateLevel(): LineInfo {
     this._level = LineLevel.getLineLevel(this._textOriginal);
     return this;
   }
 
-  getLineType(): LineTypeFormat { return this._type; }
-  updateLineType(): LineInfo {
+  getType(): LineTypeFormat { return this._type; }
+  updateType(): LineInfo {
     [this._type, this._textTypeless] = LineType.get_line_type(this._textOriginal);
     return this;
   }
