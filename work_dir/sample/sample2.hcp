@@ -27,8 +27,8 @@
 
 シンプルな処理
     初期化
-        \mod 何もしない \in bbb 
+        \mod 何もしない \in bbb \in add1
     メイン処理
         何もしない \out データaaa
     後処理
-        何もしない
+        何もしない \out additional2

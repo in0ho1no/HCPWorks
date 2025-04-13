@@ -12,7 +12,7 @@ export class LineInfo {
   private _level: number;
   private _type: LineTypeFormat;
   private _textTypeless: string;
-  private _InOutData: InOutData | null;
+  private _InOutData: InOutData;
   private _textTypeIOless: string;
 
   private _no: number;
@@ -24,7 +24,7 @@ export class LineInfo {
     this._level = 0;
     this._type = new LineTypeFormat();
     this._textTypeless = '';
-    this._InOutData = null;
+    this._InOutData = new InOutData();
     this._textTypeIOless = '';
 
     this._no = 0;
@@ -38,6 +38,7 @@ export class LineInfo {
   }
 
   getLevel(): number { return this._level; }
+  setLevel(level: number): LineInfo { this._level = level; return this; }
   updateLevel(): LineInfo {
     this._level = LineLevel.getLineLevel(this._textOriginal);
     return this;
@@ -50,6 +51,8 @@ export class LineInfo {
   }
 
   getTextLessTypeIO(): string { return this._textTypeIOless; }
+  setTextLessTypeIO(text: string): LineInfo { this._textTypeIOless = text; return this; }
+  getInOutData(): InOutData { return this._InOutData; }
   updateLineIO(): LineInfo {
     // inとoutの正規表現を用意
     const common_ptn = "\\s+(\\S+)?";
@@ -67,7 +70,7 @@ export class LineInfo {
     // inとout要素を取り除いた行を取得
     const cleanedText = this._textTypeless.replace(in_ptn, "").replace(out_ptn, "").trim();
 
-    this._InOutData = new InOutData(inDataList, outDataList);
+    this._InOutData = new InOutData().setInDataList(inDataList).setOutDataList(outDataList);
     this._textTypeIOless = cleanedText;
 
     return this;
@@ -91,3 +94,19 @@ export class LineInfo {
     return this;
   }
 }
+
+/**
+ * データ名に基づいて、データ部に相当する情報を作成する
+ * 
+ * @param dataName データ名
+ * @param dataLevel データレベル
+ * @returns 作成したdataの情報
+ */
+export const createCommonDataInfo = (dataName: string, dataLevel: number): LineInfo => {
+  const dataInfo = new LineInfo();
+  dataInfo.setTextOrg("\\data " + dataName);
+  dataInfo.setLevel(dataLevel);
+  dataInfo.updateType();
+  dataInfo.setTextLessTypeIO(dataName);
+  return dataInfo;
+};

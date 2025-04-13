@@ -5,7 +5,7 @@ import { cleanTextLines } from './file_parse';
 import { LineInfo } from './line_info';
 import { ProcessLineProcessor } from './line_info_list_process';
 import { DataLineProcessor } from './line_info_list_data';
-
+import { ParseInfo4Render } from './parse_info_4_render';
 
 const TIMEOUT = 300;
 const HCP_ID = "hcp";
@@ -71,6 +71,8 @@ export function activate(context: vscode.ExtensionContext) {
 
       const processInfoList = ProcessLineProcessor.process(lineInfoList);
       const dataInfoList = DataLineProcessor.process(lineInfoList);
+      const parseInfo4Render = new ParseInfo4Render(processInfoList, dataInfoList);
+      parseInfo4Render.mergeIoData();
 
       previewPanel.webview.html = svgContent.getHtmlWrappedSvg();
     }
