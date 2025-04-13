@@ -1,6 +1,6 @@
 import { LineInfo } from './line_info';
 import { LineTypeDefine, LineTypeEnum } from './line_define';
-import { BaseLineProcessor } from './line_info_list';
+import { BaseLineProcessor } from './line_info_list_base';
 
 /**
  * データ部の情報を扱う

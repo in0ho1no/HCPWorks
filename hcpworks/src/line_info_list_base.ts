@@ -29,6 +29,7 @@ export abstract class BaseLineProcessor {
     this._lineInfoList = lineInfoList;
     return this;
   }
+  public getLineInfoList(): LineInfo[] { return this._lineInfoList; }
 
   /**
    * 行番号を設定する
