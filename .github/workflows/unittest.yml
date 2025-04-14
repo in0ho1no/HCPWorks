@@ -2,9 +2,9 @@ name: VSCode Extension Test
 
 on:
   push:
-    branches: [ main , 行のparse]
+    branches: [ main , develop, previewの作成]
   pull_request:
-    branches: [ main]
+    branches: [ main , develop, ]
 
 permissions:
     contents: read
