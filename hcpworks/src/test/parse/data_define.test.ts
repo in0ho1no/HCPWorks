@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 
-import { IOTypeFormat, IOTypeEnum, IOTypeDefine } from '../data_define';
+import { IOTypeFormat, IOTypeEnum, IOTypeDefine } from '../../parse/data_define';
 
 suite('IOTypeFormat - Class', () => {
   test('should be initialized correctly', () => {

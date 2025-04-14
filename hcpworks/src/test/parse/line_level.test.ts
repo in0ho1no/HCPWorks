@@ -1,5 +1,5 @@
 import * as assert from 'assert';
-import { LineLevel } from '../line_level';
+import { LineLevel } from '../../parse/line_level';
 
 suite('LineLevel - Class', () => {
   test('constructor should initialize value to LEVEL_MIN', () => {

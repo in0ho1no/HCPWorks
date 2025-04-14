@@ -1,5 +1,5 @@
 import * as assert from 'assert';
-import { Wire, Process2Data } from '../wire';
+import { Wire, Process2Data } from '../../parse/wire';
 
 suite('Wire - Class', () => {
   test('wireWidth calculation', () => {

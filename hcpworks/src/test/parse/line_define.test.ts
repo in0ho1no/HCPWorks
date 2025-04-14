@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 
-import { LineTypeFormat, LineTypeEnum, LineTypeDefine } from '../line_define';
+import { LineTypeFormat, LineTypeEnum, LineTypeDefine } from '../../parse/line_define';
 
 suite('LineTypeFormat - Class', () => {
   test('should be initialized correctly', () => {

@@ -1,7 +1,7 @@
 import * as assert from 'assert';
 
-import { LineTypeEnum, LineTypeDefine } from '../line_define';
-import { LineType } from '../line_type';
+import { LineTypeEnum, LineTypeDefine } from '../../parse/line_define';
+import { LineType } from '../../parse/line_type';
 
 suite('LineType - Method - get_line_type', () => {
   test('should return NORMAL for empty line', () => {

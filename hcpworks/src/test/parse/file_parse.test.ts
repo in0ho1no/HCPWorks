@@ -1,5 +1,5 @@
 import * as assert from 'assert';
-import { parseModules, cleanTextLines, Module } from '../file_parse';
+import { parseModules, cleanTextLines, Module } from '../../parse/file_parse';
 
 suite('file_parse - Function - parseModules', () => {
 	test('Should parse a single module correctly', () => {

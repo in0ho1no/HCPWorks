@@ -1,6 +1,6 @@
 import * as assert from 'assert';
-import { DataInfo, InOutData } from '../data_info';
-import { Wire, Process2Data } from '../wire';
+import { DataInfo, InOutData } from '../../parse/data_info';
+import { Wire, Process2Data } from '../../parse/wire';
 
 suite('DataInfo - Class', () => {
   test('should create a new DataInfo instance with the given name', () => {

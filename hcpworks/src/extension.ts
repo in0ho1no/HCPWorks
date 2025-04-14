@@ -1,11 +1,11 @@
 import * as vscode from 'vscode';
 import { ModuleTreeProvider } from './tree_provider';
 import { SvgContent } from './svg_content';
-import { cleanTextLines } from './file_parse';
-import { LineInfo } from './line_info';
-import { ProcessLineProcessor } from './line_info_list_process';
-import { DataLineProcessor } from './line_info_list_data';
-import { ParseInfo4Render } from './parse_info_4_render';
+import { cleanTextLines } from './parse/file_parse';
+import { LineInfo } from './parse/line_info';
+import { ProcessLineProcessor } from './parse/line_info_list_process';
+import { DataLineProcessor } from './parse/line_info_list_data';
+import { ParseInfo4Render } from './parse/parse_info_4_render';
 
 const TIMEOUT = 300;
 const HCP_ID = "hcp";

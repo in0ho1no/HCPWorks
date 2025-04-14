@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { parseModules, Module } from './file_parse';
+import { parseModules, Module } from './parse/file_parse';
 import { ModuleTreeElement } from './tree_element';
 
 /**
