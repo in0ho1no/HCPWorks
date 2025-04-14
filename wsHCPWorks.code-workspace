@@ -2,6 +2,11 @@
 	"folders": [
 		{
 			"path": "."
+		},
+		{
+			// Yeoman extension generator
+			"name": "Extension generator",
+			"path": "./hcpworks"
 		}
 	],
 	"settings": {
@@ -11,9 +16,12 @@
 		"workbench.colorCustomizations": {
 			"activityBarTop.background": "#e2df16b4",
 			"activityBarTop.foreground": "#06065df5",
+
+			"editor.lineHighlightBackground":"#453ae1bb"
 		},
 
 		"editor.fontFamily": "Consolas, 'Meiryo UI','Courier New', monospace",
+		"editor.renderLineHighlight": "all",
 
 		"[markdown]": {
 			"editor.wordWrap":"on",
@@ -33,5 +41,10 @@
 			"editor.formatOnSave": true,
 			"prettier.semi": true,
 		},
+		"cSpell.words": [
+			"amodio",
+			"hcpworks",
+			"treeview"
+		],
 	}
 }
