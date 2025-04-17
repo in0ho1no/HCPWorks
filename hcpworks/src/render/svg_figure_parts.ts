@@ -12,7 +12,7 @@ export class SvgFigureParts {
    * @param radius 円の半径
    * @returns 円のSVG文字列
    */
-  svgCircle(
+  static svgCircle(
     centerX: number,
     centerY: number,
     radius: number,
@@ -28,7 +28,7 @@ export class SvgFigureParts {
    * @param vertices 三角形の頂点座標
    * @returns 三角形のSVG文字列
    */
-  svgTriangle(
+  static svgTriangle(
     vertices: number[][],
   ): string {
     return `<polygon points="` +
@@ -46,7 +46,7 @@ export class SvgFigureParts {
    * @param centerY 中心Y座標
    * @returns 右巻き矢印のSVG文字列
    */
-  svgArcArrowR(
+  static svgArcArrowR(
     centerX: number,
     centerY: number,
   ): string {
@@ -86,7 +86,7 @@ export class SvgFigureParts {
    * @param centerY 中心Y座標
    * @returns 四角のSVG文字列
    */
-  svgRect(
+  static svgRect(
     centerX: number,
     centerY: number,
   ): string {
@@ -104,7 +104,7 @@ export class SvgFigureParts {
    * @param centerY 中心Y座標
    * @returns 図形のSVG文字列
    */
-  svgDataFuncIn(
+  static svgDataFuncIn(
     centerX: number,
     centerY: number
   ): string {
@@ -123,7 +123,7 @@ export class SvgFigureParts {
    * @param centerY 中心Y座標
    * @returns 図形のSVG文字列
    */
-  svgDataFuncOut(centerX: number, centerY: number): string {
+  static svgDataFuncOut(centerX: number, centerY: number): string {
     return `<path d="M ${centerX + SvgFigureDefine.CIRCLE_R} ${centerY} ` +   // 描画開始位置指定
       `L ${centerX} ${centerY - SvgFigureDefine.CIRCLE_R} ` +                 // 上弦描画
       `L ${centerX} ${centerY + SvgFigureDefine.CIRCLE_R} ` +                 // 縦線描画
@@ -140,7 +140,7 @@ export class SvgFigureParts {
    * @param text 行の文字列
    * @returns [行の終端位置 , 処理を意味する行のSVG文字列]
    */
-  drawFigureNormal(
+  static drawFigureNormal(
     centerX: number,
     centerY: number,
     text: string = "",
@@ -167,7 +167,7 @@ export class SvgFigureParts {
    * @param rotation 正多角形を回転させたい角度(ラジアン)
    * @returns 正多角形の頂点座標をタプル[x,y]の配列で返す
    */
-  getVerticesPolygon(
+  static getVerticesPolygon(
     numOfVertex: number,
     centerX: number,
     centerY: number,
@@ -193,7 +193,7 @@ export class SvgFigureParts {
    * @param text 行の文字列
    * @returns [行の終端位置 , 処理を意味する行のSVG文字列]
    */
-  drawFigureFork(
+  static drawFigureFork(
     centerX: number,
     centerY: number,
     text: string = "",
@@ -222,7 +222,7 @@ export class SvgFigureParts {
    * @param text 行の文字列
    * @returns [行の終端位置 , 処理を意味する行のSVG文字列]
    */
-  drawFigureRepeat(
+  static drawFigureRepeat(
     centerX: number,
     centerY: number,
     text: string = ""
@@ -250,7 +250,7 @@ export class SvgFigureParts {
    * @param text 行の文字列
    * @returns [行の終端位置 , 処理を意味する行のSVG文字列]
    */
-  drawFigureMod(
+  static drawFigureMod(
     centerX: number,
     centerY: number,
     text: string = "",
@@ -279,7 +279,7 @@ export class SvgFigureParts {
    * @param text 行の文字列
    * @returns [行の終端位置 , 処理を意味する行のSVG文字列]
    */
-  drawFigureReturn(
+  static drawFigureReturn(
     centerX: number,
     centerY: number,
     text: string = ""
@@ -314,7 +314,7 @@ export class SvgFigureParts {
    * @param text 行の文字列
    * @returns [行の終端位置 , 処理を意味する行のSVG文字列]
    */
-  drawFigureCond(
+  static drawFigureCond(
     centerX: number,
     centerY: number,
     text: string = "",
@@ -343,7 +343,11 @@ export class SvgFigureParts {
    * @param text 行の文字列
    * @returns [行の終端位置 , 処理を意味する行のSVG文字列]
    */
-  drawFigureTrue(centerX: number, centerY: number, text: string = ""): [number, string] {
+  static drawFigureTrue(
+    centerX: number,
+    centerY: number,
+    text: string = "",
+  ): [number, string] {
     const textCond = "(true) " + text;
     return this.drawFigureCond(centerX, centerY, textCond);
   }
@@ -356,7 +360,11 @@ export class SvgFigureParts {
    * @param text 行の文字列
    * @returns [行の終端位置 , 処理を意味する行のSVG文字列]
    */
-  drawFigureFalse(centerX: number, centerY: number, text: string = ""): [number, string] {
+  static drawFigureFalse(
+    centerX: number,
+    centerY: number,
+    text: string = "",
+  ): [number, string] {
     const textCond = "(false) " + text;
     return this.drawFigureCond(centerX, centerY, textCond);
   }
@@ -369,7 +377,11 @@ export class SvgFigureParts {
    * @param text 行の文字列
    * @returns [行の終端位置 , 処理を意味する行のSVG文字列]
    */
-  drawFigureBranch(centerX: number, centerY: number, text: string = ""): [number, string] {
+  static drawFigureBranch(
+    centerX: number,
+    centerY: number,
+    text: string = "",
+  ): [number, string] {
     const textCond = "(" + text + ")";
     return this.drawFigureCond(centerX, centerY, textCond);
   }
@@ -382,7 +394,7 @@ export class SvgFigureParts {
    * @param text 行の文字列
    * @returns [行の終端位置 , 処理を意味する行のSVG文字列]
    */
-  drawFigureData(
+  static drawFigureData(
     centerX: number,
     centerY: number,
     text: string = "",
@@ -406,7 +418,7 @@ export class SvgFigureParts {
    * @param centerY 中心Y座標
    * @returns 図形のSVG文字列
    */
-  drawFigureDataFuncIn(centerX: number, centerY: number): string {
+  static drawFigureDataFuncIn(centerX: number, centerY: number): string {
     return this.svgDataFuncIn(centerX, centerY);
   }
 
@@ -417,7 +429,7 @@ export class SvgFigureParts {
    * @param centerY 中心Y座標
    * @returns 図形のSVG文字列
    */
-  drawFigureDataFuncOut(centerX: number, centerY: number): string {
+  static drawFigureDataFuncOut(centerX: number, centerY: number): string {
     return this.svgDataFuncOut(centerX, centerY);
   }
 }
