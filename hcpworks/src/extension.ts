@@ -69,8 +69,11 @@ export function activate(context: vscode.ExtensionContext) {
         lineInfoList.push(lineInfo);
       }
 
+      // 処理部とデータ部の情報を保持
       const processInfoList = ProcessLineProcessor.process(lineInfoList);
       const dataInfoList = DataLineProcessor.process(lineInfoList);
+
+      // レンダリング向けの情報を用意
       const parseInfo4Render = new ParseInfo4Render(processInfoList, dataInfoList);
       parseInfo4Render.mergeIoData();
 
