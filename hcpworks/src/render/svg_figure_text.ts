@@ -77,7 +77,8 @@ export class SvgFigureText {
     return `<text x="${startX}" y="${startY}" ` +
       `text-anchor="start" dominant-baseline="middle" ` +
       `font-family="Consolas, Courier New, monospace" ` +
-      `font-size="${fontSizePx}px">${escapedText}</text>`;
+      `font-size="${fontSizePx}px">${escapedText}</text>` +
+      `${SvgFigureDefine.LINE_BREAK}`;
   }
 
   /**

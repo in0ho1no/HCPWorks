@@ -1,6 +1,7 @@
 import { SvgFigureDefine } from './svg_figure_define';
 
 export class SvgFigureLines {
+
   /**
    * 基本的な直線を描画する
    * 
@@ -20,7 +21,8 @@ export class SvgFigureLines {
   ): string {
     return `<line x1="${startX}" y1="${startY}" ` +
       `x2="${endX}" y2="${endY}" ` +
-      `stroke="${color}"/>`;
+      `stroke="${color}"/>` +
+      `${SvgFigureDefine.LINE_BREAK}`;
   }
 
   /**
@@ -86,12 +88,13 @@ export class SvgFigureLines {
     const svgLineText = SvgFigureLines.svgLine(startX, startY, endX, startY, color);
     const arrowHead = SvgFigureDefine.ARROW_HEAD;
     const halfArrowHead = Math.ceil(arrowHead / 2);
-    return `${svgLineText}\r\n` +
+    return `${svgLineText}` +
       `<path d="M ${endX} ${startY} ` +
       `L ${endX - arrowHead} ${startY - halfArrowHead} ` +
       `M ${endX} ${startY} ` +
       `L ${endX - arrowHead} ${startY + halfArrowHead}" ` +
-      `stroke="${color}" fill="${color}" />`;
+      `stroke="${color}" fill="${color}" />` +
+      `${SvgFigureDefine.LINE_BREAK}`;
   }
 
   /**
@@ -113,12 +116,13 @@ export class SvgFigureLines {
     const svgLineText = SvgFigureLines.svgLine(startX, startY, endX, startY, color);
     const arrowHead = SvgFigureDefine.ARROW_HEAD;
     const halfArrowHead = Math.ceil(arrowHead / 2);
-    return `${svgLineText}\r\n` +
+    return `${svgLineText}` +
       `<path d="M ${startX} ${startY} ` +
       `L ${startX + arrowHead} ${startY - halfArrowHead} ` +
       `M ${startX} ${startY} ` +
       `L ${startX + arrowHead} ${startY + halfArrowHead}" ` +
-      `stroke="${color}" fill="${color}" />`;
+      `stroke="${color}" fill="${color}" />` +
+      `${SvgFigureDefine.LINE_BREAK}`;
   }
 
   /**
@@ -140,7 +144,7 @@ export class SvgFigureLines {
     // 上部の水平線
     const circleLeft = centerX - SvgFigureDefine.CIRCLE_R;
     const svgLineTopH = SvgFigureLines.drawLineH(circleLeft, vLineTop, SvgFigureDefine.FIGURE_WIDTH);
-    return `${svgLineTopV}\r\n${svgLineTopH}`;
+    return svgLineTopV + svgLineTopH;
   }
 
   /**
@@ -162,7 +166,7 @@ export class SvgFigureLines {
     const circleLeft = centerX - SvgFigureDefine.CIRCLE_R;
     const vLineBottom = circleBottom + SvgFigureDefine.FIGURE_SPACE;
     const svgLineBottomH = SvgFigureLines.drawLineH(circleLeft, vLineBottom, SvgFigureDefine.FIGURE_WIDTH);
-    return `${svgLineBottomV}\r\n${svgLineBottomH}`;
+    return svgLineBottomV + svgLineBottomH;
   }
 
   /**
@@ -189,6 +193,6 @@ export class SvgFigureLines {
     // 上部の左にシフトした垂直線
     const vLineLShiftTop = vLineTop - SvgFigureDefine.FIGURE_HEIGHT;
     const svgLineLShiftV = SvgFigureLines.drawLineV(hLineLShift, vLineLShiftTop, SvgFigureDefine.FIGURE_HEIGHT);
-    return `${svgLineTopV}\r\n${svgLineLShiftH}\r\n${svgLineLShiftV}`;
+    return svgLineTopV + svgLineLShiftH + svgLineLShiftV;
   }
 }

@@ -7,4 +7,5 @@ export class SvgFigureDefine {
   static readonly SPACE_FIGURE_TO_TEXT = 10;
   static readonly TEXT_MARGIN = 15;
   static readonly FONT_SIZE_PX = 12;
+  static readonly LINE_BREAK = "\r\n";
 }
