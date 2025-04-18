@@ -28,7 +28,7 @@ export class LineInfo {
     this._textLessTypeIo = '';
 
     this._no = 0;
-    this._beforeNo = 0;
+    this._beforeNo = LineInfo.DEFAULT_VALUE;
     this._nextNo = 0;
   }
 

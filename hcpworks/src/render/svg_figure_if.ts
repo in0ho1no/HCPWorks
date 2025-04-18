@@ -6,12 +6,11 @@ import { DiagramElement } from './diagram_element';
 /**
  * 図形描画を管理するクラス
  */
-export class DrawFigure {
+export class SvgOperator {
   private _figureMethodMap: Map<number, Function>;
 
   /**
    * 初期化メソッド
-   * 
    */
   constructor() {
     // 種別値と描画メソッドのマッピングテーブルを構築
