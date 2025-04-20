@@ -1,0 +1,17 @@
+\module 2バイト文字のタイトル
+
+\data データ1
+\data データ:補足
+\data データ*データ+データ1
+\data データ^でた~
+
+    begin process
+        initialize
+            pre data \out データ1
+            get data \out データ:補足
+
+        any
+            update \in データ1 \in データ:補足 \out データ*データ+データ1
+
+        finalize
+            result \in データ*データ+データ1 \out データ^でた~

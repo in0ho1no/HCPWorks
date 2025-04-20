@@ -1,0 +1,14 @@
+
+\module DDDDDDD
+\data hogehoge
+\data fizz
+\data buzz
+\data hogehoge
+
+/* テスト的なモジュール */
+    取得
+        /* なにもしない */ \out temp
+    比較
+        // 何もしない \in temp
+    更新
+        何もしない \out hogehoge
