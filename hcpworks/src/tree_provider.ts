@@ -91,4 +91,8 @@ export class ModuleTreeProvider implements vscode.TreeDataProvider<ModuleTreeEle
       )
       : [new ModuleTreeElement("", "モジュールが存在しません。", ["",])];
   }
+
+  getRootElements(): ModuleTreeElement[] {
+    return this.rootElements;
+  }
 }

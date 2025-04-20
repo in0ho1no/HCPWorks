@@ -17,7 +17,7 @@ const HCP_ID = "hcp";
 const HCP_SUFFIX = `.${HCP_ID}`;
 
 let previewPanel: vscode.WebviewPanel | undefined;
-let selectedFilePath: string | undefined;
+let selectedItem: ModuleTreeElement | undefined;
 let currentSvgContent: SvgContent | undefined;
 
 export function activate(context: vscode.ExtensionContext) {
@@ -38,6 +38,9 @@ export function activate(context: vscode.ExtensionContext) {
 
   // エディタ切り替え時のイベント登録
   registerEditorChangeEvent(context);
+
+  // ファイル保存時のイベントを登録
+  registerFileSaveEvent(context, moduleTreeProvider);
 
   // 起動時のチェック処理
   checkActiveEditorOnStartup();
@@ -80,8 +83,8 @@ function registerCommands(
         vscode.window.showInformationMessage('No preview panel available to save.');
         return;
       }
-      if (!selectedFilePath || selectedFilePath === "") {
-        vscode.window.showInformationMessage('No file selected to save.');
+      if (!selectedItem) {
+        vscode.window.showInformationMessage('No Module selected to save.');
         return;
       }
       if (!currentSvgContent) {
@@ -89,7 +92,7 @@ function registerCommands(
         return;
       }
 
-      const savePath = selectedFilePath.split('.')[0] + '_' + currentSvgContent.getName() + '.svg';
+      const savePath = selectedItem.filePath.split('.')[0] + '_' + currentSvgContent.getName() + '.svg';
       const svgContent = currentSvgContent.getSvgContent();
 
       // ファイルに保存
@@ -111,17 +114,18 @@ function registerFileSelectEvent(
   moduleTreeView: vscode.TreeView<any>
 ) {
   moduleTreeView.onDidChangeSelection((e) => {
-    const selectedItem = e.selection[0];
+    selectedItem = e.selection[0];
     if (selectedItem) {
       // vscode.window.showInformationMessage(`Selected Module: ${selectedItem.name}`);
       if (!previewPanel) {
         previewPanel = createWebviewPanel();
         previewPanel.onDidDispose(() => {
           previewPanel = undefined;
+          selectedItem = undefined;
+          currentSvgContent = undefined;
         });
       }
 
-      selectedFilePath = selectedItem.filePath;
       currentSvgContent = createSvgContent(selectedItem);
       previewPanel.webview.html = currentSvgContent.getHtmlWrappedSvg();
     }
@@ -157,11 +161,11 @@ function createWebviewPanel(): vscode.WebviewPanel {
 /**
  * SVGコンテンツを生成する
  */
-function createSvgContent(selectedItem: ModuleTreeElement): SvgContent {
+function createSvgContent(selectedElement: ModuleTreeElement): SvgContent {
   // コンテンツを新規作成
   const svgContent = new SvgContent()
-    .setName(selectedItem.name)
-    .setTextContent(cleanTextLines(selectedItem.content));
+    .setName(selectedElement.name)
+    .setTextContent(cleanTextLines(selectedElement.content));
 
   // テキストファイルをパース
   const lineInfoList: LineInfo[] = [];
@@ -212,6 +216,36 @@ function registerEditorChangeEvent(context: vscode.ExtensionContext) {
     vscode.window.onDidChangeActiveTextEditor((e) => {
       if (e && (e.document.languageId === HCP_ID || e.document.fileName.endsWith(HCP_SUFFIX))) {
         vscode.commands.executeCommand('hcpworks.listingModule');
+      }
+    })
+  );
+}
+
+/**
+ * ファイル保存時のイベントを登録する
+ */
+function registerFileSaveEvent(context: vscode.ExtensionContext, moduleTreeProvider: ModuleTreeProvider) {
+  context.subscriptions.push(
+    vscode.workspace.onDidSaveTextDocument((document) => {
+      // .hcp ファイルのみを対象とする
+      if (document.languageId === HCP_ID || document.fileName.endsWith(HCP_SUFFIX)) {
+        const fileFullPath = document.fileName;
+        const fileContent = document.getText().replace(/\r\n/g, '\n');
+
+        // プレビューを更新
+        moduleTreeProvider.updateRootElements(fileFullPath, fileContent);
+        moduleTreeProvider.refresh();
+
+        // Webview パネルが存在する場合は SVG コンテンツを更新
+        if (previewPanel && selectedItem) {
+          const rootElements = moduleTreeProvider.getRootElements();
+          for (const element of rootElements) {
+            if (element.name === selectedItem.name) {
+              currentSvgContent = createSvgContent(element);
+              previewPanel.webview.html = currentSvgContent.getHtmlWrappedSvg();
+            }
+          }
+        }
       }
     })
   );
