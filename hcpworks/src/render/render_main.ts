@@ -297,7 +297,7 @@ export class SVGRenderer {
 
       // 最小レベルか否かの判定を保持する
       const dataLineInfo = dataElement.getLineInfo();
-      const normalizeLevel = dataLineInfo.getLevel() - this._processLines.getMinLevel();
+      const normalizeLevel = dataLineInfo.getLevel() - this._dataLines.getMinLevel();
       const isLevelMin = (normalizeLevel === LineLevel.LEVEL_MIN);
 
       // 直前の要素の有無を保持する
