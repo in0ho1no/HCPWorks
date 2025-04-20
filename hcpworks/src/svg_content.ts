@@ -81,7 +81,7 @@ export class SvgContent {
         </style>
       </head>
       <body>
-        ${this.getSvgContent()}
+        ${this._svgContent}
       </body>
       </html>
     `;
@@ -104,12 +104,6 @@ export class SvgContent {
    * @returns SVGコンテンツ
    */
   private getSvgContent(): string {
-    return `
-      <svg width="200" height="100" xmlns="http://www.w3.org/2000/svg">
-        <rect width="100%" height="100%" fill="#808d81"/>
-        <text x=5 y=10 text-anchor="start" dominant-baseline="middle" font-family="Consolas, Courier New, monospace" font-size="12">${this._name}</text>
-        <text x=10 y=25 text-anchor="start" dominant-baseline="middle" font-family="Consolas, Courier New, monospace" font-size="12">${this._textContent[0]}</text>
-      </svg>
-    `;
+    return this._svgContent;
   }
 }

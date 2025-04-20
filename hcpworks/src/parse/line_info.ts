@@ -38,7 +38,13 @@ export class LineInfo {
   }
 
   getLevel(): number { return this._level; }
-  setLevel(level: number): LineInfo { this._level = level; return this; }
+  setLevel(level: number): LineInfo {
+    if (level < LineLevel.LEVEL_MIN) {
+      throw new Error("Invalid level value: " + level);
+    }
+    this._level = level;
+    return this;
+  }
   updateLevel(): LineInfo {
     this._level = LineLevel.getLineLevel(this._textOriginal);
     return this;

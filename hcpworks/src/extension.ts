@@ -6,6 +6,7 @@ import { LineInfo } from './parse/line_info';
 import { ProcessLineProcessor } from './parse/line_info_list_process';
 import { DataLineProcessor } from './parse/line_info_list_data';
 import { ParseInfo4Render } from './parse/parse_info_4_render';
+import { SVGRenderer } from './render/render_main';
 
 const TIMEOUT = 300;
 const HCP_ID = "hcp";
@@ -77,6 +78,11 @@ export function activate(context: vscode.ExtensionContext) {
       const parseInfo4Render = new ParseInfo4Render(processInfoList, dataInfoList);
       parseInfo4Render.mergeIoData();
 
+      // レンダリング実行
+      const renderer = new SVGRenderer(svgContent.getName(), parseInfo4Render);
+      const svgText = renderer.render();
+
+      svgContent.setSvgContent(svgText);
       previewPanel.webview.html = svgContent.getHtmlWrappedSvg();
     }
   });
