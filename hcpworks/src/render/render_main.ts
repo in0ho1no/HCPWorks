@@ -62,7 +62,8 @@ export class SVGRenderer {
     const startY = DiagramDefine.IMG_MARGIN;
 
     // タイトル部を描画
-    const [titleEndX, titleEndY, titleSvgText] = this.setTitle(startX, startY);
+    const titleX = startX - SvgFigureDefine.CIRCLE_R;
+    const [titleEndX, titleEndY, titleSvgText] = this.setTitle(titleX, startY);
     this._svgText.push(titleSvgText);
 
     // 処理部を描画
@@ -73,7 +74,7 @@ export class SVGRenderer {
     const exitFromProcessEndX = this.renderLineExitFromProcess(processEndX);
 
     // データ部を描画
-    this._dataElements = this.setElements(exitFromProcessEndX, titleEndY, this._dataLines);
+    this._dataElements = this.setElements(exitFromProcessEndX + DiagramDefine.LEVEL_SHIFT, titleEndY, this._dataLines);
     const [dataEndX, dataEndY] = this.renderData();
 
     // データ部への水平線を描画
@@ -97,7 +98,7 @@ export class SVGRenderer {
    */
   setTitle(startX: number, startY: number): [number, number, string] {
     // タイトル部を描画する
-    const titleString = "モジュール名: " + this._name;
+    const titleString = "Name: " + this._name;
     const [end_x, svgStringText] = SvgFigureText.drawString(startX, startY, titleString, 150);
     const end_y = startY + DiagramDefine.LEVEL_SHIFT;
 
@@ -120,7 +121,7 @@ export class SVGRenderer {
     for (const lineInfo of lineProcessor.getLineInfoList()) {
       const element = new DiagramElement(lineInfo);
 
-      const normalizeLevel = lineInfo.getLevel() - lineProcessor.getMinLevel() + 1;
+      const normalizeLevel = lineInfo.getLevel() - lineProcessor.getMinLevel();
       element.setX(startX + normalizeLevel * DiagramDefine.LEVEL_SHIFT);
       element.setY(startY + elementList.length * DiagramDefine.LEVEL_SHIFT);
       elementList.push(element);
@@ -349,11 +350,15 @@ export class SVGRenderer {
     const dataInOutLine = (dataElement: DiagramElement, processInfo: LineInfo, dataInfoList: DataInfo[], isInData: boolean): void => {
       // 種別(入力・出力)に応じた線の描画
       for (const dataInfo of dataInfoList) {
+        // 同じデータ名のみ対象とする
+        if (dataElement.getLineInfo().getTextLessTypeIO() !== dataInfo.name) {
+          continue;
+        }
+
         // 種別に応じた情報の更新
         let offsetY: number;
         let drawLineMethod: (x: number, y: number, length: number, color: string) => string;
         let drawDataInOutMethod: (x: number, y: number) => string;
-
         if (isInData === true) {
           offsetY = +5;
           drawLineMethod = SvgFigureLines.drawLineH;
@@ -375,11 +380,6 @@ export class SVGRenderer {
           if (!connextLine) { continue; }
           const exitFromProcess = connextLine.exitFromProcess;
           if (!exitFromProcess) { continue; }
-
-          // 同じデータ名をつなぐ
-          if (dataElement.getLineInfo().getTextLessTypeIO() !== dataInfo.name) {
-            continue;
-          }
 
           // 水平線の始点と終点を決定
           const wireYPos = dataElement.getY() + offsetY;
