@@ -105,37 +105,52 @@ export function activate(context: vscode.ExtensionContext) {
     })
   );
 
-  // ファイル表示時のイベントを用意(新規パネルが開かれたときのみ実行される)
+  // ファイル表示時のイベント登録
+  registerFileOpenEvent(context);
+
+  // エディタ切り替え時のイベント登録
+  registerEditorChangeEvent(context);
+
+  // 起動時のチェック処理
+  checkActiveEditorOnStartup();
+}
+
+export function deactivate() { }
+
+/**
+ * ファイル表示時のイベントを登録する
+ */
+function registerFileOpenEvent(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.workspace.onDidOpenTextDocument((e) => {
-      // イベント発生直後は状態が完全でないため、一定時間待機する
       setTimeout(() => {
         if (e.languageId === HCP_ID || e.fileName.endsWith(HCP_SUFFIX)) {
           vscode.commands.executeCommand('hcpworks.listingModule');
         }
-      }, TIMEOUT);
+      }, TIMEOUT);    // イベント発生直後は状態が完全でないため、一定時間待機する
     })
   );
+}
 
-  // エディタを切り替えたときのイベントを用意
+/**
+ * エディタ切り替え時のイベントを登録する
+ */
+function registerEditorChangeEvent(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.window.onDidChangeActiveTextEditor((e) => {
-      if (e) {
-        if (e.document.languageId === HCP_ID || e.document.fileName.endsWith(HCP_SUFFIX)) {
-          vscode.commands.executeCommand('hcpworks.listingModule');
-        }
+      if (e && (e.document.languageId === HCP_ID || e.document.fileName.endsWith(HCP_SUFFIX))) {
+        vscode.commands.executeCommand('hcpworks.listingModule');
       }
     })
   );
-
-  // VSCode起動時のチェック処理
-  // 起動時に一度実行するだけなので、イベントリスナーには登録しない
-  if (vscode.window.activeTextEditor) {
-    const editor = vscode.window.activeTextEditor;
-    if (editor.document.languageId === HCP_ID || editor.document.fileName.endsWith(HCP_SUFFIX)) {
-      vscode.commands.executeCommand('hcpworks.listingModule');
-    }
-  }
 }
 
-export function deactivate() { }
+/**
+ * 起動時にアクティブなエディタをチェックする
+ */
+function checkActiveEditorOnStartup() {
+  const editor = vscode.window.activeTextEditor;
+  if (editor && (editor.document.languageId === HCP_ID || editor.document.fileName.endsWith(HCP_SUFFIX))) {
+    vscode.commands.executeCommand('hcpworks.listingModule');
+  }
+}
