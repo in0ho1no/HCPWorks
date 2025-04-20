@@ -1,0 +1,30 @@
+\module OOOOO
+\data ssss
+    \data ggggggg
+    \data JJJJJJJ
+\data fff
+
+シンプルな処理 \in ssss \out fff
+    初期化
+        何もしない
+    メイン処理
+        \fork 入力で分岐する \in ssss
+            \true 条件を満足した
+                出力更新 \out fff
+            \false 条件を満足しない
+                出力更新 \out fff
+    後処理
+        何もしない
+
+\module モジュール名のみ
+
+\module module-name-only123456789
+
+
+\module XXXXXXX
+/* テスト的なモジュール */
+    取得
+        /* なにもしない */ \out temp
+    比較
+        // 何もしない \in temp
+    更新

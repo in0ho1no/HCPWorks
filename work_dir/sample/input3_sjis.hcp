@@ -1,0 +1,24 @@
+\module sjis_test
+    \data データ1
+        \data データ1-1
+        \data データ(AAA)
+        \data データ(種類)
+    \data データ2
+    \data データ3
+    \data データ4
+    \data データ5
+    \data SJIS
+    \data データ7
+
+    処理開始
+        必要な情報を揃える
+            排他を取得
+            \repeat DBから取得 \in データ1 \out データ2 \out データ7
+            排他を解放
+            機能Bの実行
+                機能Bの前処理
+                機能Bの後処理
+                \return 2
+        処理終了
+            戻り値を返す
+                \return TRUE(成功値) 固定

@@ -2,39 +2,58 @@
   "name": "hcpworks",
   "displayName": "HCPWorks",
   "description": "This extension displays HCP chart.",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "engines": {
-    "vscode": "^1.98.0"
+    "vscode": "^1.99.0"
   },
   "categories": [
     "Other"
   ],
   "publisher": "in0ho1no",
-  "icon": "resources/icon/icon.png",
+  "icon": "resources/icon/icon-light.png",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/in0ho1no/HCPWorks"
   },
-  "activationEvents": [],
+  "activationEvents": [
+    "onLanguage:hcp"
+  ],
   "main": "./dist/extension.js",
   "contributes": {
+    "menus": {
+      "editor/title": [
+        {
+          "when": "hcpworks.webviewActive",
+          "command": "hcpworks.savePreview",
+          "group": "navigation"
+        }
+      ]
+    },
     "languages": [
       {
         "id": "hcp",
-        "extensions": [".hcp"],
-        "aliases": ["HCP"]
+        "extensions": [
+          ".hcp"
+        ],
+        "aliases": [
+          "HCP"
+        ]
       }
     ],
     "commands": [
       {
-        "command": "hcpworks.helloWorld",
-        "title": "Hello World"
-      },
-      {
         "command": "hcpworks.listingModule",
         "title": "HCPWorks: Listing Modules",
         "when": "editorLangId == hcp"
+      },
+      {
+        "command": "hcpworks.savePreview",
+        "title": "HCPWorks: Save Preview to Current Folder",
+        "icon": {
+          "light": "resources/icon/icon-light.png",
+          "dark": "resources/icon/icon-dark.png"
+        }
       }
     ],
     "viewsContainers": {
@@ -42,7 +61,7 @@
         {
           "id": "hcpworks-container",
           "title": "HCP Works",
-          "icon": "resources/icon/icon.png"
+          "icon": "resources/icon/icon-dark.png"
         }
       ]
     },
@@ -51,7 +70,7 @@
         {
           "id": "hcpworks-View",
           "name": "Module List",
-          "icon": "resources/icon/icon.png"
+          "icon": "resources/icon/icon-dark.png"
         }
       ]
     },
@@ -75,47 +94,69 @@
         "textMateRules": [
           {
             "scope": "keyword.control.module.hcp",
-            "settings": { "foreground": "#4dabf7" }
+            "settings": {
+              "foreground": "#4dabf7"
+            }
           },
           {
             "scope": "keyword.control.data.hcp",
-            "settings": { "foreground": "#ffb92d" }
+            "settings": {
+              "foreground": "#ffb92d"
+            }
           },
           {
             "scope": "keyword.control.fork.hcp",
-            "settings": { "foreground": "#a64aca" }
+            "settings": {
+              "foreground": "#a64aca"
+            }
           },
           {
             "scope": "keyword.control.branch.hcp",
-            "settings": { "foreground": "#cc5de8" }
+            "settings": {
+              "foreground": "#cc5de8"
+            }
           },
           {
             "scope": "keyword.control.true.hcp",
-            "settings": { "foreground": "#40c057" }
+            "settings": {
+              "foreground": "#40c057"
+            }
           },
           {
             "scope": "keyword.control.false.hcp",
-            "settings": { "foreground": "#fa5252" }
+            "settings": {
+              "foreground": "#fa5252"
+            }
           },
           {
             "scope": "keyword.control.repeat.hcp",
-            "settings": { "foreground": "#20c997" }
+            "settings": {
+              "foreground": "#20c997"
+            }
           },
           {
             "scope": "keyword.control.mod.hcp",
-            "settings": { "foreground": "#339af0" }
+            "settings": {
+              "foreground": "#339af0"
+            }
           },
           {
             "scope": "keyword.control.return.hcp",
-            "settings": { "foreground": "#f783ac" }
+            "settings": {
+              "foreground": "#f783ac"
+            }
           },
           {
             "scope": "keyword.control.in.hcp",
-            "settings": { "foreground": "#ffa94d" }
+            "settings": {
+              "foreground": "#ffa94d"
+            }
           },
           {
             "scope": "keyword.control.out.hcp",
-            "settings": { "foreground": "#e67700" }
+            "settings": {
+              "foreground": "#e67700"
+            }
           }
         ]
       }
@@ -133,17 +174,17 @@
     "test": "vscode-test"
   },
   "devDependencies": {
-    "@types/vscode": "^1.98.0",
+    "@types/vscode": "^1.99.1",
     "@types/mocha": "^10.0.10",
     "@types/node": "22.x",
-    "@typescript-eslint/eslint-plugin": "^8.29.0",
-    "@typescript-eslint/parser": "^8.29.0",
-    "eslint": "^9.21.0",
-    "typescript": "^5.7.3",
+    "@typescript-eslint/eslint-plugin": "^8.29.1",
+    "@typescript-eslint/parser": "^8.29.1",
+    "eslint": "^9.24.0",
+    "typescript": "^5.8.3",
     "ts-loader": "^9.5.2",
     "webpack": "^5.98.0",
     "webpack-cli": "^6.0.1",
     "@vscode/test-cli": "^0.0.10",
-    "@vscode/test-electron": "^2.4.1"
+    "@vscode/test-electron": "^2.5.2"
   }
 }
