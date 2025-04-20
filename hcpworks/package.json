@@ -34,10 +34,6 @@
     ],
     "commands": [
       {
-        "command": "hcpworks.helloWorld",
-        "title": "Hello World"
-      },
-      {
         "command": "hcpworks.listingModule",
         "title": "HCPWorks: Listing Modules",
         "when": "editorLangId == hcp"
