@@ -50,7 +50,10 @@
       {
         "command": "hcpworks.savePreview",
         "title": "HCPWorks: Save Preview to Current Folder",
-        "icon": "resources/icon/icon.png"
+        "icon": {
+          "light": "resources/icon/icon-light.png",
+          "dark": "resources/icon/icon-dark.png"
+        }
       }
     ],
     "viewsContainers": {
@@ -58,7 +61,7 @@
         {
           "id": "hcpworks-container",
           "title": "HCP Works",
-          "icon": "resources/icon/icon.png"
+          "icon": "resources/icon/icon-dark.png"
         }
       ]
     },
@@ -67,7 +70,7 @@
         {
           "id": "hcpworks-View",
           "name": "Module List",
-          "icon": "resources/icon/icon.png"
+          "icon": "resources/icon/icon-dark.png"
         }
       ]
     },
