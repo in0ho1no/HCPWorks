@@ -70,7 +70,7 @@ function registerCommands(
       }
 
       // ファイルの内容を取得
-      const fileContent = editor.document.getText();
+      const fileContent = editor.document.getText().replace(/\r\n/g, '\n');
       moduleTreeProvider.updateRootElements(fileFullPath, fileContent);
       moduleTreeProvider.refresh();
     }),
