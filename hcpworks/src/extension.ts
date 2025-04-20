@@ -18,72 +18,38 @@ export function activate(context: vscode.ExtensionContext) {
   // Webviewパネルの初期化
   let previewPanel: vscode.WebviewPanel | undefined;
 
-  // tree viewを保持
+  // ツリービューの初期化
   const moduleTreeProvider = new ModuleTreeProvider();
   const moduleTreeView = vscode.window.createTreeView('hcpworks-View', { treeDataProvider: moduleTreeProvider });
 
-  // viewの選択イベントを用意
-  moduleTreeView.onDidChangeSelection((e) => {
-    const selectedItem = e.selection[0];
-    if (selectedItem) {
-      // vscode.window.showInformationMessage(`Selected Module: ${selectedItem.name}`);
+  // コマンド登録
+  registerCommands(context, moduleTreeProvider);
 
-      // パネルが存在しない場合は新規作成
-      if (!previewPanel) {
-        previewPanel = vscode.window.createWebviewPanel(
-          'hcpPreview',  // 識別子
-          'HCPWorks: Panel', // タイトル
-          vscode.ViewColumn.Beside,  // 表示位置
-          {
-            enableScripts: true,  // スクリプトを有効化
-            retainContextWhenHidden: true  // 非表示時にコンテキストを保持
-          }
-        );
+  // ファイル選択時のイベント登録
+  registerFileSelectEvent(moduleTreeView, previewPanel);
 
-        // パネルが閉じられたときの処理
-        previewPanel.onDidDispose(() => {
-          previewPanel = undefined;
-        });
-      }
+  // ファイル表示時のイベント登録
+  registerFileOpenEvent(context);
 
-      // パネルコンテンツを更新
-      const svgContent = new SvgContent()
-        .setName(selectedItem.name)
-        .setTextContent(cleanTextLines(selectedItem.content));
+  // エディタ切り替え時のイベント登録
+  registerEditorChangeEvent(context);
 
-      // テキストファイルをパース
-      const lineInfoList: LineInfo[] = [];
-      for (const getText of svgContent.getTextContent()) {
-        const lineInfo = new LineInfo()
-          .setTextOrg(getText)
-          .updateLevel()
-          .updateType()
-          .updateLineIO();
+  // 起動時のチェック処理
+  checkActiveEditorOnStartup();
+}
 
-        lineInfoList.push(lineInfo);
-      }
+export function deactivate() { }
 
-      // 処理部とデータ部の情報を保持
-      const processInfoList = ProcessLineProcessor.process(lineInfoList);
-      const dataInfoList = DataLineProcessor.process(lineInfoList);
-
-      // レンダリング向けの情報を用意
-      const parseInfo4Render = new ParseInfo4Render(processInfoList, dataInfoList);
-      parseInfo4Render.mergeIoData();
-
-      // レンダリング実行
-      const renderer = new SVGRenderer(svgContent.getName(), parseInfo4Render);
-      const svgText = renderer.render();
-
-      svgContent.setSvgContent(svgText);
-      previewPanel.webview.html = svgContent.getHtmlWrappedSvg();
-    }
-  });
-
-  // モジュール一覧表示のイベント登録
+/**
+ * コマンドを登録する
+ */
+function registerCommands(
+  context: vscode.ExtensionContext,
+  moduleTreeProvider: ModuleTreeProvider
+) {
+  // モジュール一覧表示コマンド
   context.subscriptions.push(
     vscode.commands.registerCommand('hcpworks.listingModule', () => {
-      // アクティブなエディタを取得
       const editor = vscode.window.activeTextEditor;
       if (!editor) {
         vscode.window.showInformationMessage('No active editor found');
@@ -104,18 +70,81 @@ export function activate(context: vscode.ExtensionContext) {
       moduleTreeProvider.refresh();
     })
   );
-
-  // ファイル表示時のイベント登録
-  registerFileOpenEvent(context);
-
-  // エディタ切り替え時のイベント登録
-  registerEditorChangeEvent(context);
-
-  // 起動時のチェック処理
-  checkActiveEditorOnStartup();
 }
 
-export function deactivate() { }
+/**
+ * ファイル選択時のイベントを登録する
+ */
+function registerFileSelectEvent(
+  moduleTreeView: vscode.TreeView<any>,
+  previewPanel: vscode.WebviewPanel | undefined
+) {
+  moduleTreeView.onDidChangeSelection((e) => {
+    const selectedItem = e.selection[0];
+    if (selectedItem) {
+      // vscode.window.showInformationMessage(`Selected Module: ${selectedItem.name}`);
+      if (!previewPanel) {
+        previewPanel = createWebviewPanel();
+        previewPanel.onDidDispose(() => {
+          previewPanel = undefined;
+        });
+      }
+
+      const svgContent = createSvgContent(selectedItem);
+      previewPanel.webview.html = svgContent.getHtmlWrappedSvg();
+    }
+  });
+}
+
+/**
+ * Webviewパネルを作成する
+ */
+function createWebviewPanel(): vscode.WebviewPanel {
+  return vscode.window.createWebviewPanel(
+    'hcpPreview',  // 識別子
+    'HCP Preview', // タイトル
+    vscode.ViewColumn.Beside,  // 表示位置
+    {
+      enableScripts: true,  // スクリプトを有効化
+      retainContextWhenHidden: true,  // 非表示時にコンテキストを保持
+    }
+  );
+}
+
+/**
+ * SVGコンテンツを生成する
+ */
+function createSvgContent(selectedItem: any): SvgContent {
+  // コンテンツを新規作成
+  const svgContent = new SvgContent()
+    .setName(selectedItem.name)
+    .setTextContent(cleanTextLines(selectedItem.content));
+
+  // テキストファイルをパース
+  const lineInfoList: LineInfo[] = [];
+  for (const getText of svgContent.getTextContent()) {
+    const lineInfo = new LineInfo()
+      .setTextOrg(getText)
+      .updateLevel()
+      .updateType()
+      .updateLineIO();
+    lineInfoList.push(lineInfo);
+  }
+
+  // 処理部とデータ部の情報に分けて保持
+  const processInfoList = ProcessLineProcessor.process(lineInfoList);
+  const dataInfoList = DataLineProcessor.process(lineInfoList);
+
+  // レンダリング向けの情報を用意
+  const parseInfo4Render = new ParseInfo4Render(processInfoList, dataInfoList);
+  parseInfo4Render.mergeIoData();
+
+  // レンダリング実行
+  const renderer = new SVGRenderer(svgContent.getName(), parseInfo4Render);
+  const svgText = renderer.render();
+
+  return svgContent.setSvgContent(svgText);
+}
 
 /**
  * ファイル表示時のイベントを登録する
