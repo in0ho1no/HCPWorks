@@ -73,8 +73,8 @@ export class SvgContent {
         <style>
           body {
             display: flex;
-            justify-content: center;
-            align-items: center;
+            justify-content: start;
+            align-items: start;
             height: 100vh;
             margin: 0;
           }

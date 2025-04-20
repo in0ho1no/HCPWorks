@@ -14,7 +14,7 @@ export class SvgOperator {
    */
   constructor() {
     // 種別値と描画メソッドのマッピングテーブルを構築
-    this._figureMethodMap = new Map<number, Function>([
+    this._figureMethodMap = new Map<number, (x: number, y: number, text: string) => [number, string]>([
       [LineTypeDefine.get_format_by_type(LineTypeEnum.NORMAL).type_value, SvgFigureParts.drawFigureNormal],
       [LineTypeDefine.get_format_by_type(LineTypeEnum.FORK).type_value, SvgFigureParts.drawFigureFork],
       [LineTypeDefine.get_format_by_type(LineTypeEnum.REPEAT).type_value, SvgFigureParts.drawFigureRepeat],
@@ -35,12 +35,16 @@ export class SvgOperator {
    */
   drawFigureMethod(element: DiagramElement): [number, string] {
     // 要素の種別に対応するメソッドを取得
-    const drawMethod = this._figureMethodMap.get(element.getLineInfo().getType().type_value);
+    const typeValue = element.getLineInfo().getType().type_value;
+    const drawMethod = this._figureMethodMap.get(typeValue);
 
     // メソッドが見つかれば実行する
     if (drawMethod) {
       return drawMethod(element.getX(), element.getY(), element.getLineInfo().getTextLessTypeIO());
     }
+
+    // 未対応の種別値の場合
+    console.error(`Unsupported LineTypeEnum: ${typeValue}`);
     return [0, ""];
   }
 }

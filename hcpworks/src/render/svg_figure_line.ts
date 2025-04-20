@@ -40,7 +40,7 @@ export class SvgFigureLines {
     length: number,
     color: string = 'black'
   ): string {
-    return this.svgLine(
+    return SvgFigureLines.svgLine(
       startX, startY,
       startX + length, startY,
       color
@@ -62,7 +62,7 @@ export class SvgFigureLines {
     length: number,
     color: string = 'black'
   ): string {
-    return this.svgLine(
+    return SvgFigureLines.svgLine(
       startX, startY,
       startX, startY + length,
       color

@@ -146,7 +146,7 @@ export class SvgFigureParts {
     text: string = "",
   ): [number, string] {
     // 円の描画
-    const svgCircleText = this.svgCircle(centerX, centerY, SvgFigureDefine.CIRCLE_R);
+    const svgCircleText = SvgFigureParts.svgCircle(centerX, centerY, SvgFigureDefine.CIRCLE_R);
 
     // 文字列の描画
     const startX = centerX + SvgFigureDefine.CIRCLE_R + SvgFigureDefine.SPACE_FIGURE_TO_TEXT;
@@ -199,11 +199,11 @@ export class SvgFigureParts {
     text: string = "",
   ): [number, string] {
     // 円の描画
-    const svgCircleText = this.svgCircle(centerX, centerY, SvgFigureDefine.CIRCLE_R);
+    const svgCircleText = SvgFigureParts.svgCircle(centerX, centerY, SvgFigureDefine.CIRCLE_R);
 
     // 正三角形の描画
-    const vertices = this.getVerticesPolygon(3, centerX, centerY, SvgFigureDefine.CIRCLE_R - 2, 0);
-    const svgTriangleText = this.svgTriangle(vertices);
+    const vertices = SvgFigureParts.getVerticesPolygon(3, centerX, centerY, SvgFigureDefine.CIRCLE_R - 2, 0);
+    const svgTriangleText = SvgFigureParts.svgTriangle(vertices);
 
     // 文字列の描画
     const startX = centerX + SvgFigureDefine.CIRCLE_R + SvgFigureDefine.SPACE_FIGURE_TO_TEXT;
@@ -228,10 +228,10 @@ export class SvgFigureParts {
     text: string = ""
   ): [number, string] {
     // 円の描画
-    const svgCircleText = this.svgCircle(centerX, centerY, SvgFigureDefine.CIRCLE_R);
+    const svgCircleText = SvgFigureParts.svgCircle(centerX, centerY, SvgFigureDefine.CIRCLE_R);
 
     // 繰り返し記号の描画
-    const svgArcArrowRText = this.svgArcArrowR(centerX, centerY);
+    const svgArcArrowRText = SvgFigureParts.svgArcArrowR(centerX, centerY);
 
     // 文字列の描画
     const startX = centerX + SvgFigureDefine.CIRCLE_R + SvgFigureDefine.SPACE_FIGURE_TO_TEXT;
@@ -256,11 +256,11 @@ export class SvgFigureParts {
     text: string = "",
   ): [number, string] {
     // 円の描画
-    const svgCircleText = this.svgCircle(centerX, centerY, SvgFigureDefine.CIRCLE_R);
+    const svgCircleText = SvgFigureParts.svgCircle(centerX, centerY, SvgFigureDefine.CIRCLE_R);
 
     // 内側の円の描画
     const innerRadius = Math.floor(SvgFigureDefine.CIRCLE_R / 2);
-    const svgInnerCircleText = this.svgCircle(centerX, centerY, innerRadius);
+    const svgInnerCircleText = SvgFigureParts.svgCircle(centerX, centerY, innerRadius);
 
     // 文字列の描画
     const startX = centerX + SvgFigureDefine.CIRCLE_R + SvgFigureDefine.SPACE_FIGURE_TO_TEXT;
@@ -289,8 +289,8 @@ export class SvgFigureParts {
     const svgLineVText = SvgFigureLines.drawLineV(centerX, vLineTop, SvgFigureDefine.CIRCLE_R);
 
     // 正三角形の描画
-    const vertices = this.getVerticesPolygon(3, centerX, centerY, SvgFigureDefine.CIRCLE_R, (Math.PI / 2));
-    const svgTriangleText = this.svgTriangle(vertices);
+    const vertices = SvgFigureParts.getVerticesPolygon(3, centerX, centerY, SvgFigureDefine.CIRCLE_R, (Math.PI / 2));
+    const svgTriangleText = SvgFigureParts.svgTriangle(vertices);
 
     // 下部の水平線
     const triangleLeft = centerX - SvgFigureDefine.CIRCLE_R;
@@ -349,7 +349,7 @@ export class SvgFigureParts {
     text: string = "",
   ): [number, string] {
     const textCond = "(true) " + text;
-    return this.drawFigureCond(centerX, centerY, textCond);
+    return SvgFigureParts.drawFigureCond(centerX, centerY, textCond);
   }
 
   /**
@@ -366,7 +366,7 @@ export class SvgFigureParts {
     text: string = "",
   ): [number, string] {
     const textCond = "(false) " + text;
-    return this.drawFigureCond(centerX, centerY, textCond);
+    return SvgFigureParts.drawFigureCond(centerX, centerY, textCond);
   }
 
   /**
@@ -383,7 +383,7 @@ export class SvgFigureParts {
     text: string = "",
   ): [number, string] {
     const textCond = "(" + text + ")";
-    return this.drawFigureCond(centerX, centerY, textCond);
+    return SvgFigureParts.drawFigureCond(centerX, centerY, textCond);
   }
 
   /**
@@ -400,7 +400,7 @@ export class SvgFigureParts {
     text: string = "",
   ): [number, string] {
     // 四角の描画
-    const svgRectText = this.svgRect(centerX, centerY);
+    const svgRectText = SvgFigureParts.svgRect(centerX, centerY);
 
     // 文字列の描画
     const startX = centerX + SvgFigureDefine.CIRCLE_R + SvgFigureDefine.SPACE_FIGURE_TO_TEXT;
@@ -419,7 +419,7 @@ export class SvgFigureParts {
    * @returns 図形のSVG文字列
    */
   static drawFigureDataFuncIn(centerX: number, centerY: number): string {
-    return this.svgDataFuncIn(centerX, centerY);
+    return SvgFigureParts.svgDataFuncIn(centerX, centerY);
   }
 
   /**
@@ -430,6 +430,6 @@ export class SvgFigureParts {
    * @returns 図形のSVG文字列
    */
   static drawFigureDataFuncOut(centerX: number, centerY: number): string {
-    return this.svgDataFuncOut(centerX, centerY);
+    return SvgFigureParts.svgDataFuncOut(centerX, centerY);
   }
 }

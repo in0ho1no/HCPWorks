@@ -32,6 +32,10 @@ export class SVGRenderer {
   private _processElements: DiagramElement[];
   private _dataElements: DiagramElement[];
 
+  private _svgWidth: number;
+  private _svgHeight: number;
+  private _svgColor: string;
+
   constructor(name: string, parseInfo4Render: ParseInfo4Render) {
     this._name = name;
     this._processLines = parseInfo4Render.getProcessLines();
@@ -42,6 +46,10 @@ export class SVGRenderer {
 
     this._processElements = [];
     this._dataElements = [];
+
+    this._svgWidth = 0;
+    this._svgHeight = 0;
+    this._svgColor = "808d81";
   }
 
   /**
@@ -75,9 +83,9 @@ export class SVGRenderer {
     this.connect_process2data();
 
     // 描画終了
-    const totalWidth = Math.max(titleEndX, processEndX, dataEndX);
-    const totalHeight = Math.max(titleEndY, processEndY, dataEndY);
-    return this.renderFinish(totalWidth, totalHeight);
+    this._svgWidth = Math.max(titleEndX, processEndX, dataEndX);
+    this._svgHeight = Math.max(titleEndY, processEndY, dataEndY);
+    return this.renderFinish();
   }
 
   /**
@@ -215,7 +223,7 @@ export class SVGRenderer {
 
         if (isInData === true) {
           offsetY = -5;
-          drawMethod = SvgFigureLines.drawArrowR;
+          drawMethod = SvgFigureLines.drawArrowL;
         } else {
           offsetY = 5;
           drawMethod = SvgFigureLines.drawLineH;
@@ -306,7 +314,8 @@ export class SVGRenderer {
           const beforeElementPosBottom = beforeElement.getY() + SvgFigureDefine.CIRCLE_R;
           const dataElementPosTop = dataElement.getY() - SvgFigureDefine.CIRCLE_R;
           const lineLength = dataElementPosTop - beforeElementPosBottom;
-          SvgFigureLines.drawLineV(dataElement.getX(), beforeElementPosBottom, lineLength);
+          svgText = SvgFigureLines.drawLineV(dataElement.getX(), beforeElementPosBottom, lineLength);
+          this._svgText.push(svgText);
         }
       }
 
@@ -449,17 +458,22 @@ export class SVGRenderer {
   /**
    * SVGの描画を終える
    * 
-   * @param width SVGの幅
-   * @param height SVGの高さ
-   * @param color 背景色
    * @returns SVG文字列
    */
-  private renderFinish(width: number, height: number, color: string = "808d81"): string {
+  private renderFinish(): string {
     // SVGの描画を終える
     const margin = 50;
-    this._svgText.unshift(`<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height + margin}" style="background-color: #${color}">`);
-    this._svgText.splice(1, 0, `<rect x="0" y="0" width="${width}" height="${height + margin}" fill="#${color}" stroke="#${color}"/>`);
+    const width = this._svgWidth;
+    const height = this._svgHeight + margin;
+    const color = this._svgColor;
+
+    this._svgText.unshift(`<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" style="background-color: #${color}">`);
+    this._svgText.splice(1, 0, `<rect x="0" y="0" width="${width}" height="${height}" fill="#${color}" stroke="#${color}"/>`);
     this._svgText.push("</svg>");
     return this._svgText.join(SvgFigureDefine.LINE_BREAK);
   }
+
+  getSvgWidth(): number { return this._svgWidth; }
+  getSvgHeight(): number { return this._svgHeight; }
+  getSvgColor(): string { return this._svgColor; }
 }

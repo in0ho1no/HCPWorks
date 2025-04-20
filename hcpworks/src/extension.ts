@@ -33,7 +33,7 @@ export function activate(context: vscode.ExtensionContext) {
   moduleTreeView.onDidChangeSelection((e) => {
     const selectedItem = e.selection[0];
     if (selectedItem) {
-      vscode.window.showInformationMessage(`Selected Module: ${selectedItem.name}`);
+      // vscode.window.showInformationMessage(`Selected Module: ${selectedItem.name}`);
 
       // パネルが存在しない場合は新規作成
       if (!previewPanel) {
