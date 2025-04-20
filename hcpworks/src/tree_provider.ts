@@ -69,24 +69,26 @@ export class ModuleTreeProvider implements vscode.TreeDataProvider<ModuleTreeEle
 
   /**
    * ファイルの内容からルート要素を更新する
-   * @param {string} file_contents - 解析するファイルの内容
+   * @param {string} filePath - 解析するファイルのフルパス
+   * @param {string} fileContents - 解析するファイルの内容
    */
-  updateRootElements(file_contents: string): void {
-    const modules = parseModules(file_contents);
-    this.rootElements = this.createModuleElements(modules);
+  updateRootElements(filePath: string, fileContents: string): void {
+    const modules = parseModules(fileContents);
+    this.rootElements = this.createModuleElements(filePath, modules);
   }
 
   /**
    * モジュール配列からModuleTreeElement配列を作成する
+   * @param {string} filePath - モジュールのフルパス
    * @param {Module[]} modules - モジュールの配列
    * @returns {ModuleTreeElement[]} ModuleTreeElement配列
    * @private
    */
-  private createModuleElements(modules: Module[]): ModuleTreeElement[] {
+  private createModuleElements(filePath: string, modules: Module[]): ModuleTreeElement[] {
     return modules.length > 0
       ? modules.map((module, index) =>
-        new ModuleTreeElement(module.name, module.content)
+        new ModuleTreeElement(filePath, module.name, module.content)
       )
-      : [new ModuleTreeElement("モジュールが存在しません。", ["",])];
+      : [new ModuleTreeElement("", "モジュールが存在しません。", ["",])];
   }
 }

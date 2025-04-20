@@ -1,6 +1,5 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
-import * as path from 'path';
 
 import { ModuleTreeProvider } from './tree_provider';
 import { ModuleTreeElement } from './tree_element';
@@ -16,7 +15,10 @@ import { SVGRenderer } from './render/render_main';
 const TIMEOUT = 300;
 const HCP_ID = "hcp";
 const HCP_SUFFIX = `.${HCP_ID}`;
+
 let previewPanel: vscode.WebviewPanel | undefined;
+let selectedFilePath: string | undefined;
+let currentSvgContent: SvgContent | undefined;
 
 export function activate(context: vscode.ExtensionContext) {
   console.log('"hcpworks" is now active!');
@@ -60,8 +62,8 @@ function registerCommands(
       }
 
       // 拡張子判定
-      const fileName = editor.document.fileName;
-      const fileExtension = fileName.split('.').pop()?.toLowerCase();
+      const fileFullPath = editor.document.fileName;
+      const fileExtension = fileFullPath.split('.').pop()?.toLowerCase();
       if (fileExtension !== HCP_ID) {
         vscode.window.showInformationMessage(`Current file is not ${HCP_ID.toUpperCase()} file`);
         return;
@@ -69,7 +71,7 @@ function registerCommands(
 
       // ファイルの内容を取得
       const fileContent = editor.document.getText();
-      moduleTreeProvider.updateRootElements(fileContent);
+      moduleTreeProvider.updateRootElements(fileFullPath, fileContent);
       moduleTreeProvider.refresh();
     }),
 
@@ -78,21 +80,24 @@ function registerCommands(
         vscode.window.showInformationMessage('No preview panel available to save.');
         return;
       }
+      if (!selectedFilePath || selectedFilePath === "") {
+        vscode.window.showInformationMessage('No file selected to save.');
+        return;
+      }
+      if (!currentSvgContent) {
+        vscode.window.showInformationMessage('No Svg Content to save.');
+        return;
+      }
 
-      const htmlText = previewPanel.webview.html;
-
-      // 保存先のファイルパスを指定
-      const filePath = path.join(
-        vscode.workspace.workspaceFolders?.[0].uri.fsPath || '',
-        'preview.html'
-      );
+      const savePath = selectedFilePath.split('.')[0] + '_' + currentSvgContent.getName() + '.svg';
+      const svgContent = currentSvgContent.getSvgContent();
 
       // ファイルに保存
-      fs.writeFile(filePath, htmlText, (err) => {
+      fs.writeFile(savePath, svgContent, (err) => {
         if (err) {
           vscode.window.showErrorMessage(`Failed to save preview: ${err.message}`);
         } else {
-          vscode.window.showInformationMessage(`Preview saved to ${filePath}`);
+          vscode.window.showInformationMessage(`Preview saved to ${savePath}`);
         }
       });
     })
@@ -116,8 +121,9 @@ function registerFileSelectEvent(
         });
       }
 
-      const svgContent = createSvgContent(selectedItem);
-      previewPanel.webview.html = svgContent.getHtmlWrappedSvg();
+      selectedFilePath = selectedItem.filePath;
+      currentSvgContent = createSvgContent(selectedItem);
+      previewPanel.webview.html = currentSvgContent.getHtmlWrappedSvg();
     }
   });
 }
