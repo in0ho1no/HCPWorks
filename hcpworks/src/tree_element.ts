@@ -10,10 +10,12 @@ export class ModuleTreeElement {
 
   /**
    * ModuleTreeElementのインスタンスを作成する
+   * @param {string} filePath - モジュールのフルパス
    * @param {string} name - モジュール名
    * @param {string[]} content - モジュール要素に関連するコンテンツ
    */
   constructor(
+    public filePath: string,
     public name: string,
     public content: string[],
   ) {

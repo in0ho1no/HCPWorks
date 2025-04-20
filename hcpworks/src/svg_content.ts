@@ -150,7 +150,7 @@ export class SvgContent {
    * 
    * @returns SVGコンテンツ
    */
-  private getSvgContent(): string {
+  getSvgContent(): string {
     return this._svgContent;
   }
 }

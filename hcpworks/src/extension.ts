@@ -1,5 +1,9 @@
 import * as vscode from 'vscode';
+import * as fs from 'fs';
+
 import { ModuleTreeProvider } from './tree_provider';
+import { ModuleTreeElement } from './tree_element';
+
 import { SvgContent } from './svg_content';
 import { cleanTextLines } from './parse/file_parse';
 import { LineInfo } from './parse/line_info';
@@ -12,11 +16,12 @@ const TIMEOUT = 300;
 const HCP_ID = "hcp";
 const HCP_SUFFIX = `.${HCP_ID}`;
 
+let previewPanel: vscode.WebviewPanel | undefined;
+let selectedFilePath: string | undefined;
+let currentSvgContent: SvgContent | undefined;
+
 export function activate(context: vscode.ExtensionContext) {
   console.log('"hcpworks" is now active!');
-
-  // Webviewパネルの初期化
-  let previewPanel: vscode.WebviewPanel | undefined;
 
   // ツリービューの初期化
   const moduleTreeProvider = new ModuleTreeProvider();
@@ -26,7 +31,7 @@ export function activate(context: vscode.ExtensionContext) {
   registerCommands(context, moduleTreeProvider);
 
   // ファイル選択時のイベント登録
-  registerFileSelectEvent(moduleTreeView, previewPanel);
+  registerFileSelectEvent(moduleTreeView);
 
   // ファイル表示時のイベント登録
   registerFileOpenEvent(context);
@@ -57,8 +62,8 @@ function registerCommands(
       }
 
       // 拡張子判定
-      const fileName = editor.document.fileName;
-      const fileExtension = fileName.split('.').pop()?.toLowerCase();
+      const fileFullPath = editor.document.fileName;
+      const fileExtension = fileFullPath.split('.').pop()?.toLowerCase();
       if (fileExtension !== HCP_ID) {
         vscode.window.showInformationMessage(`Current file is not ${HCP_ID.toUpperCase()} file`);
         return;
@@ -66,8 +71,35 @@ function registerCommands(
 
       // ファイルの内容を取得
       const fileContent = editor.document.getText();
-      moduleTreeProvider.updateRootElements(fileContent);
+      moduleTreeProvider.updateRootElements(fileFullPath, fileContent);
       moduleTreeProvider.refresh();
+    }),
+
+    vscode.commands.registerCommand('hcpworks.savePreview', () => {
+      if (!previewPanel) {
+        vscode.window.showInformationMessage('No preview panel available to save.');
+        return;
+      }
+      if (!selectedFilePath || selectedFilePath === "") {
+        vscode.window.showInformationMessage('No file selected to save.');
+        return;
+      }
+      if (!currentSvgContent) {
+        vscode.window.showInformationMessage('No Svg Content to save.');
+        return;
+      }
+
+      const savePath = selectedFilePath.split('.')[0] + '_' + currentSvgContent.getName() + '.svg';
+      const svgContent = currentSvgContent.getSvgContent();
+
+      // ファイルに保存
+      fs.writeFile(savePath, svgContent, (err) => {
+        if (err) {
+          vscode.window.showErrorMessage(`Failed to save preview: ${err.message}`);
+        } else {
+          vscode.window.showInformationMessage(`Preview saved to ${savePath}`);
+        }
+      });
     })
   );
 }
@@ -76,8 +108,7 @@ function registerCommands(
  * ファイル選択時のイベントを登録する
  */
 function registerFileSelectEvent(
-  moduleTreeView: vscode.TreeView<any>,
-  previewPanel: vscode.WebviewPanel | undefined
+  moduleTreeView: vscode.TreeView<any>
 ) {
   moduleTreeView.onDidChangeSelection((e) => {
     const selectedItem = e.selection[0];
@@ -90,8 +121,9 @@ function registerFileSelectEvent(
         });
       }
 
-      const svgContent = createSvgContent(selectedItem);
-      previewPanel.webview.html = svgContent.getHtmlWrappedSvg();
+      selectedFilePath = selectedItem.filePath;
+      currentSvgContent = createSvgContent(selectedItem);
+      previewPanel.webview.html = currentSvgContent.getHtmlWrappedSvg();
     }
   });
 }
@@ -100,7 +132,8 @@ function registerFileSelectEvent(
  * Webviewパネルを作成する
  */
 function createWebviewPanel(): vscode.WebviewPanel {
-  return vscode.window.createWebviewPanel(
+  // Webviewパネルを作成
+  const panel = vscode.window.createWebviewPanel(
     'hcpPreview',  // 識別子
     'HCP Preview', // タイトル
     vscode.ViewColumn.Beside,  // 表示位置
@@ -109,12 +142,22 @@ function createWebviewPanel(): vscode.WebviewPanel {
       retainContextWhenHidden: true,  // 非表示時にコンテキストを保持
     }
   );
+
+  // カスタムコンテキストキーを設定
+  vscode.commands.executeCommand('setContext', 'hcpworks.webviewActive', true);
+
+  // パネルが閉じられたときにコンテキストキーをリセット
+  panel.onDidDispose(() => {
+    vscode.commands.executeCommand('setContext', 'hcpworks.webviewActive', false);
+  });
+
+  return panel;
 }
 
 /**
  * SVGコンテンツを生成する
  */
-function createSvgContent(selectedItem: any): SvgContent {
+function createSvgContent(selectedItem: ModuleTreeElement): SvgContent {
   // コンテンツを新規作成
   const svgContent = new SvgContent()
     .setName(selectedItem.name)
