@@ -21,6 +21,15 @@
   ],
   "main": "./dist/extension.js",
   "contributes": {
+    "menus": {
+      "editor/title": [
+        {
+          "when": "hcpworks.webviewActive",
+          "command": "hcpworks.savePreview",
+          "group": "navigation"
+        }
+      ]
+    },
     "languages": [
       {
         "id": "hcp",
@@ -37,6 +46,11 @@
         "command": "hcpworks.listingModule",
         "title": "HCPWorks: Listing Modules",
         "when": "editorLangId == hcp"
+      },
+      {
+        "command": "hcpworks.savePreview",
+        "title": "HCPWorks: Save Preview to Current Folder",
+        "icon": "resources/icon/icon.png"
       }
     ],
     "viewsContainers": {

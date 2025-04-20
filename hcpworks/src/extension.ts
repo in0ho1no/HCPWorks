@@ -68,6 +68,10 @@ function registerCommands(
       const fileContent = editor.document.getText();
       moduleTreeProvider.updateRootElements(fileContent);
       moduleTreeProvider.refresh();
+    }),
+
+    vscode.commands.registerCommand('hcpworks.savePreview', () => {
+      vscode.window.showInformationMessage('Hello World from HCPWorks!');
     })
   );
 }
@@ -100,7 +104,8 @@ function registerFileSelectEvent(
  * Webviewパネルを作成する
  */
 function createWebviewPanel(): vscode.WebviewPanel {
-  return vscode.window.createWebviewPanel(
+  // Webviewパネルを作成
+  const panel = vscode.window.createWebviewPanel(
     'hcpPreview',  // 識別子
     'HCP Preview', // タイトル
     vscode.ViewColumn.Beside,  // 表示位置
@@ -109,6 +114,16 @@ function createWebviewPanel(): vscode.WebviewPanel {
       retainContextWhenHidden: true,  // 非表示時にコンテキストを保持
     }
   );
+
+  // カスタムコンテキストキーを設定
+  vscode.commands.executeCommand('setContext', 'hcpworks.webviewActive', true);
+
+  // パネルが閉じられたときにコンテキストキーをリセット
+  panel.onDidDispose(() => {
+    vscode.commands.executeCommand('setContext', 'hcpworks.webviewActive', false);
+  });
+
+  return panel;
 }
 
 /**
