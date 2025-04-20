@@ -72,16 +72,27 @@ export class SvgContent {
         <title>HCP Preview</title>
         <style>
           body {
-            display: flex;
-            justify-content: start;
-            align-items: start;
-            height: 100vh;
             margin: 0;
+            padding: 0;
+            overflow-x: auto;
+            overflow-y: auto;
+          }
+
+          .svg-container {
+            // コンテナの幅を明示的に設定せず、SVGが自然なサイズを持てるようにする
+            display: inline-block;
+            min-width: min-content;
+          }
+
+          svg {
+            display: block; // SVGをブロック要素として表示
           }
         </style>
       </head>
       <body>
+      <div class="svg-container">
         ${this._svgContent}
+      </div>
       </body>
       </html>
     `;
