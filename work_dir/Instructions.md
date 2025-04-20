@@ -285,3 +285,46 @@ HCPWorks向けに記載すると以下のようになる。
 - vscode.window.createTreeView:  package.jsonで登録済みのIDと実装したproviderでtree viewを作成する。TreeViewAPIが必要な場合はこちらを使用する。
 
 サンプルで動かす程度ならregisterTreeDataProviderで問題なさそう。動作確認を済ませて柔軟な実装をしようと思ったらcreateTreeViewを使った方がいい。
+
+#### treeviewの要素選択
+
+treeview上に表示した要素をクリックしたときのイベントは以下用意する。
+
+まずイベント検出用にpackage.jsonへ以下登録する。
+
+  "activationEvents": [
+    "onLanguage:hcp"
+  ],
+
+そして以下3種用意して、確実にhcpファイルの表示を検知する
+
+- onDidOpenTextDocument: 新規でパネルを開いたことを検知するイベント
+- onDidChangeActiveTextEditor: エディタ(タブ)を切り替えたことを検知するイベント
+- if (vscode.window.activeTextEditor) {} : 起動時のアクティブエディタからhcpファイルを検知する
+
+## テスト環境の整備
+
+テストコードを以下に追加しておく。
+
+  /workspaces/HCPWorks/hcpworks/src/test/file_parse.test.ts
+
+github actionsでユニットテストを実行するためのworkflowを追加しておく。
+
+  /workspaces/HCPWorks/.github/workflows/test.yml
+
+github actions上で結果を確認しやすいようにする。  
+※ package.jsonへ追記しておけばci的に環境構築できるので、dockerfileへ追記する必要はない。  
+
+  npm install --save-dev mocha-github-actions-reporter
+
+github actions上で結果を確認しやすいようにする。  
+※ package.jsonへ追記しておけばci的に環境構築できるので、dockerfileへ追記する必要はない。  
+
+  npm install --save-dev mocha-junit-reporter
+
+テスト結果をxml出力するように設定しておく
+
+  .vscode-test.mjs
+
+結果ページを開いたJobsにMocha Testsと表示される。  
+ページを開くと実行結果を視覚的に確認できる。
