@@ -4,13 +4,13 @@
   "description": "This extension displays HCP chart.",
   "version": "0.0.1",
   "engines": {
-    "vscode": "^1.98.0"
+    "vscode": "^1.99.0"
   },
   "categories": [
     "Other"
   ],
   "publisher": "in0ho1no",
-  "icon": "resources/icon/icon.png",
+  "icon": "resources/icon/icon-light.png",
   "license": "MIT",
   "repository": {
     "type": "git",
