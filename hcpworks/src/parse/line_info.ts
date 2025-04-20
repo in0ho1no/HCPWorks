@@ -29,7 +29,7 @@ export class LineInfo {
 
     this._no = 0;
     this._beforeNo = LineInfo.DEFAULT_VALUE;
-    this._nextNo = 0;
+    this._nextNo = LineInfo.DEFAULT_VALUE;
   }
 
   setTextOrg(text: string): LineInfo {
