@@ -82,6 +82,8 @@ export class SvgContent {
             // コンテナの幅を明示的に設定せず、SVGが自然なサイズを持てるようにする
             display: inline-block;
             min-width: min-content;
+            
+            transform-origin: 0 0;
           }
 
           svg {
@@ -90,9 +92,43 @@ export class SvgContent {
         </style>
       </head>
       <body>
-      <div class="svg-container">
+      <div class="svg-container" id="svgContainer">
         ${this._svgContent}
       </div>
+
+      <script>
+        // 初期ズームレベル
+        let scale = 1;
+        // 最小・最大ズームレベル
+        const minScale = 0.1;
+        const maxScale = 10;
+        // スケーリング速度
+        const scaleSpeed = 0.1;
+        
+        const container = document.getElementById('svgContainer');
+        
+        // マウスホイールイベントのリスナー
+        document.addEventListener('wheel', (event) => {
+          // Ctrlキーが押されているかチェック
+          if (event.ctrlKey) {
+            // デフォルトの動作を防止（ブラウザのズーム）
+            event.preventDefault();
+            
+            // ホイールの方向に応じてスケールを調整
+            const delta = event.deltaY > 0 ? -scaleSpeed : scaleSpeed;
+            scale = Math.max(minScale, Math.min(maxScale, scale + delta));
+            
+            // コンテナに変換を適用（トランジションなし）
+            container.style.transform = \`scale(\${scale})\`;
+          }
+        }, { passive: false });
+        
+        // ダブルクリックでズームをリセット
+        container.addEventListener('dblclick', () => {
+          scale = 1;
+          container.style.transform = 'scale(1)';
+        });
+      </script>
       </body>
       </html>
     `;
