@@ -1,5 +1,10 @@
 import * as vscode from 'vscode';
+import * as fs from 'fs';
+import * as path from 'path';
+
 import { ModuleTreeProvider } from './tree_provider';
+import { ModuleTreeElement } from './tree_element';
+
 import { SvgContent } from './svg_content';
 import { cleanTextLines } from './parse/file_parse';
 import { LineInfo } from './parse/line_info';
@@ -11,12 +16,10 @@ import { SVGRenderer } from './render/render_main';
 const TIMEOUT = 300;
 const HCP_ID = "hcp";
 const HCP_SUFFIX = `.${HCP_ID}`;
+let previewPanel: vscode.WebviewPanel | undefined;
 
 export function activate(context: vscode.ExtensionContext) {
   console.log('"hcpworks" is now active!');
-
-  // Webviewパネルの初期化
-  let previewPanel: vscode.WebviewPanel | undefined;
 
   // ツリービューの初期化
   const moduleTreeProvider = new ModuleTreeProvider();
@@ -26,7 +29,7 @@ export function activate(context: vscode.ExtensionContext) {
   registerCommands(context, moduleTreeProvider);
 
   // ファイル選択時のイベント登録
-  registerFileSelectEvent(moduleTreeView, previewPanel);
+  registerFileSelectEvent(moduleTreeView);
 
   // ファイル表示時のイベント登録
   registerFileOpenEvent(context);
@@ -71,7 +74,27 @@ function registerCommands(
     }),
 
     vscode.commands.registerCommand('hcpworks.savePreview', () => {
-      vscode.window.showInformationMessage('Hello World from HCPWorks!');
+      if (!previewPanel) {
+        vscode.window.showInformationMessage('No preview panel available to save.');
+        return;
+      }
+
+      const htmlText = previewPanel.webview.html;
+
+      // 保存先のファイルパスを指定
+      const filePath = path.join(
+        vscode.workspace.workspaceFolders?.[0].uri.fsPath || '',
+        'preview.html'
+      );
+
+      // ファイルに保存
+      fs.writeFile(filePath, htmlText, (err) => {
+        if (err) {
+          vscode.window.showErrorMessage(`Failed to save preview: ${err.message}`);
+        } else {
+          vscode.window.showInformationMessage(`Preview saved to ${filePath}`);
+        }
+      });
     })
   );
 }
@@ -80,8 +103,7 @@ function registerCommands(
  * ファイル選択時のイベントを登録する
  */
 function registerFileSelectEvent(
-  moduleTreeView: vscode.TreeView<any>,
-  previewPanel: vscode.WebviewPanel | undefined
+  moduleTreeView: vscode.TreeView<any>
 ) {
   moduleTreeView.onDidChangeSelection((e) => {
     const selectedItem = e.selection[0];
@@ -129,7 +151,7 @@ function createWebviewPanel(): vscode.WebviewPanel {
 /**
  * SVGコンテンツを生成する
  */
-function createSvgContent(selectedItem: any): SvgContent {
+function createSvgContent(selectedItem: ModuleTreeElement): SvgContent {
   // コンテンツを新規作成
   const svgContent = new SvgContent()
     .setName(selectedItem.name)
