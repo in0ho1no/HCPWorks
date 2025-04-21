@@ -13,3 +13,4 @@ fi
 
 # パッケージングする
 npx vsce package
+npm run prepare-readme
