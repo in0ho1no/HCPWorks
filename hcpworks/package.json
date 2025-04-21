@@ -2,7 +2,7 @@
   "name": "hcpworks",
   "displayName": "HCPWorks",
   "description": "This extension displays HCP chart.",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "engines": {
     "vscode": "^1.99.0"
   },
@@ -56,20 +56,11 @@
         }
       }
     ],
-    "viewsContainers": {
-      "activitybar": [
-        {
-          "id": "hcpworks-container",
-          "title": "HCP Works",
-          "icon": "resources/icon/icon-dark.png"
-        }
-      ]
-    },
     "views": {
-      "hcpworks-container": [
+      "explorer": [
         {
           "id": "hcpworks-View",
-          "name": "Module List",
+          "name": "HCP Module List",
           "icon": "resources/icon/icon-dark.png"
         }
       ]

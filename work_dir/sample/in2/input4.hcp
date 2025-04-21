@@ -32,3 +32,15 @@
             何もしない \out データaaa
         後処理
             何もしない
+
+\module 階層1のモジュール3
+    \data bbb
+    \data データaaa
+
+    シンプルな処理 \in データaaa \out bbb
+        初期化
+            \mod 何もしない \in データアア \out bbb
+        メイン処理
+            何もしない
+        後処理
+            何もしない
