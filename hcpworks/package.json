@@ -56,20 +56,11 @@
         }
       }
     ],
-    "viewsContainers": {
-      "activitybar": [
-        {
-          "id": "hcpworks-container",
-          "title": "HCP Works",
-          "icon": "resources/icon/icon-dark.png"
-        }
-      ]
-    },
     "views": {
-      "hcpworks-container": [
+      "explorer": [
         {
           "id": "hcpworks-View",
-          "name": "Module List",
+          "name": "HCP Module List",
           "icon": "resources/icon/icon-dark.png"
         }
       ]
