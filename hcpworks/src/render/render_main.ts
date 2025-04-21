@@ -74,7 +74,8 @@ export class SVGRenderer {
     const exitFromProcessEndX = this.renderLineExitFromProcess(processEndX);
 
     // データ部を描画
-    this._dataElements = this.setElements(exitFromProcessEndX + DiagramDefine.LEVEL_SHIFT, titleEndY, this._dataLines);
+    const dataStartX = Math.max(processEndX, exitFromProcessEndX) + DiagramDefine.LEVEL_SHIFT;
+    this._dataElements = this.setElements(dataStartX, titleEndY, this._dataLines);
     const [dataEndX, dataEndY] = this.renderData();
 
     // データ部への水平線を描画
