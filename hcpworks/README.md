@@ -9,7 +9,7 @@ It aims to streamline the HCP chart creation process by enabling you to complete
 
 This extension supports syntax highlighting as shown in the image below.
 
-![syntaxHighlight](/resources/images/syntaxHighlight.png)
+![syntaxHighlight](hcpworks/resources/images/syntaxHighlight.png)
 
 ## Known Issues
 
