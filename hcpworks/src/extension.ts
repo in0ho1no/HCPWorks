@@ -30,8 +30,8 @@ export function activate(context: vscode.ExtensionContext) {
   // コマンド登録
   registerCommands(context, moduleTreeProvider);
 
-  // ファイル選択時のイベント登録
-  registerFileSelectEvent(moduleTreeView);
+  // モジュール選択時のイベント登録
+  registerModuleSelectEvent(moduleTreeView);
 
   // ファイル表示時のイベント登録
   registerFileOpenEvent(context);
@@ -108,9 +108,9 @@ function registerCommands(
 }
 
 /**
- * ファイル選択時のイベントを登録する
+ * モジュール選択時のイベントを登録する
  */
-function registerFileSelectEvent(
+function registerModuleSelectEvent(
   moduleTreeView: vscode.TreeView<any>
 ) {
   moduleTreeView.onDidChangeSelection((e) => {
