@@ -30,9 +30,6 @@ export function activate(context: vscode.ExtensionContext) {
   // コマンド登録
   registerCommands(context, moduleTreeProvider);
 
-  // モジュール選択時のイベント登録
-  registerModuleSelectEvent(moduleTreeView);
-
   // ファイル表示時のイベント登録
   registerFileOpenEvent(context);
 
@@ -79,8 +76,12 @@ function registerCommands(
     }),
 
     vscode.commands.registerCommand('hcpworks.itemClicked', (item: ModuleTreeElement) => {
-      // クリック時の処理
-      console.log(`Item clicked: ${item.name}`);
+      if (!previewPanel) {
+        previewPanel = createWebviewPanel();
+      }
+
+      currentSvgContent = createSvgContent(item);
+      previewPanel.webview.html = currentSvgContent.getHtmlWrappedSvg();
     }),
 
     vscode.commands.registerCommand('hcpworks.savePreview', () => {
@@ -110,26 +111,6 @@ function registerCommands(
       });
     })
   );
-}
-
-/**
- * モジュール選択時のイベントを登録する
- */
-function registerModuleSelectEvent(
-  moduleTreeView: vscode.TreeView<any>
-) {
-  moduleTreeView.onDidChangeSelection((e) => {
-    selectedItem = e.selection[0];
-    if (selectedItem) {
-      // vscode.window.showInformationMessage(`Selected Module: ${selectedItem.name}`);
-      if (!previewPanel) {
-        previewPanel = createWebviewPanel();
-      }
-
-      currentSvgContent = createSvgContent(selectedItem);
-      previewPanel.webview.html = currentSvgContent.getHtmlWrappedSvg();
-    }
-  });
 }
 
 /**
