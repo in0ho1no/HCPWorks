@@ -78,6 +78,11 @@ function registerCommands(
       moduleTreeProvider.refresh();
     }),
 
+    vscode.commands.registerCommand('hcpworks.itemClicked', (item: ModuleTreeElement) => {
+      // クリック時の処理
+      console.log(`Item clicked: ${item.name}`);
+    }),
+
     vscode.commands.registerCommand('hcpworks.savePreview', () => {
       if (!previewPanel) {
         vscode.window.showInformationMessage('No preview panel available to save.');
