@@ -119,11 +119,6 @@ function registerModuleSelectEvent(
       // vscode.window.showInformationMessage(`Selected Module: ${selectedItem.name}`);
       if (!previewPanel) {
         previewPanel = createWebviewPanel();
-        previewPanel.onDidDispose(() => {
-          previewPanel = undefined;
-          selectedItem = undefined;
-          currentSvgContent = undefined;
-        });
       }
 
       currentSvgContent = createSvgContent(selectedItem);
@@ -153,6 +148,9 @@ function createWebviewPanel(): vscode.WebviewPanel {
   // パネルが閉じられたときにコンテキストキーをリセット
   panel.onDidDispose(() => {
     vscode.commands.executeCommand('setContext', 'hcpworks.webviewActive', false);
+    previewPanel = undefined;
+    selectedItem = undefined;
+    currentSvgContent = undefined;
   });
 
   return panel;
