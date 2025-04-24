@@ -9,6 +9,29 @@ It aims to streamline the HCP chart creation process by enabling you to complete
 
 ## Features
 
+### Preview HCP Charts
+
+#### Preview
+
+Preview HCP charts.
+
+1. Select a ".hcp" file
+1. Charts beginning with "\module" are listed
+1. Select any module
+1. The HCP chart is previewed
+
+![previewHCPCharts](hcpworks/resources/videos/previewHCPCharts.gif)
+
+#### Reload
+
+Automatically update preview when file is saved.
+
+1. Edit the previewed ".hcp" file
+1. Save the file
+1. The preview will update automatically
+
+![reloadHCPCharts](hcpworks/resources/videos/reloadHCPCharts.gif)
+
 ### Support Syntax Highlight
 
 This extension supports syntax highlighting as shown in the image below.
@@ -22,4 +45,4 @@ If you find any issues, please report them on the [Github issue](https://github.
 
 ## Release Notes
 
-Check the CHANGELOG.
+Check the [CHANGELOG](hcpworks/CHANGELOG.md).

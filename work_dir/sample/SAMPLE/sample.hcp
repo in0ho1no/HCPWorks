@@ -1,0 +1,16 @@
+\module モジュールサンプル
+    \data データA
+    \data データB
+
+    シンプルな関数 \out 戻り値
+        初期化
+            \mod 現在値取得 \out データA
+        メイン処理
+            \fork 現在値に応じた結果を返す \in データA 
+                \true 状態がXXXである
+                    結果をZZZとする \out データB
+
+                \false 状態がYYYである
+                    結果をXYZとする \out データB
+        後処理
+            結果を返す \in データB \out 戻り値
