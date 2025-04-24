@@ -44,7 +44,13 @@ export class ModuleTreeProvider implements vscode.TreeDataProvider<ModuleTreeEle
       element.children.length > 0
         ? vscode.TreeItemCollapsibleState.Collapsed
         : vscode.TreeItemCollapsibleState.None;
-    return new vscode.TreeItem(element.name, collapsibleState);
+    const treeItem = new vscode.TreeItem(element.name, collapsibleState);
+    treeItem.command = {
+      command: 'hcpworks.itemClicked',
+      title: 'HCPWorks: Item Clicked',
+      arguments: [element]
+    };
+    return treeItem;
   }
 
   /**

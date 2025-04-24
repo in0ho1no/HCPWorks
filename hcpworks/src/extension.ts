@@ -30,9 +30,6 @@ export function activate(context: vscode.ExtensionContext) {
   // コマンド登録
   registerCommands(context, moduleTreeProvider);
 
-  // ファイル選択時のイベント登録
-  registerFileSelectEvent(moduleTreeView);
-
   // ファイル表示時のイベント登録
   registerFileOpenEvent(context);
 
@@ -78,6 +75,15 @@ function registerCommands(
       moduleTreeProvider.refresh();
     }),
 
+    vscode.commands.registerCommand('hcpworks.itemClicked', (item: ModuleTreeElement) => {
+      if (!previewPanel) {
+        previewPanel = createWebviewPanel();
+      }
+
+      currentSvgContent = createSvgContent(item);
+      previewPanel.webview.html = currentSvgContent.getHtmlWrappedSvg();
+    }),
+
     vscode.commands.registerCommand('hcpworks.savePreview', () => {
       if (!previewPanel) {
         vscode.window.showInformationMessage('No preview panel available to save.');
@@ -108,31 +114,6 @@ function registerCommands(
 }
 
 /**
- * ファイル選択時のイベントを登録する
- */
-function registerFileSelectEvent(
-  moduleTreeView: vscode.TreeView<any>
-) {
-  moduleTreeView.onDidChangeSelection((e) => {
-    selectedItem = e.selection[0];
-    if (selectedItem) {
-      // vscode.window.showInformationMessage(`Selected Module: ${selectedItem.name}`);
-      if (!previewPanel) {
-        previewPanel = createWebviewPanel();
-        previewPanel.onDidDispose(() => {
-          previewPanel = undefined;
-          selectedItem = undefined;
-          currentSvgContent = undefined;
-        });
-      }
-
-      currentSvgContent = createSvgContent(selectedItem);
-      previewPanel.webview.html = currentSvgContent.getHtmlWrappedSvg();
-    }
-  });
-}
-
-/**
  * Webviewパネルを作成する
  */
 function createWebviewPanel(): vscode.WebviewPanel {
@@ -153,6 +134,9 @@ function createWebviewPanel(): vscode.WebviewPanel {
   // パネルが閉じられたときにコンテキストキーをリセット
   panel.onDidDispose(() => {
     vscode.commands.executeCommand('setContext', 'hcpworks.webviewActive', false);
+    previewPanel = undefined;
+    selectedItem = undefined;
+    currentSvgContent = undefined;
   });
 
   return panel;
