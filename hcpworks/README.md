@@ -2,7 +2,7 @@
 [![VSCode Extension Test](https://github.com/in0ho1no/HCPWorks/actions/workflows/unittest.yml/badge.svg)](https://github.com/in0ho1no/HCPWorks/actions/workflows/unittest.yml)
 [![Release](https://img.shields.io/github/v/release/in0ho1no/HCPWorks)](https://github.com/in0ho1no/HCPWorks/releases)
 
-日本語版の README.md は <[こちら](README.md)>.
+日本語版の README.md は <[こちら](README.ja.md)>.
 
 # About HCPWorks
 
