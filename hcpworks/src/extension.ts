@@ -80,6 +80,7 @@ function registerCommands(
         previewPanel = createWebviewPanel();
       }
 
+      selectedItem = item;
       currentSvgContent = createSvgContent(item);
       previewPanel.webview.html = currentSvgContent.getHtmlWrappedSvg();
     }),
