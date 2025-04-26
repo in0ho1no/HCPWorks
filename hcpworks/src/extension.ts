@@ -154,9 +154,9 @@ function createSvgContent(selectedElement: ModuleTreeElement): SvgContent {
 
   // テキストファイルをパース
   const lineInfoList: LineInfo[] = [];
-  for (const getText of svgContent.getTextContent()) {
+  for (const textContent of svgContent.getTextContent()) {
     const lineInfo = new LineInfo()
-      .setTextOrg(getText)
+      .setTextOrg(textContent)
       .updateLevel()
       .updateType()
       .updateLineIO();
