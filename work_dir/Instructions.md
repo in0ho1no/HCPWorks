@@ -328,3 +328,10 @@ github actions上で結果を確認しやすいようにする。
 
 結果ページを開いたJobsにMocha Testsと表示される。  
 ページを開くと実行結果を視覚的に確認できる。
+
+## 文字コード変換用のライブラリ追加
+
+コンテナ内にて以下コマンドを実行する。package.jsonへ追記されればOK
+
+  npm install encoding-japanese
+  npm install @types/encoding-japanese

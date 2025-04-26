@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
+import * as Encoding from 'encoding-japanese';
 
 import { ModuleTreeProvider } from './tree_provider';
 import { ModuleTreeElement } from './tree_element';
@@ -70,7 +71,8 @@ function registerCommands(
       }
 
       // ファイルの内容を取得
-      const fileContent = editor.document.getText().replace(/\r\n/g, '\n');
+      const filePath = editor.document.uri.fsPath;
+      const fileContent = convertFileContent(filePath);
       moduleTreeProvider.updateRootElements(fileFullPath, fileContent);
       moduleTreeProvider.refresh();
     }),
@@ -154,9 +156,9 @@ function createSvgContent(selectedElement: ModuleTreeElement): SvgContent {
 
   // テキストファイルをパース
   const lineInfoList: LineInfo[] = [];
-  for (const getText of svgContent.getTextContent()) {
+  for (const textContent of svgContent.getTextContent()) {
     const lineInfo = new LineInfo()
-      .setTextOrg(getText)
+      .setTextOrg(textContent)
       .updateLevel()
       .updateType()
       .updateLineIO();
@@ -214,10 +216,11 @@ function registerFileSaveEvent(context: vscode.ExtensionContext, moduleTreeProvi
     vscode.workspace.onDidSaveTextDocument((document) => {
       // .hcp ファイルのみを対象とする
       if (document.languageId === HCP_ID || document.fileName.endsWith(HCP_SUFFIX)) {
-        const fileFullPath = document.fileName;
-        const fileContent = document.getText().replace(/\r\n/g, '\n');
+        const filePath = document.uri.fsPath;
+        const fileContent = convertFileContent(filePath);
 
         // プレビューを更新
+        const fileFullPath = document.fileName;
         moduleTreeProvider.updateRootElements(fileFullPath, fileContent);
         moduleTreeProvider.refresh();
 
@@ -244,4 +247,34 @@ function checkActiveEditorOnStartup() {
   if (editor && (editor.document.languageId === HCP_ID || editor.document.fileName.endsWith(HCP_SUFFIX))) {
     vscode.commands.executeCommand('hcpworks.listingModule');
   }
+}
+
+/**
+ * ファイルをUTF-8で読み込む
+ * 
+ * 生データを取得するためにファイルパスから直接読み出す
+ * 
+ * @param filePath - ファイルパス
+ * @returns - UTF-8に変換された文字列
+ */
+function convertFileContent(filePath: string): string {
+  const fileBuffer = fs.readFileSync(filePath);
+
+  // 文字コードを自動検出
+  const detectedEncoding = Encoding.detect(fileBuffer);
+  const encodingToUse = detectedEncoding && detectedEncoding !== 'BINARY' ? detectedEncoding : 'SJIS';
+
+  // 文字コード変換
+  const unicodeArray = Encoding.convert(fileBuffer, {
+    to: 'UNICODE',
+    from: encodingToUse,
+    type: 'array'
+  });
+
+  // UnicodeArrayを文字列に変換
+  const decodedContent = Encoding.codeToString(unicodeArray);
+
+  // 改行コードを統一
+  const unifiedContent = decodedContent.replace(/\r\n/g, '\n');
+  return unifiedContent;
 }
