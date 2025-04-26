@@ -2,14 +2,22 @@
 
 All notable changes to the "hcpworks" extension will be documented in this file.
 
+## [0.0.5]
+
+- bux Fixed
+    - Garbled characters in SJIS
+- update Readme
+
 ## [0.0.4]
 
 - bux Fixed
+    - Changes to module selection method.
 - update Readme
 
 ## [0.0.3]
 
 - bux Fixed
+    - The data section overlaps the processing section.
 - prepare Documentation
 
 ## [0.0.2]
