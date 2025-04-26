@@ -15,10 +15,10 @@ It aims to streamline the HCP chart creation process by enabling you to complete
 
 Preview HCP charts.
 
-1. Select a ".hcp" file
-1. Charts beginning with "\module" are listed
-1. Select any module
-1. The HCP chart is previewed
+1. Select a ".hcp" file.
+1. Charts beginning with "\module" are listed.
+1. Select any module.
+1. The HCP chart is previewed.
 
 ![previewHCPCharts](hcpworks/resources/videos/previewHCPCharts.gif)
 
@@ -26,11 +26,22 @@ Preview HCP charts.
 
 Automatically update preview when file is saved.
 
-1. Edit the previewed ".hcp" file
-1. Save the file
-1. The preview will update automatically
+1. Edit the previewed ".hcp" file.
+1. Save the file.
+1. The preview will update automatically.
 
 ![reloadHCPCharts](hcpworks/resources/videos/reloadHCPCharts.gif)
+
+#### Save
+
+Save HCP charts.
+
+1. Push the "Save" button displayed on the tab bar.  
+The "Save" button will be displayed in the ".hcp" panel or the preview panel.
+1. "SVG" images are saved.
+1. The naming convention for the created SVG file is: \<fileName>_\<moduleName>.svg
+
+![saveHCPCharts](hcpworks/resources/videos/saveHCPCharts.gif)
 
 ### Support Syntax Highlight
 

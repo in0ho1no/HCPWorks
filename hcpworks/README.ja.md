@@ -29,6 +29,17 @@ HCPチャートをプレビューします。
 
 ![reloadHCPCharts](hcpworks/resources/videos/reloadHCPCharts.gif)
 
+#### 保存
+
+HCPチャートを保存します。
+
+1. タブバーに表示される保存用ボタンをクリックします。  
+保存用ボタンは、".hcp"ファイルのパネルもしくはHCPチャートのプレビューパネルに表示されます。
+1. "SVG"画像が保存されます。
+1. SVG画像の命名規則は右記の通りです。: \<fileName>_\<moduleName>.svg
+
+![saveHCPCharts](hcpworks/resources/videos/saveHCPCharts.gif)
+
 ### シンタックスハイライト
 
 以下の画像に示すようにシンタックスハイライトをサポートしています。
