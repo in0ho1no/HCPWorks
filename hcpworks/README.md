@@ -32,7 +32,7 @@ Automatically update preview when file is saved.
 
 ![reloadHCPCharts](hcpworks/resources/videos/reloadHCPCharts.gif)
 
-#### save
+#### Save
 
 Save HCP charts.
 
