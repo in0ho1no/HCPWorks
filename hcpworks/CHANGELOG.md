@@ -2,6 +2,11 @@
 
 All notable changes to the "hcpworks" extension will be documented in this file.
 
+## [0.0.6]
+
+- update icon image.
+- update menu contents. Save / Refresh
+
 ## [0.0.5]
 
 - bux Fixed
