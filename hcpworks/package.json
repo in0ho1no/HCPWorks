@@ -2,7 +2,7 @@
   "name": "hcpworks",
   "displayName": "HCPWorks",
   "description": "This extension displays HCP chart.",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "engines": {
     "vscode": "^1.99.0"
   },
@@ -10,7 +10,7 @@
     "Other"
   ],
   "publisher": "in0ho1no",
-  "icon": "resources/icon/icon-light.png",
+  "icon": "resources/icon/icon_128px_light.png",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -25,7 +25,19 @@
       "editor/title": [
         {
           "when": "hcpworks.webviewActive",
+          "command": "hcpworks.refreshPreview",
+          "group": "navigation"
+        },
+        {
+          "when": "hcpworks.webviewActive",
           "command": "hcpworks.savePreview",
+          "group": "navigation"
+        }
+      ],
+      "view/title": [
+        {
+          "when": "view == hcpworks-View",
+          "command": "hcpworks.listingModule",
           "group": "navigation"
         }
       ]
@@ -45,14 +57,26 @@
       {
         "command": "hcpworks.listingModule",
         "title": "HCPWorks: Listing Modules",
-        "when": "editorLangId == hcp"
+        "when": "editorLangId == hcp",
+        "icon": {
+          "light": "resources/icon/refresh-light.svg",
+          "dark": "resources/icon/refresh-dark.svg"
+        }
+      },
+      {
+        "command": "hcpworks.refreshPreview",
+        "title": "HCPWorks: Refresh Preview to Current Module",
+        "icon": {
+          "light": "resources/icon/refresh-light.svg",
+          "dark": "resources/icon/refresh-dark.svg"
+        }
       },
       {
         "command": "hcpworks.savePreview",
         "title": "HCPWorks: Save Preview to Current Folder",
         "icon": {
-          "light": "resources/icon/icon-light.png",
-          "dark": "resources/icon/icon-dark.png"
+          "light": "resources/icon/save-light.svg",
+          "dark": "resources/icon/save-dark.svg"
         }
       }
     ],
@@ -61,7 +85,7 @@
         {
           "id": "hcpworks-View",
           "name": "HCP Module List",
-          "icon": "resources/icon/icon-dark.png"
+          "icon": "resources/icon/icon_16px_light.svg"
         }
       ]
     },

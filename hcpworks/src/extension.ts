@@ -58,7 +58,7 @@ function registerCommands(
     vscode.commands.registerCommand('hcpworks.listingModule', () => {
       const editor = vscode.window.activeTextEditor;
       if (!editor) {
-        vscode.window.showInformationMessage('No active editor found');
+        vscode.window.showWarningMessage('No active editor found');
         return;
       }
 
@@ -66,7 +66,7 @@ function registerCommands(
       const fileFullPath = editor.document.fileName;
       const fileExtension = fileFullPath.split('.').pop()?.toLowerCase();
       if (fileExtension !== HCP_ID) {
-        vscode.window.showInformationMessage(`Current file is not ${HCP_ID.toUpperCase()} file`);
+        vscode.window.showWarningMessage(`Current file is not ${HCP_ID.toUpperCase()} file`);
         return;
       }
 
@@ -85,6 +85,19 @@ function registerCommands(
       selectedItem = item;
       currentSvgContent = createSvgContent(item);
       previewPanel.webview.html = currentSvgContent.getHtmlWrappedSvg();
+    }),
+
+    vscode.commands.registerCommand('hcpworks.refreshPreview', (item: ModuleTreeElement) => {
+      // Webview パネルが存在する場合は SVG コンテンツを更新
+      if (previewPanel && selectedItem) {
+        const rootElements = moduleTreeProvider.getRootElements();
+        for (const element of rootElements) {
+          if (element.name === selectedItem.name) {
+            currentSvgContent = createSvgContent(element);
+            previewPanel.webview.html = currentSvgContent.getHtmlWrappedSvg();
+          }
+        }
+      }
     }),
 
     vscode.commands.registerCommand('hcpworks.savePreview', () => {
@@ -131,8 +144,11 @@ function createWebviewPanel(): vscode.WebviewPanel {
     }
   );
 
-  // カスタムコンテキストキーを設定
-  vscode.commands.executeCommand('setContext', 'hcpworks.webviewActive', true);
+  // パネルのアクティブ状態が変化するごとにコンテキストの状態更新
+  panel.onDidChangeViewState(() => {
+    const isActive = panel.active;
+    vscode.commands.executeCommand('setContext', 'hcpworks.webviewActive', isActive);
+  });
 
   // パネルが閉じられたときにコンテキストキーをリセット
   panel.onDidDispose(() => {
