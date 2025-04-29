@@ -131,8 +131,11 @@ function createWebviewPanel(): vscode.WebviewPanel {
     }
   );
 
-  // カスタムコンテキストキーを設定
-  vscode.commands.executeCommand('setContext', 'hcpworks.webviewActive', true);
+  // パネルのアクティブ状態が変化するごとにコンテキストの状態更新
+  panel.onDidChangeViewState(() => {
+    const isActive = panel.active;
+    vscode.commands.executeCommand('setContext', 'hcpworks.webviewActive', isActive);
+  });
 
   // パネルが閉じられたときにコンテキストキーをリセット
   panel.onDidDispose(() => {
