@@ -58,7 +58,7 @@ function registerCommands(
     vscode.commands.registerCommand('hcpworks.listingModule', () => {
       const editor = vscode.window.activeTextEditor;
       if (!editor) {
-        vscode.window.showInformationMessage('No active editor found');
+        vscode.window.showWarningMessage('No active editor found');
         return;
       }
 
@@ -66,7 +66,7 @@ function registerCommands(
       const fileFullPath = editor.document.fileName;
       const fileExtension = fileFullPath.split('.').pop()?.toLowerCase();
       if (fileExtension !== HCP_ID) {
-        vscode.window.showInformationMessage(`Current file is not ${HCP_ID.toUpperCase()} file`);
+        vscode.window.showWarningMessage(`Current file is not ${HCP_ID.toUpperCase()} file`);
         return;
       }
 
