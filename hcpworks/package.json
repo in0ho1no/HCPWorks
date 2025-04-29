@@ -25,6 +25,11 @@
       "editor/title": [
         {
           "when": "hcpworks.webviewActive",
+          "command": "hcpworks.refreshPreview",
+          "group": "navigation"
+        },
+        {
+          "when": "hcpworks.webviewActive",
           "command": "hcpworks.savePreview",
           "group": "navigation"
         }
@@ -57,7 +62,15 @@
           "light": "resources/icon/refresh-light.svg",
           "dark": "resources/icon/refresh-dark.svg"
         }
-        },
+      },
+      {
+        "command": "hcpworks.refreshPreview",
+        "title": "HCPWorks: Refresh Preview to Current Module",
+        "icon": {
+          "light": "resources/icon/refresh-light.svg",
+          "dark": "resources/icon/refresh-dark.svg"
+        }
+      },
       {
         "command": "hcpworks.savePreview",
         "title": "HCPWorks: Save Preview to Current Folder",

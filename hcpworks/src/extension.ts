@@ -87,6 +87,19 @@ function registerCommands(
       previewPanel.webview.html = currentSvgContent.getHtmlWrappedSvg();
     }),
 
+    vscode.commands.registerCommand('hcpworks.refreshPreview', (item: ModuleTreeElement) => {
+      // Webview パネルが存在する場合は SVG コンテンツを更新
+      if (previewPanel && selectedItem) {
+        const rootElements = moduleTreeProvider.getRootElements();
+        for (const element of rootElements) {
+          if (element.name === selectedItem.name) {
+            currentSvgContent = createSvgContent(element);
+            previewPanel.webview.html = currentSvgContent.getHtmlWrappedSvg();
+          }
+        }
+      }
+    }),
+
     vscode.commands.registerCommand('hcpworks.savePreview', () => {
       if (!previewPanel) {
         vscode.window.showInformationMessage('No preview panel available to save.');
