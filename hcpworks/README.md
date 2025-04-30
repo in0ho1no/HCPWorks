@@ -24,7 +24,7 @@ Preview HCP charts.
 
 ![previewHCPCharts](hcpworks/resources/videos/previewHCPCharts.gif)
 
-#### Reload
+#### Update Preview
 
 Automatically update preview when file is saved.
 
@@ -53,8 +53,8 @@ This extension supports syntax highlighting as shown in the image below.
 
 ## Known Issues
 
-There are no known issues.  
-If you find any issues, please report them on the [Github issue](https://github.com/in0ho1no/HCPWorks/issues).
+For known issues, please see [Github issue](https://github.com/in0ho1no/HCPWorks/issues).
+If you find any issues, please report them to [Github issue](https://github.com/in0ho1no/HCPWorks/issues).
 
 ## Release Notes
 
