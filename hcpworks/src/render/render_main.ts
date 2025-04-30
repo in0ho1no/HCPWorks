@@ -49,7 +49,7 @@ export class SVGRenderer {
 
     this._svgWidth = 0;
     this._svgHeight = 0;
-    this._svgColor = "808d81";
+    this._svgColor = DiagramDefine.DEFAULT_BG_COLOR;
   }
 
   /**
@@ -477,4 +477,5 @@ export class SVGRenderer {
   getSvgWidth(): number { return this._svgWidth; }
   getSvgHeight(): number { return this._svgHeight; }
   getSvgColor(): string { return this._svgColor; }
+  setSvgColor(svgColor: string) { this._svgColor = svgColor; }
 }
