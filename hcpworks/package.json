@@ -104,6 +104,17 @@
         "path": "./syntaxes/hcp.tmLanguage.json"
       }
     ],
+    "configuration": {
+        "type": "object",
+        "title": "HCPWorks Configuration",
+        "properties": {
+            "hcpworks.SvgBgColor": {
+                "type": "string",
+                "default": "FFFFFF",
+                "description": "HCP Preview SVG background color."
+            }
+        }
+    },
     "configurationDefaults": {
       "editor.tokenColorCustomizations": {
         "textMateRules": [

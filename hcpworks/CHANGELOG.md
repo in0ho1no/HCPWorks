@@ -7,6 +7,7 @@ All notable changes to the "hcpworks" extension will be documented in this file.
 - bux Fixed
     - Syntax highlighting was disabled
 - update Readme
+- Supports configuration to background color
 
 ## [0.0.6]
 
