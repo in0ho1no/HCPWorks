@@ -53,8 +53,8 @@ HCPチャートを保存します。
 
 ## 既知の問題
 
-既知の問題はありません。
-問題を発見した場合は、[Github issue](https://github.com/in0ho1no/HCPWorks/issues) にご報告ください。
+既知の問題は、[GitHubのissue](https://github.com/in0ho1no/HCPWorks/issues) をご覧ください。  
+新たな問題が発生した場合は、GitHub で新しい問題として報告してください。
 
 ## リリースノート
 

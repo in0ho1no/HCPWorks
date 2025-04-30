@@ -11,6 +11,7 @@ import { LineInfo } from './parse/line_info';
 import { ProcessLineProcessor } from './parse/line_info_list_process';
 import { DataLineProcessor } from './parse/line_info_list_data';
 import { ParseInfo4Render } from './parse/parse_info_4_render';
+import { DiagramDefine } from './render/render_define';
 import { SVGRenderer } from './render/render_main';
 
 const TIMEOUT = 300;
@@ -39,6 +40,9 @@ export function activate(context: vscode.ExtensionContext) {
 
   // ファイル保存時のイベントを登録
   registerFileSaveEvent(context, moduleTreeProvider);
+
+  // 設定更新時のイベントを登録
+  registerUpdateConfig(context, moduleTreeProvider);
 
   // 起動時のチェック処理
   checkActiveEditorOnStartup();
@@ -88,16 +92,8 @@ function registerCommands(
     }),
 
     vscode.commands.registerCommand('hcpworks.refreshPreview', (item: ModuleTreeElement) => {
-      // Webview パネルが存在する場合は SVG コンテンツを更新
-      if (previewPanel && selectedItem) {
-        const rootElements = moduleTreeProvider.getRootElements();
-        for (const element of rootElements) {
-          if (element.name === selectedItem.name) {
-            currentSvgContent = createSvgContent(element);
-            previewPanel.webview.html = currentSvgContent.getHtmlWrappedSvg();
-          }
-        }
-      }
+      // SVG コンテンツを更新
+      updatePreview(moduleTreeProvider);
     }),
 
     vscode.commands.registerCommand('hcpworks.savePreview', () => {
@@ -191,6 +187,7 @@ function createSvgContent(selectedElement: ModuleTreeElement): SvgContent {
 
   // レンダリング実行
   const renderer = new SVGRenderer(svgContent.getName(), parseInfo4Render);
+  renderer.setSvgColor(getSvgBgColor());
   const svgText = renderer.render();
 
   return svgContent.setSvgContent(svgText);
@@ -239,18 +236,25 @@ function registerFileSaveEvent(context: vscode.ExtensionContext, moduleTreeProvi
         const fileFullPath = document.fileName;
         moduleTreeProvider.updateRootElements(fileFullPath, fileContent);
         moduleTreeProvider.refresh();
-
-        // Webview パネルが存在する場合は SVG コンテンツを更新
-        if (previewPanel && selectedItem) {
-          const rootElements = moduleTreeProvider.getRootElements();
-          for (const element of rootElements) {
-            if (element.name === selectedItem.name) {
-              currentSvgContent = createSvgContent(element);
-              previewPanel.webview.html = currentSvgContent.getHtmlWrappedSvg();
-            }
-          }
-        }
+        updatePreview(moduleTreeProvider);
       }
+    })
+  );
+}
+
+/**
+ * 設定変更を監視して値を更新する
+ * @param context 拡張機能のコンテキスト
+ */
+function registerUpdateConfig(context: vscode.ExtensionContext, moduleTreeProvider: ModuleTreeProvider) {
+  context.subscriptions.push(
+    vscode.workspace.onDidChangeConfiguration((event) => {
+
+      // hcpworks.SvgBgColorの更新
+      if (event.affectsConfiguration('hcpworks.SvgBgColor')) {
+        updatePreview(moduleTreeProvider);
+      }
+
     })
   );
 }
@@ -293,4 +297,49 @@ function convertFileContent(filePath: string): string {
   // 改行コードを統一
   const unifiedContent = decodedContent.replace(/\r\n/g, '\n');
   return unifiedContent;
+}
+
+/**
+ * プレビューを更新する
+ */
+function updatePreview(moduleTreeProvider: ModuleTreeProvider): void {
+  // Webview パネルが存在する場合は SVG コンテンツを更新
+  if (previewPanel && selectedItem) {
+    const rootElements = moduleTreeProvider.getRootElements();
+    for (const element of rootElements) {
+      if (element.name === selectedItem.name) {
+        currentSvgContent = createSvgContent(element);
+        previewPanel.webview.html = currentSvgContent.getHtmlWrappedSvg();
+      }
+    }
+  }
+}
+
+/**
+ * Previewの背景色を取得する
+ * @returns 背景色
+ */
+function getSvgBgColor(): string {
+  const configKey = "hcpworks.SvgBgColor";
+  const rawSvgBgColor = vscode.workspace.getConfiguration().get<string>(configKey, DiagramDefine.DEFAULT_BG_COLOR);
+
+  // #を除外
+  const defaultColorValue = DiagramDefine.DEFAULT_BG_COLOR.replace("#", "");
+  const userColorValue = rawSvgBgColor.replace("#", "");
+
+  // 16進文字列チェック（0-9、A-F、a-fのみを許可）
+  const hexRegex = /^[0-9A-Fa-f]+$/;
+  if (!hexRegex.test(userColorValue)) {
+    vscode.window.showErrorMessage(`${configKey}: 16進数（0-9、A-F）で指定してください。現在の値: ${rawSvgBgColor}`);
+    return defaultColorValue;
+  }
+
+  // 文字列長チェック
+  const colorLength = defaultColorValue.length;
+  if (userColorValue.length !== colorLength) {
+    vscode.window.showErrorMessage(`${configKey}: ${colorLength}文字の16進数で指定してください。現在の値: ${rawSvgBgColor}`);
+    return defaultColorValue;
+  }
+
+  return userColorValue;
 }

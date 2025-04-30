@@ -2,7 +2,7 @@
   "name": "hcpworks",
   "displayName": "HCPWorks",
   "description": "This extension displays HCP chart.",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "engines": {
     "vscode": "^1.99.0"
   },
@@ -104,6 +104,17 @@
         "path": "./syntaxes/hcp.tmLanguage.json"
       }
     ],
+    "configuration": {
+        "type": "object",
+        "title": "HCPWorks Configuration",
+        "properties": {
+            "hcpworks.SvgBgColor": {
+                "type": "string",
+                "default": "FFFFFF",
+                "description": "HCP Preview SVG background color."
+            }
+        }
+    },
     "configurationDefaults": {
       "editor.tokenColorCustomizations": {
         "textMateRules": [
