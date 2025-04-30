@@ -41,6 +41,9 @@ export function activate(context: vscode.ExtensionContext) {
   // ファイル保存時のイベントを登録
   registerFileSaveEvent(context, moduleTreeProvider);
 
+  // 設定更新時のイベントを登録
+  registerUpdateConfig(context, moduleTreeProvider);
+
   // 起動時のチェック処理
   checkActiveEditorOnStartup();
 }
@@ -89,16 +92,8 @@ function registerCommands(
     }),
 
     vscode.commands.registerCommand('hcpworks.refreshPreview', (item: ModuleTreeElement) => {
-      // Webview パネルが存在する場合は SVG コンテンツを更新
-      if (previewPanel && selectedItem) {
-        const rootElements = moduleTreeProvider.getRootElements();
-        for (const element of rootElements) {
-          if (element.name === selectedItem.name) {
-            currentSvgContent = createSvgContent(element);
-            previewPanel.webview.html = currentSvgContent.getHtmlWrappedSvg();
-          }
-        }
-      }
+      // SVG コンテンツを更新
+      updatePreview(moduleTreeProvider);
     }),
 
     vscode.commands.registerCommand('hcpworks.savePreview', () => {
@@ -241,18 +236,25 @@ function registerFileSaveEvent(context: vscode.ExtensionContext, moduleTreeProvi
         const fileFullPath = document.fileName;
         moduleTreeProvider.updateRootElements(fileFullPath, fileContent);
         moduleTreeProvider.refresh();
-
-        // Webview パネルが存在する場合は SVG コンテンツを更新
-        if (previewPanel && selectedItem) {
-          const rootElements = moduleTreeProvider.getRootElements();
-          for (const element of rootElements) {
-            if (element.name === selectedItem.name) {
-              currentSvgContent = createSvgContent(element);
-              previewPanel.webview.html = currentSvgContent.getHtmlWrappedSvg();
-            }
-          }
-        }
+        updatePreview(moduleTreeProvider);
       }
+    })
+  );
+}
+
+/**
+ * 設定変更を監視して値を更新する
+ * @param context 拡張機能のコンテキスト
+ */
+function registerUpdateConfig(context: vscode.ExtensionContext, moduleTreeProvider: ModuleTreeProvider) {
+  context.subscriptions.push(
+    vscode.workspace.onDidChangeConfiguration((event) => {
+
+      // hcpworks.SvgBgColorの更新
+      if (event.affectsConfiguration('hcpworks.SvgBgColor')) {
+        updatePreview(moduleTreeProvider);
+      }
+
     })
   );
 }
@@ -295,6 +297,22 @@ function convertFileContent(filePath: string): string {
   // 改行コードを統一
   const unifiedContent = decodedContent.replace(/\r\n/g, '\n');
   return unifiedContent;
+}
+
+/**
+ * プレビューを更新する
+ */
+function updatePreview(moduleTreeProvider: ModuleTreeProvider): void {
+  // Webview パネルが存在する場合は SVG コンテンツを更新
+  if (previewPanel && selectedItem) {
+    const rootElements = moduleTreeProvider.getRootElements();
+    for (const element of rootElements) {
+      if (element.name === selectedItem.name) {
+        currentSvgContent = createSvgContent(element);
+        previewPanel.webview.html = currentSvgContent.getHtmlWrappedSvg();
+      }
+    }
+  }
 }
 
 /**
