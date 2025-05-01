@@ -35,39 +35,32 @@ export class NumberInputViewProvider implements vscode.WebviewViewProvider {
       <title>描画レベル</title>
       <style>
         body {
-          padding: 10px;
-          color: var(--vscode-foreground);
-          font-family: var(--vscode-font-family);
+          padding: 8px;
+          margin: 0;
         }
-        .input-container {
-          margin-bottom: 15px;
-        }
-        label {
-          display: block;
-          margin-bottom: 5px;
-        }
-        input[type="number"] {
+        input[type="number"], button {
           width: 100%;
+          box-sizing: border-box;
           padding: 5px;
+          margin: 3px 0;
           background-color: var(--vscode-input-background);
           color: var(--vscode-input-foreground);
           border: 1px solid var(--vscode-input-border);
+          border-radius: 1px;
         }
         button {
+          cursor: pointer;
           background-color: var(--vscode-button-background);
           color: var(--vscode-button-foreground);
-          border: none;
-          padding: 5px 10px;
-          cursor: pointer;
+        }
+        button:hover {
+          background-color: var(--vscode-button-hoverBackground);
         }
       </style>
     </head>
     <body>
-      <div class="input-container">
-        <label for="numberInput">描画レベル:</label>
-        <input type="number" id="numberInput" min="1" max="20" value="10" step="1" placeholder="メッセージ">
-      </div>
-      <button id="applyButton">適用</button>
+      <input type="number" id="numberInput" min="1" max="20" value="10" step="1" placeholder="描画レベル">
+      <button id="applyButton">描画レベル確定</button>
 
       <script>
         const vscode = acquireVsCodeApi();

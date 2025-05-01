@@ -90,7 +90,7 @@
         {
           "id": "hcpworks-numberInputView",
           "type": "webview",
-          "name": "数値入力",
+          "name": "HCP Preview Level",
           "icon": "resources/icon/icon_16px_light.svg"
         }
       ]
