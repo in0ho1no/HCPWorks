@@ -5,6 +5,8 @@ import * as Encoding from 'encoding-japanese';
 import { ModuleTreeProvider } from './tree_provider';
 import { ModuleTreeElement } from './tree_element';
 
+import { NumberInputViewProvider } from './webview_settings';
+
 import { SvgContent } from './svg_content';
 import { cleanTextLines } from './parse/file_parse';
 import { LineInfo } from './parse/line_info';
@@ -29,8 +31,14 @@ export function activate(context: vscode.ExtensionContext) {
   const moduleTreeProvider = new ModuleTreeProvider();
   const moduleTreeView = vscode.window.createTreeView('hcpworks-View', { treeDataProvider: moduleTreeProvider });
 
+  // wevviewの初期化
+  const numberInputViewProviderer = new NumberInputViewProvider(context.extensionUri);
+
   // コマンド登録
   registerCommands(context, moduleTreeProvider);
+
+  // viewを登録
+  registerWebview(context, numberInputViewProviderer);
 
   // ファイル表示時のイベント登録
   registerFileOpenEvent(context);
@@ -122,6 +130,18 @@ function registerCommands(
         }
       });
     })
+  );
+}
+
+/**
+ * viewを登録する
+ */
+function registerWebview(
+  context: vscode.ExtensionContext,
+  numberInputViewProviderer: NumberInputViewProvider
+) {
+  context.subscriptions.push(
+    vscode.window.registerWebviewViewProvider('hcpworks-numberInputView', numberInputViewProviderer)
   );
 }
 
