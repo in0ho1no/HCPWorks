@@ -21,6 +21,16 @@ export class DataLineProcessor extends BaseLineProcessor {
   }
 
   /**
+   * レベルを制限したリストを作成する
+   * @param limitLevel 制限するレベル
+   * @returns このインスタンスへの参照（メソッドチェーン用）
+   */
+  public override limitLevelInfoList(limitLevel: number) {
+    // データ部ではレベル制限は行わない
+    return this;
+  }
+
+  /**
    * データ部の標準的な処理シーケンスを実行する
    * 1. 行番号を設定
    * 2. 重複を除去

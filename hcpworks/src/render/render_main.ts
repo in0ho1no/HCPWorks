@@ -35,7 +35,6 @@ export class SVGRenderer {
   private _svgWidth: number;
   private _svgHeight: number;
   private _svgColor: string;
-  private _svgLevelLimit: number;
 
   constructor(name: string, parseInfo4Render: ParseInfo4Render) {
     this._name = name;
@@ -51,7 +50,6 @@ export class SVGRenderer {
     this._svgWidth = 0;
     this._svgHeight = 0;
     this._svgColor = DiagramDefine.DEFAULT_BG_COLOR;
-    this._svgLevelLimit = LineLevel.LEVEL_MAX;
   }
 
   /**
@@ -127,11 +125,9 @@ export class SVGRenderer {
       const normalizeLevel = lineInfo.getLevel() - lineProcessor.getMinLevel();
       const isData = element.getLineInfo().getType().type_value === LineTypeDefine.get_format_by_type(LineTypeEnum.DATA).type_value;
 
-      if ((normalizeLevel < this._svgLevelLimit) || isData) {
-        element.setX(startX + normalizeLevel * DiagramDefine.LEVEL_SHIFT);
-        element.setY(startY + elementList.length * DiagramDefine.LEVEL_SHIFT);
-        elementList.push(element);
-      }
+      element.setX(startX + normalizeLevel * DiagramDefine.LEVEL_SHIFT);
+      element.setY(startY + elementList.length * DiagramDefine.LEVEL_SHIFT);
+      elementList.push(element);
     }
 
     return elementList;
@@ -484,5 +480,4 @@ export class SVGRenderer {
   getSvgHeight(): number { return this._svgHeight; }
   getSvgColor(): string { return this._svgColor; }
   setSvgColor(svgColor: string) { this._svgColor = svgColor; }
-  setSvgLevelLimit(levelLimit: number) { this._svgLevelLimit = levelLimit; }
 }

@@ -21,6 +21,13 @@ export abstract class BaseLineProcessor {
   public abstract createInfoList(lineInfoList: LineInfo[]): BaseLineProcessor;
 
   /**
+   * レベルを制限したリストを作成する（サブクラスで実装する）
+   * @param limitLevel 制限するレベル
+   * @returns このインスタンスへの参照（メソッドチェーン用）
+   */
+  public abstract limitLevelInfoList(limitLevel: number): BaseLineProcessor;
+
+  /**
    * ラインリストを設定する
    * @param lineInfoList 設定するラインリスト
    * @returns このインスタンスへの参照（メソッドチェーン用）

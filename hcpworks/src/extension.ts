@@ -224,7 +224,7 @@ function createSvgContent(selectedElement: ModuleTreeElement): SvgContent {
   }
 
   // 処理部とデータ部の情報に分けて保持
-  const processInfoList = ProcessLineProcessor.process(lineInfoList);
+  const processInfoList = ProcessLineProcessor.process(lineInfoList, configedLevelLimit);
   const dataInfoList = DataLineProcessor.process(lineInfoList);
 
   // レンダリング向けの情報を用意
@@ -234,7 +234,6 @@ function createSvgContent(selectedElement: ModuleTreeElement): SvgContent {
   // レンダリング実行
   const renderer = new SVGRenderer(svgContent.getName(), parseInfo4Render);
   renderer.setSvgColor(getSvgBgColor());
-  renderer.setSvgLevelLimit(configedLevelLimit);
   const svgText = renderer.render();
 
   return svgContent.setSvgContent(svgText);
