@@ -5,6 +5,8 @@ import * as Encoding from 'encoding-japanese';
 import { ModuleTreeProvider } from './tree_provider';
 import { ModuleTreeElement } from './tree_element';
 
+import { NumberInputViewProvider } from './webview_settings';
+
 import { SvgContent } from './svg_content';
 import { cleanTextLines } from './parse/file_parse';
 import { LineInfo } from './parse/line_info';
@@ -21,6 +23,7 @@ const HCP_SUFFIX = `.${HCP_ID}`;
 let previewPanel: vscode.WebviewPanel | undefined;
 let selectedItem: ModuleTreeElement | undefined;
 let currentSvgContent: SvgContent | undefined;
+let configedLevelLimit: number = 0;
 
 export function activate(context: vscode.ExtensionContext) {
   console.log('"hcpworks" is now active!');
@@ -29,8 +32,14 @@ export function activate(context: vscode.ExtensionContext) {
   const moduleTreeProvider = new ModuleTreeProvider();
   const moduleTreeView = vscode.window.createTreeView('hcpworks-View', { treeDataProvider: moduleTreeProvider });
 
+  // wevviewの初期化
+  const numberInputViewProviderer = new NumberInputViewProvider(context.extensionUri);
+
   // コマンド登録
-  registerCommands(context, moduleTreeProvider);
+  registerCommands(context, moduleTreeProvider, numberInputViewProviderer);
+
+  // viewを登録
+  registerWebview(context, numberInputViewProviderer);
 
   // ファイル表示時のイベント登録
   registerFileOpenEvent(context);
@@ -45,17 +54,26 @@ export function activate(context: vscode.ExtensionContext) {
   registerUpdateConfig(context, moduleTreeProvider);
 
   // 起動時のチェック処理
-  checkActiveEditorOnStartup();
+  checkOnStartup(numberInputViewProviderer);
 }
 
-export function deactivate() { }
+export function deactivate() {
+  // リソースのクリーンアップ
+  if (previewPanel) {
+    previewPanel.dispose();
+    previewPanel = undefined;
+  }
+  selectedItem = undefined;
+  currentSvgContent = undefined;
+}
 
 /**
  * コマンドを登録する
  */
 function registerCommands(
   context: vscode.ExtensionContext,
-  moduleTreeProvider: ModuleTreeProvider
+  moduleTreeProvider: ModuleTreeProvider,
+  numberInputViewProviderer: NumberInputViewProvider,
 ) {
   // モジュール一覧表示コマンド
   context.subscriptions.push(
@@ -74,26 +92,32 @@ function registerCommands(
         return;
       }
 
-      // ファイルの内容を取得
+      // モジュールツリーを更新する
       const filePath = editor.document.uri.fsPath;
-      const fileContent = convertFileContent(filePath);
-      moduleTreeProvider.updateRootElements(fileFullPath, fileContent);
-      moduleTreeProvider.refresh();
+      updateModuleTreeProvider(filePath, moduleTreeProvider);
     }),
 
     vscode.commands.registerCommand('hcpworks.itemClicked', (item: ModuleTreeElement) => {
-      if (!previewPanel) {
-        previewPanel = createWebviewPanel();
-      }
-
+      // プレビューを表示する
       selectedItem = item;
-      currentSvgContent = createSvgContent(item);
-      previewPanel.webview.html = currentSvgContent.getHtmlWrappedSvg();
+      updatePreviewByElement(item);
     }),
 
     vscode.commands.registerCommand('hcpworks.refreshPreview', (item: ModuleTreeElement) => {
-      // SVG コンテンツを更新
-      updatePreview(moduleTreeProvider);
+      if (selectedItem) {
+        const rootElements = moduleTreeProvider.getRootElements();
+        for (const element of rootElements) {
+          if (element.name === selectedItem.name) {
+
+            // モジュールツリーを更新する
+            const filePath = selectedItem.filePath;
+            updateModuleTreeProvider(filePath, moduleTreeProvider);
+
+            // SVG コンテンツを更新
+            updatePreviewByTree(moduleTreeProvider);
+          }
+        }
+      }
     }),
 
     vscode.commands.registerCommand('hcpworks.savePreview', () => {
@@ -121,7 +145,29 @@ function registerCommands(
           vscode.window.showInformationMessage(`Preview saved to ${savePath}`);
         }
       });
-    })
+    }),
+
+    vscode.commands.registerCommand('hcpworks.configLevelLimit', () => {
+      const levelLimit = numberInputViewProviderer.getLevelLimit();
+      if (levelLimit !== configedLevelLimit) {
+        configedLevelLimit = numberInputViewProviderer.getLevelLimit();
+        console.log(`Level Limit: ${configedLevelLimit}`);
+        updatePreviewByTree(moduleTreeProvider);
+      }
+    }),
+
+  );
+}
+
+/**
+ * viewを登録する
+ */
+function registerWebview(
+  context: vscode.ExtensionContext,
+  numberInputViewProviderer: NumberInputViewProvider
+) {
+  context.subscriptions.push(
+    vscode.window.registerWebviewViewProvider('hcpworks-numberInputView', numberInputViewProviderer)
   );
 }
 
@@ -178,7 +224,7 @@ function createSvgContent(selectedElement: ModuleTreeElement): SvgContent {
   }
 
   // 処理部とデータ部の情報に分けて保持
-  const processInfoList = ProcessLineProcessor.process(lineInfoList);
+  const processInfoList = ProcessLineProcessor.process(lineInfoList, configedLevelLimit);
   const dataInfoList = DataLineProcessor.process(lineInfoList);
 
   // レンダリング向けの情報を用意
@@ -229,14 +275,12 @@ function registerFileSaveEvent(context: vscode.ExtensionContext, moduleTreeProvi
     vscode.workspace.onDidSaveTextDocument((document) => {
       // .hcp ファイルのみを対象とする
       if (document.languageId === HCP_ID || document.fileName.endsWith(HCP_SUFFIX)) {
+        // モジュールツリーを更新する
         const filePath = document.uri.fsPath;
-        const fileContent = convertFileContent(filePath);
+        updateModuleTreeProvider(filePath, moduleTreeProvider);
 
         // プレビューを更新
-        const fileFullPath = document.fileName;
-        moduleTreeProvider.updateRootElements(fileFullPath, fileContent);
-        moduleTreeProvider.refresh();
-        updatePreview(moduleTreeProvider);
+        updatePreviewByTree(moduleTreeProvider);
       }
     })
   );
@@ -252,7 +296,7 @@ function registerUpdateConfig(context: vscode.ExtensionContext, moduleTreeProvid
 
       // hcpworks.SvgBgColorの更新
       if (event.affectsConfiguration('hcpworks.SvgBgColor')) {
-        updatePreview(moduleTreeProvider);
+        updatePreviewByTree(moduleTreeProvider);
       }
 
     })
@@ -260,13 +304,62 @@ function registerUpdateConfig(context: vscode.ExtensionContext, moduleTreeProvid
 }
 
 /**
- * 起動時にアクティブなエディタをチェックする
+ * 起動時の更新処理
  */
-function checkActiveEditorOnStartup() {
+function checkOnStartup(
+  numberInputViewProviderer: NumberInputViewProvider,
+) {
+  // 初期値を取得
+  configedLevelLimit = numberInputViewProviderer.getLevelLimit();
+
+  // 起動時にhcpファイルが開いている場合はモジュールツリーを更新
   const editor = vscode.window.activeTextEditor;
   if (editor && (editor.document.languageId === HCP_ID || editor.document.fileName.endsWith(HCP_SUFFIX))) {
     vscode.commands.executeCommand('hcpworks.listingModule');
   }
+}
+
+/**
+ * ファイルの内容に基づいてモジュールツリーを更新する
+ * 
+ * @param filePath - ファイルパス
+ * @param moduleTreeProvider - モジュールツリープロバイダ
+ */
+function updateModuleTreeProvider(filePath: string, moduleTreeProvider: ModuleTreeProvider) {
+  const fileContent = convertFileContent(filePath);
+  moduleTreeProvider.updateRootElements(filePath, fileContent);
+  moduleTreeProvider.refresh();
+}
+
+/**
+ * プレビューを更新する
+ */
+function updatePreviewByTree(moduleTreeProvider: ModuleTreeProvider): void {
+  // Webview パネルが存在する場合は SVG コンテンツを更新
+  if (previewPanel && selectedItem) {
+    const rootElements = moduleTreeProvider.getRootElements();
+    for (const element of rootElements) {
+      if (element.name === selectedItem.name) {
+        updatePreviewByElement(element);
+      }
+    }
+  }
+}
+
+/**
+ * モジュールツリー要素に基づいてプレビューを更新する
+ * 
+ * @param moduleTreeElement - モジュールツリー要素
+ */
+function updatePreviewByElement(moduleTreeElement: ModuleTreeElement) {
+  // Webview パネルが存在しない場合は新規作成
+  if (!previewPanel) {
+    previewPanel = createWebviewPanel();
+  }
+
+  // SVG コンテンツを生成してパネルに設定する
+  currentSvgContent = createSvgContent(moduleTreeElement);
+  previewPanel.webview.html = currentSvgContent.getHtmlWrappedSvg();
 }
 
 /**
@@ -297,22 +390,6 @@ function convertFileContent(filePath: string): string {
   // 改行コードを統一
   const unifiedContent = decodedContent.replace(/\r\n/g, '\n');
   return unifiedContent;
-}
-
-/**
- * プレビューを更新する
- */
-function updatePreview(moduleTreeProvider: ModuleTreeProvider): void {
-  // Webview パネルが存在する場合は SVG コンテンツを更新
-  if (previewPanel && selectedItem) {
-    const rootElements = moduleTreeProvider.getRootElements();
-    for (const element of rootElements) {
-      if (element.name === selectedItem.name) {
-        currentSvgContent = createSvgContent(element);
-        previewPanel.webview.html = currentSvgContent.getHtmlWrappedSvg();
-      }
-    }
-  }
 }
 
 /**

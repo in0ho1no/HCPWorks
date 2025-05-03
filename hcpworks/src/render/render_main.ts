@@ -310,7 +310,7 @@ export class SVGRenderer {
 
         // 始点でなければ直前の要素があるので結合する
         if (!isLevelStarting) {
-          const beforeElement = this._processElements[beforeLineNo];
+          const beforeElement = this._dataElements[beforeLineNo];
 
           // 垂直線を描画する
           const beforeElementPosBottom = beforeElement.getY() + SvgFigureDefine.CIRCLE_R;

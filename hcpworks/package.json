@@ -86,6 +86,12 @@
           "id": "hcpworks-View",
           "name": "HCP Module List",
           "icon": "resources/icon/icon_16px_light.svg"
+        },
+        {
+          "id": "hcpworks-numberInputView",
+          "type": "webview",
+          "name": "HCP Preview Level",
+          "icon": "resources/icon/icon_16px_light.svg"
         }
       ]
     },
