@@ -23,6 +23,7 @@ const HCP_SUFFIX = `.${HCP_ID}`;
 let previewPanel: vscode.WebviewPanel | undefined;
 let selectedItem: ModuleTreeElement | undefined;
 let currentSvgContent: SvgContent | undefined;
+let configedLevelLimit: number = 0;
 
 export function activate(context: vscode.ExtensionContext) {
   console.log('"hcpworks" is now active!');
@@ -53,7 +54,7 @@ export function activate(context: vscode.ExtensionContext) {
   registerUpdateConfig(context, moduleTreeProvider);
 
   // 起動時のチェック処理
-  checkActiveEditorOnStartup();
+  checkOnStartup(numberInputViewProviderer);
 }
 
 export function deactivate() {
@@ -148,7 +149,11 @@ function registerCommands(
 
     vscode.commands.registerCommand('hcpworks.configLevelLimit', () => {
       const levelLimit = numberInputViewProviderer.getLevelLimit();
-      console.log(`Level Limit: ${levelLimit}`);
+      if (levelLimit !== configedLevelLimit) {
+        configedLevelLimit = numberInputViewProviderer.getLevelLimit();
+        console.log(`Level Limit: ${configedLevelLimit}`);
+        updatePreviewByTree(moduleTreeProvider);
+      }
     }),
 
   );
@@ -229,6 +234,7 @@ function createSvgContent(selectedElement: ModuleTreeElement): SvgContent {
   // レンダリング実行
   const renderer = new SVGRenderer(svgContent.getName(), parseInfo4Render);
   renderer.setSvgColor(getSvgBgColor());
+  renderer.setSvgLevelLimit(configedLevelLimit);
   const svgText = renderer.render();
 
   return svgContent.setSvgContent(svgText);
@@ -299,9 +305,15 @@ function registerUpdateConfig(context: vscode.ExtensionContext, moduleTreeProvid
 }
 
 /**
- * 起動時にアクティブなエディタをチェックする
+ * 起動時の更新処理
  */
-function checkActiveEditorOnStartup() {
+function checkOnStartup(
+  numberInputViewProviderer: NumberInputViewProvider,
+) {
+  // 初期値を取得
+  configedLevelLimit = numberInputViewProviderer.getLevelLimit();
+
+  // 起動時にhcpファイルが開いている場合はモジュールツリーを更新
   const editor = vscode.window.activeTextEditor;
   if (editor && (editor.document.languageId === HCP_ID || editor.document.fileName.endsWith(HCP_SUFFIX))) {
     vscode.commands.executeCommand('hcpworks.listingModule');
