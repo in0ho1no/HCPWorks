@@ -127,7 +127,7 @@ export class SVGRenderer {
       const normalizeLevel = lineInfo.getLevel() - lineProcessor.getMinLevel();
       const isData = element.getLineInfo().getType().type_value === LineTypeDefine.get_format_by_type(LineTypeEnum.DATA).type_value;
 
-      if (normalizeLevel < this._svgLevelLimit || isData) {
+      if ((normalizeLevel < this._svgLevelLimit) || isData) {
         element.setX(startX + normalizeLevel * DiagramDefine.LEVEL_SHIFT);
         element.setY(startY + elementList.length * DiagramDefine.LEVEL_SHIFT);
         elementList.push(element);
@@ -316,7 +316,7 @@ export class SVGRenderer {
 
         // 始点でなければ直前の要素があるので結合する
         if (!isLevelStarting) {
-          const beforeElement = this._processElements[beforeLineNo];
+          const beforeElement = this._dataElements[beforeLineNo];
 
           // 垂直線を描画する
           const beforeElementPosBottom = beforeElement.getY() + SvgFigureDefine.CIRCLE_R;
