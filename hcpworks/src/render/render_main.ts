@@ -123,8 +123,6 @@ export class SVGRenderer {
       const element = new DiagramElement(lineInfo);
 
       const normalizeLevel = lineInfo.getLevel() - lineProcessor.getMinLevel();
-      const isData = element.getLineInfo().getType().type_value === LineTypeDefine.get_format_by_type(LineTypeEnum.DATA).type_value;
-
       element.setX(startX + normalizeLevel * DiagramDefine.LEVEL_SHIFT);
       element.setY(startY + elementList.length * DiagramDefine.LEVEL_SHIFT);
       elementList.push(element);
