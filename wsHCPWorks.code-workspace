@@ -22,6 +22,7 @@
 
 		"editor.fontFamily": "Consolas, 'Meiryo UI','Courier New', monospace",
 		"editor.renderLineHighlight": "all",
+		"editor.guides.bracketPairs": "active",
 
 		"[markdown]": {
 			"editor.wordWrap":"on",
