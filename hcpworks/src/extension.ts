@@ -35,7 +35,7 @@ export function activate(context: vscode.ExtensionContext) {
   const numberInputViewProviderer = new NumberInputViewProvider(context.extensionUri);
 
   // コマンド登録
-  registerCommands(context, moduleTreeProvider);
+  registerCommands(context, moduleTreeProvider, numberInputViewProviderer);
 
   // viewを登録
   registerWebview(context, numberInputViewProviderer);
@@ -71,7 +71,8 @@ export function deactivate() {
  */
 function registerCommands(
   context: vscode.ExtensionContext,
-  moduleTreeProvider: ModuleTreeProvider
+  moduleTreeProvider: ModuleTreeProvider,
+  numberInputViewProviderer: NumberInputViewProvider,
 ) {
   // モジュール一覧表示コマンド
   context.subscriptions.push(
@@ -143,7 +144,13 @@ function registerCommands(
           vscode.window.showInformationMessage(`Preview saved to ${savePath}`);
         }
       });
-    })
+    }),
+
+    vscode.commands.registerCommand('hcpworks.configLevelLimit', () => {
+      const levelLimit = numberInputViewProviderer.getLevelLimit();
+      console.log(`Level Limit: ${levelLimit}`);
+    }),
+
   );
 }
 

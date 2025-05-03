@@ -1,7 +1,15 @@
 import * as vscode from 'vscode';
+import { LineLevel } from './parse/line_level';
 
 export class NumberInputViewProvider implements vscode.WebviewViewProvider {
-  constructor(private readonly _extensionUri: vscode.Uri) { }
+  private readonly INPUT_LEVEL_MIN = LineLevel.LEVEL_MIN + 1;
+  private readonly INPUT_LEVEL_MAX = LineLevel.LEVEL_MAX;
+  private readonly INPUT_LEVEL_INI = LineLevel.LEVEL_MAX;
+  private _levelLimit: number;
+
+  constructor(private readonly _extensionUri: vscode.Uri) {
+    this._levelLimit = LineLevel.LEVEL_MAX;
+  }
 
   resolveWebviewView(
     webviewView: vscode.WebviewView,
@@ -19,8 +27,8 @@ export class NumberInputViewProvider implements vscode.WebviewViewProvider {
     webviewView.webview.onDidReceiveMessage(data => {
       switch (data.type) {
         case 'valueChanged':
-          console.log(`値が変更されました: ${data.value}`);
-          // ここで値を使った処理を行う
+          this.setLevelLimit(data.value);
+          vscode.commands.executeCommand('hcpworks.configLevelLimit');
           break;
       }
     });
@@ -59,7 +67,7 @@ export class NumberInputViewProvider implements vscode.WebviewViewProvider {
       </style>
     </head>
     <body>
-      <input type="number" id="numberInput" min="1" max="20" value="10" step="1" placeholder="描画レベル">
+      <input type="number" id="numberInput" min="${this.INPUT_LEVEL_MIN}" max="${this.INPUT_LEVEL_MAX}" value="${this.INPUT_LEVEL_INI}" step="1" placeholder="描画レベル">
       <button id="applyButton">描画レベル確定</button>
 
       <script>
@@ -79,4 +87,16 @@ export class NumberInputViewProvider implements vscode.WebviewViewProvider {
     </body>
     </html>`;
   }
+
+  getLevelLimit(): number { return this._levelLimit; }
+  setLevelLimit(inputLevelLimit: number): void {
+    if (inputLevelLimit < this.INPUT_LEVEL_MIN) {
+      this._levelLimit = this.INPUT_LEVEL_MIN;
+    } else if (inputLevelLimit > this.INPUT_LEVEL_MAX) {
+      this._levelLimit = this.INPUT_LEVEL_MAX;
+    } else {
+      this._levelLimit = inputLevelLimit;
+    }
+  }
+
 }
