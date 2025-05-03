@@ -205,8 +205,8 @@
     "@types/mocha": "^10.0.10",
     "@types/node": "22.x",
     "@types/vscode": "^1.99.1",
-    "@typescript-eslint/eslint-plugin": "^8.29.1",
-    "@typescript-eslint/parser": "^8.29.1",
+    "@typescript-eslint/eslint-plugin": "^8.31.1",
+    "@typescript-eslint/parser": "^8.31.1",
     "@vscode/test-cli": "^0.0.10",
     "@vscode/test-electron": "^2.5.2",
     "@types/encoding-japanese": "^2.2.1",
@@ -215,7 +215,7 @@
     "mocha-junit-reporter": "^2.2.1",
     "ts-loader": "^9.5.2",
     "typescript": "^5.8.3",
-    "webpack": "^5.98.0",
+    "webpack": "^5.99.7",
     "webpack-cli": "^6.0.1"
   },
   "dependencies": {

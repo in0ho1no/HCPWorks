@@ -6,12 +6,27 @@
 
 version: 2
 updates:
-  # npm（Node.js）パッケージの依存関係を管理
   - package-ecosystem: "npm"
     directory: "/hcpworks/"
     schedule:
-      interval: "weekly"
-      day: "friday"
+      interval: "daily"
+      time: "17:00"
+      timezone: "Asia/Tokyo"
+    open-pull-requests-limit: 10
+    assignees:
+      - "in0ho1no"
+    labels:
+      - "dependencies"
+    commit-message:
+      prefix: "npm Security update"
+      include: "scope"
+    target-branch: "develop"
+    security-updates-only: true
+
+  - package-ecosystem: "npm"
+    directory: "/hcpworks/"
+    schedule:
+      interval: "monthly"
       time: "17:00"
       timezone: "Asia/Tokyo"
     open-pull-requests-limit: 10
@@ -22,5 +37,4 @@ updates:
     commit-message:
       prefix: "npm"
       include: "scope"
-
     target-branch: "dependency-eliminate"
