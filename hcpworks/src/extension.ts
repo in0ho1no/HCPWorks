@@ -56,7 +56,15 @@ export function activate(context: vscode.ExtensionContext) {
   checkActiveEditorOnStartup();
 }
 
-export function deactivate() { }
+export function deactivate() {
+  // リソースのクリーンアップ
+  if (previewPanel) {
+    previewPanel.dispose();
+    previewPanel = undefined;
+  }
+  selectedItem = undefined;
+  currentSvgContent = undefined;
+}
 
 /**
  * コマンドを登録する
