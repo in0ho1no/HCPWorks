@@ -1,9 +1,9 @@
 name: Workflow for Node using Snyk
 on:
   push:
-    branches:
-      - main
-      - develop
+    branches: [ main , develop, ]
+  pull_request:
+    branches: [ main , develop, ]
 jobs:
   security:
     runs-on: ubuntu-latest
@@ -11,6 +11,6 @@ jobs:
       - uses: actions/checkout@master
       - name: Run Snyk to check for vulnerabilities
         uses: snyk/actions/node@master
-        working-directory: hcpworks/
+        working-directory: ./hcpworks
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
