@@ -1,4 +1,4 @@
-FROM ubuntu:22.04
+FROM ubuntu:25.04
 
 RUN apt update
 RUN apt upgrade -y
@@ -15,11 +15,6 @@ RUN apt-get update
 RUN apt-get install -y git
 RUN rm -rf /var/lib/apt/lists/*
 
-ARG USERNAME=nUser
-ARG GROUPNAME=nUser
-ARG UID=1000
-ARG GID=1000
-RUN groupadd -g $GID $GROUPNAME && \
-    useradd -m -s /bin/bash -u $UID -g $GID $USERNAME
+ARG USERNAME=ubuntu
 USER $USERNAME
 WORKDIR /home/$USERNAME/
