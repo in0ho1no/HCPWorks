@@ -335,3 +335,36 @@ github actions上で結果を確認しやすいようにする。
 
   npm install encoding-japanese
   npm install @types/encoding-japanese
+
+## githubactionsでsnykを実行する
+
+[公式ページ](https://docs.snyk.io/scm-ide-and-ci-cd-integrations/snyk-ci-cd-integrations/github-actions-for-snyk-setup-and-checking-for-vulnerabilities/snyk-node-action#using-the-snyk-node-action-to-check-for-vulnerabilities)
+を参考にする
+
+### Snykのkey取得
+
+以下ページへとんでKeyをコピペする。
+
+https://app.snyk.io/account
+
+以下記載があるので、対象箇所は分かる。
+
+> Use this token to authenticate the Snyk CLI and in CI/CD pipelines. Learn more about authenticating CLI in our docs.
+
+### GithubにKeyを登録
+
+以下ページへ飛ぶ。
+
+https://github.com/in0ho1no/HCPWorks/settings/secrets/actions
+
+ページ構成はgithub依存なのでアクセスする時期によって差異がある。  
+
+`Repository secrets`という欄があるはずなので`New repository secret`をクリックする。
+
+遷移先のページにてトークンの名前と、snyk側で取得したkeyを登録する。
+
+### workflowで実行できるようにする
+
+公式ページに記載されたActionを以下のようなファイル名で`.github/workflows/`へ配置する。
+
+SnykNodeActionToCheckForVul.yml
