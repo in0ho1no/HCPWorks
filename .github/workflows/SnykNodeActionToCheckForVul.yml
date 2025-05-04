@@ -11,5 +11,6 @@ jobs:
       - uses: actions/checkout@master
       - name: Run Snyk to check for vulnerabilities
         uses: snyk/actions/node@master
+        working-directory: hcpworks/
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
