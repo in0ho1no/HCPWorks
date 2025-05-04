@@ -365,6 +365,8 @@ https://github.com/in0ho1no/HCPWorks/settings/secrets/actions
 
 ### workflowで実行できるようにする
 
-公式ページに記載されたActionを以下のようなファイル名で`.github/workflows/`へ配置する。
+公式ページに記載された
+[Action](https://docs.snyk.io/scm-ide-and-ci-cd-integrations/snyk-ci-cd-integrations/github-actions-for-snyk-setup-and-checking-for-vulnerabilities#use-your-own-development-environment)
+を以下のようなファイル名で`.github/workflows/`へ配置する。
 
 SnykNodeActionToCheckForVul.yml
