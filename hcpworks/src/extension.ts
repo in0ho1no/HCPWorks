@@ -3,6 +3,7 @@ import * as vscode from 'vscode';
 import { SvgContent } from './svg_content';
 import { ConfigManager } from './utils/config_manager';
 import { FileManager } from './utils/file_manager';
+import { PreviewManager } from './preview_manager';
 
 import { ModuleTreeProvider } from './provider/tree_provider';
 import { ModuleTreeElement } from './provider/tree_element';
@@ -167,38 +168,6 @@ function registerWebview(
 }
 
 /**
- * Webviewパネルを作成する
- */
-function createWebviewPanel(): vscode.WebviewPanel {
-  // Webviewパネルを作成
-  const panel = vscode.window.createWebviewPanel(
-    'hcpPreview',  // 識別子
-    'HCP Preview', // タイトル
-    vscode.ViewColumn.Beside,  // 表示位置
-    {
-      enableScripts: true,  // スクリプトを有効化
-      retainContextWhenHidden: true,  // 非表示時にコンテキストを保持
-    }
-  );
-
-  // パネルのアクティブ状態が変化するごとにコンテキストの状態更新
-  panel.onDidChangeViewState(() => {
-    const isActive = panel.active;
-    vscode.commands.executeCommand('setContext', 'hcpworks.webviewActive', isActive);
-  });
-
-  // パネルが閉じられたときにコンテキストキーをリセット
-  panel.onDidDispose(() => {
-    vscode.commands.executeCommand('setContext', 'hcpworks.webviewActive', false);
-    previewPanel = undefined;
-    selectedItem = undefined;
-    currentSvgContent = undefined;
-  });
-
-  return panel;
-}
-
-/**
  * SVGコンテンツを生成する
  */
 function createSvgContent(selectedElement: ModuleTreeElement): SvgContent {
@@ -349,12 +318,10 @@ function updatePreviewByTree(moduleTreeProvider: ModuleTreeProvider): void {
  * @param moduleTreeElement - モジュールツリー要素
  */
 function updatePreviewByElement(moduleTreeElement: ModuleTreeElement) {
-  // Webview パネルが存在しない場合は新規作成
-  if (!previewPanel) {
-    previewPanel = createWebviewPanel();
-  }
-
-  // SVG コンテンツを生成してパネルに設定する
+  // SVG コンテンツを生成
   currentSvgContent = createSvgContent(moduleTreeElement);
-  previewPanel.webview.html = currentSvgContent.getHtmlWrappedSvg();
+
+  // プレビューパネルを取得または作成し、コンテンツを設定
+  const previewManager = new PreviewManager();
+  previewManager.updatePreview(currentSvgContent);
 }
