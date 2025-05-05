@@ -21,6 +21,20 @@ export class ProcessLineProcessor extends BaseLineProcessor {
   }
 
   /**
+   * レベルを制限したリストを作成する
+   * @param limitLevel 制限するレベル
+   * @returns このインスタンスへの参照（メソッドチェーン用）
+   */
+  public override limitLevelInfoList(limitLevel: number) {
+    const levelLimitInfoList = this.getLineInfoList().filter(lineInfo =>
+      lineInfo.getLevel() <= limitLevel
+    );
+
+    super.setLineInfoList(levelLimitInfoList);
+    return this;
+  }
+
+  /**
    * 処理部の標準的な処理シーケンスを実行する
    * 1. 行番号を設定
    * 2. 行間の関係を割り当て
@@ -28,9 +42,10 @@ export class ProcessLineProcessor extends BaseLineProcessor {
    * @param lineInfoList 処理対象のラインリスト
    * @returns このインスタンスへの参照
    */
-  public static process(lineInfoList: LineInfo[]): ProcessLineProcessor {
+  public static process(lineInfoList: LineInfo[], limitLevel: number): ProcessLineProcessor {
     return new ProcessLineProcessor()
       .createInfoList(lineInfoList)
+      .limitLevelInfoList(limitLevel)
       .setInfoListNo()
       .assignLineRelationships()
       .setMinLevel();

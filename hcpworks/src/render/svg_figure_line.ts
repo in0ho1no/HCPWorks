@@ -17,11 +17,11 @@ export class SvgFigureLines {
     startY: number,
     endX: number,
     endY: number,
-    color: string = 'black'
+    color: string = '000000'  // black
   ): string {
     return `<line x1="${startX}" y1="${startY}" ` +
       `x2="${endX}" y2="${endY}" ` +
-      `stroke="${color}"/>` +
+      `stroke="#${color}"/>` +
       `${SvgFigureDefine.LINE_BREAK}`;
   }
 
@@ -38,7 +38,7 @@ export class SvgFigureLines {
     startX: number,
     startY: number,
     length: number,
-    color: string = 'black'
+    color: string = '000000'  // black
   ): string {
     return SvgFigureLines.svgLine(
       startX, startY,
@@ -60,7 +60,7 @@ export class SvgFigureLines {
     startX: number,
     startY: number,
     length: number,
-    color: string = 'black'
+    color: string = '000000'  // black
   ): string {
     return SvgFigureLines.svgLine(
       startX, startY,
@@ -82,7 +82,7 @@ export class SvgFigureLines {
     startX: number,
     startY: number,
     length: number,
-    color: string = 'black'
+    color: string = '000000'  // black
   ): string {
     const endX = startX + length;
     const svgLineText = SvgFigureLines.svgLine(startX, startY, endX, startY, color);
@@ -93,7 +93,7 @@ export class SvgFigureLines {
       `L ${endX - arrowHead} ${startY - halfArrowHead} ` +
       `M ${endX} ${startY} ` +
       `L ${endX - arrowHead} ${startY + halfArrowHead}" ` +
-      `stroke="${color}" fill="${color}" />` +
+      `stroke="#${color}" fill="#${color}" />` +
       `${SvgFigureDefine.LINE_BREAK}`;
   }
 
@@ -110,7 +110,7 @@ export class SvgFigureLines {
     startX: number,
     startY: number,
     length: number,
-    color: string = 'black'
+    color: string = '000000'  // black
   ): string {
     const endX = startX + length;
     const svgLineText = SvgFigureLines.svgLine(startX, startY, endX, startY, color);
@@ -121,7 +121,7 @@ export class SvgFigureLines {
       `L ${startX + arrowHead} ${startY - halfArrowHead} ` +
       `M ${startX} ${startY} ` +
       `L ${startX + arrowHead} ${startY + halfArrowHead}" ` +
-      `stroke="${color}" fill="${color}" />` +
+      `stroke="#${color}" fill="#${color}" />` +
       `${SvgFigureDefine.LINE_BREAK}`;
   }
 

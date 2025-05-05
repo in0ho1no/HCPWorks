@@ -1,0 +1,24 @@
+name: Workflow for Node using Snyk
+
+on:
+  push:
+    branches: [ main , develop, ]
+  pull_request:
+    branches: [ main , develop, ]
+jobs:
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: snyk/actions/setup@master
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: ./hcpworks
+
+      - name: Run Snyk test
+        run: snyk test
+        working-directory: ./hcpworks
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}

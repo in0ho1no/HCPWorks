@@ -335,3 +335,80 @@ github actions上で結果を確認しやすいようにする。
 
   npm install encoding-japanese
   npm install @types/encoding-japanese
+
+## githubactionsでsnykを実行する
+
+[公式ページ](https://docs.snyk.io/scm-ide-and-ci-cd-integrations/snyk-ci-cd-integrations/github-actions-for-snyk-setup-and-checking-for-vulnerabilities/snyk-node-action#using-the-snyk-node-action-to-check-for-vulnerabilities)
+を参考にする
+
+### Snykのkey取得
+
+以下ページへとんでKeyをコピペする。
+
+https://app.snyk.io/account
+
+以下記載があるので、対象箇所は分かる。
+
+> Use this token to authenticate the Snyk CLI and in CI/CD pipelines. Learn more about authenticating CLI in our docs.
+
+### GithubにKeyを登録
+
+以下ページへ飛ぶ。
+
+https://github.com/in0ho1no/HCPWorks/settings/secrets/actions
+
+ページ構成はgithub依存なのでアクセスする時期によって差異がある。  
+
+`Repository secrets`という欄があるはずなので`New repository secret`をクリックする。
+
+遷移先のページにてトークンの名前と、snyk側で取得したkeyを登録する。
+
+### workflowで実行できるようにする
+
+公式ページに記載された
+[Action](https://docs.snyk.io/scm-ide-and-ci-cd-integrations/snyk-ci-cd-integrations/github-actions-for-snyk-setup-and-checking-for-vulnerabilities#use-your-own-development-environment)
+を以下のようなファイル名で`.github/workflows/`へ配置する。
+
+SnykNodeActionToCheckForVul.yml
+
+## マケプレに公開する
+
+### アカウント準備
+
+AzureのページへアクセスしてGithubアカウントでログインする
+
+https://portal.azure.com/#home
+
+1. サービス一覧より「Azure DevOps Organizations」をクリックする。
+1. (新規のみ?)Azure DevOpsのページへ遷移したら「My Azure DevOps Organizations」をクリックする。
+1. (新規のみ?)追加情報(名前・メアド・国)の入力を求められたら、入力して同意する。  
+1. 「Create new Organization」をクリックする。
+1. 利用規約に同意する。
+1. 必要事項を入力して次に進む。  
+    - Name your Azure DevOps organization: 任意
+    - We'll host your projects in: Asia Pacific
+1. 更に遷移先で新規プロジェクトを作成する。(Create a project to get started)
+    - Project name(required field): HCPWorks
+    - Private
+
+### トークン作成
+
+手動アップロードするならこの手順は不要
+
+1. プロジェクトページにて、設定ボタン(User settings)をクリックして表示されるプルダウンメニューから「Personal access tokens」をクリックする。
+1. 「+New Tokens」をクリックする。
+1. 以下必要事項を入力する。非表示項目もあるので下部の「Show all scopes」をクリックする。
+    - Name: HCPWorks-Token
+    - Scopes: Custom defined
+    - Marketplace: AcquireとManageにチェックを入れる
+1. 「Create」をクリックし、表示されるトークンをコピーする
+
+### パブリッシャ―作成・ID確認
+
+1. プロジェクトページにて、カゴ(?)ボタン(Marketplace)をクリックして表示されるプルダウンメニューから「Browse marketplace」をクリックする。
+1. [Marketplace](https://marketplace.visualstudio.com/azuredevops?utm_source=vstsproduct&utm_medium=L1BrowseMarketplace&targetId=602d9faf-d20b-4e4d-af93-2980429b9f96)
+のページが表示されるので「Publish extensions」をクリックする。
+1. Create Publisher画面にて必要事項を入力する。
+1. 手動かコマンドかに応じた手順実施
+    - 手動アップロード: 「+New Extension」をクリック「Visual Studio Code」ヲクリックし、vsixファイルをドラッグアンドドロップする。
+    - コマンドからアップロード: 画面上部に表示されるユーザ名をマウスオーバー(クリックではない)すると、IDが表示されるのでコピーする。

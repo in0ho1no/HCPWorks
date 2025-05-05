@@ -1,3 +1,5 @@
+import * as vscode from 'vscode';
+
 import { ParseInfo4Render } from '../parse/parse_info_4_render';
 import { BaseLineProcessor } from '../parse/line_info_list_base';
 import { ProcessLineProcessor } from '../parse/line_info_list_process';
@@ -34,7 +36,8 @@ export class SVGRenderer {
 
   private _svgWidth: number;
   private _svgHeight: number;
-  private _svgColor: string;
+  private _svgBgColor: string;
+  private _svgWireColorTable: string[];
 
   constructor(name: string, parseInfo4Render: ParseInfo4Render) {
     this._name = name;
@@ -49,7 +52,8 @@ export class SVGRenderer {
 
     this._svgWidth = 0;
     this._svgHeight = 0;
-    this._svgColor = DiagramDefine.DEFAULT_BG_COLOR;
+    this._svgBgColor = DiagramDefine.DEFAULT_BG_COLOR;
+    this._svgWireColorTable = DiagramDefine.WIRE_COLOR_TABLE;
   }
 
   /**
@@ -244,8 +248,8 @@ export class SVGRenderer {
         dataInfo.connectLine = connectWireP2D;
 
         // 線の色を保持
-        dataInfo.connectLine.color = DiagramDefine.COLOR_TABLE[colorIndex];
-        colorIndex = (colorIndex + 1) % DiagramDefine.COLOR_TABLE.length;
+        dataInfo.connectLine.color = this._svgWireColorTable[colorIndex];
+        colorIndex = (colorIndex + 1) % this._svgWireColorTable.length;
 
         // 線を描画
         const svgText = drawMethod(wireH.start.x, wireH.start.y, wireH.wireWidth(), dataInfo.connectLine.color);
@@ -310,7 +314,7 @@ export class SVGRenderer {
 
         // 始点でなければ直前の要素があるので結合する
         if (!isLevelStarting) {
-          const beforeElement = this._processElements[beforeLineNo];
+          const beforeElement = this._dataElements[beforeLineNo];
 
           // 垂直線を描画する
           const beforeElementPosBottom = beforeElement.getY() + SvgFigureDefine.CIRCLE_R;
@@ -466,7 +470,7 @@ export class SVGRenderer {
     const margin = 50;
     const width = this._svgWidth;
     const height = this._svgHeight + margin;
-    const color = this._svgColor;
+    const color = this._svgBgColor;
 
     this._svgText.unshift(`<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" style="background-color: #${color}">`);
     this._svgText.splice(1, 0, `<rect x="0" y="0" width="${width}" height="${height}" fill="#${color}" stroke="#${color}"/>`);
@@ -476,6 +480,113 @@ export class SVGRenderer {
 
   getSvgWidth(): number { return this._svgWidth; }
   getSvgHeight(): number { return this._svgHeight; }
-  getSvgColor(): string { return this._svgColor; }
-  setSvgColor(svgColor: string) { this._svgColor = svgColor; }
+
+  /**
+   * Previewの背景色を設定する
+   * 
+   * @param bgColor 設定する背景色 (#RRGGBBまたはRRGGBB形式)
+   * @returns 現在のインスタンス
+   */
+  setSvgBgColor(bgColor: string): SVGRenderer {
+    const validatedColor = this.checkColorFormat(bgColor);
+    if (validatedColor) {
+      this._svgBgColor = validatedColor;
+    } else {
+      vscode.window.showWarningMessage(`無効な色形式です。設定は変更されませんでした。`);
+    }
+    return this;
+  }
+
+  /**
+   * 現在設定されている背景色を取得する
+   * 
+   * @returns 背景色の16進数表現(RRGGBB形式)
+   */
+  getSvgBgColor(): string {
+    let bgColor;
+    if (!this._svgBgColor) {
+      bgColor = DiagramDefine.DEFAULT_BG_COLOR;
+    } else {
+      bgColor = this._svgBgColor;
+    }
+    return bgColor.replace('#', '');
+  }
+
+  /**
+   * 線の色のテーブルを設定する
+   * 
+   * @param wireColorTable 設定する線の色のテーブル (#RRGGBBまたはRRGGBB形式)
+   * @returns 現在のインスタンス
+   */
+  setWireColorTable(wireColorTable: string[]): SVGRenderer {
+    if (wireColorTable.length === 0) {
+      vscode.window.showWarningMessage(`有効な色テーブルが指定されていません。設定は変更されませんでした。`);
+      return this;
+    }
+
+    // 各色を検証・正規化する (無効な色はnullになる)
+    const validatedColors = wireColorTable.map(color => this.checkColorFormat(color));
+
+    // 無効な色を除外する
+    const validColorTable = validatedColors.filter(color => color !== null);
+
+    if (validColorTable.length === 0) {
+      vscode.window.showWarningMessage(`有効な色が指定されていません。設定は変更されませんでした。`);
+    } else {
+      this._svgWireColorTable = validColorTable;
+    }
+
+    return this;
+  }
+
+  /**
+   * 現在設定されている線の色テーブルを取得する
+   * 
+   * @returns 線の色テーブル(RRGGBB形式)
+   */
+  getWireColorTable(): string[] {
+    let wireColorTable;
+    if (!this._svgWireColorTable || this._svgWireColorTable.length === 0) {
+      wireColorTable = DiagramDefine.WIRE_COLOR_TABLE;
+    } else {
+      wireColorTable = this._svgWireColorTable;
+    }
+    return wireColorTable.map(color => color.replace('#', ''));
+  }
+
+  /**
+   * 色指定のフォーマットをチェックする
+   * 
+   * @param color チェックする色指定 (#RRGGBBまたはRRGGBB形式)
+   * @returns 問題なければ色指定の16進数表現(RRGGBB形式)、問題があればnull
+   */
+  checkColorFormat(color: string): string | null {
+    // nullまたはundefinedのチェック
+    if (color === null) {
+      return null;
+    }
+
+    // 色文字列の正規化(前後の空白を削除)
+    const normalizedColor = color.trim();
+
+    // 正規表現による入力のパターンチェック: #で始まる場合、#の後に6桁の16進数が続く
+    let validFormat = /^#([0-9A-Fa-f]{6})$/;  // #RRGGBB
+    let match = normalizedColor.match(validFormat);
+    if (match) {
+      return match[1].toUpperCase();
+    }
+
+    // 正規表現による入力のパターンチェック: #がない場合、6桁の16進数のみ
+    validFormat = /^([0-9A-Fa-f]{6})$/;   // RRGGBB
+    match = normalizedColor.match(validFormat);
+    if (match) {
+      return match[1].toUpperCase();
+    }
+
+    // どちらの形式にも合致しない場合
+    vscode.window.showErrorMessage(
+      `6桁の16進数形式の色を指定してください。例: #RRGGBB または RRGGBB。現在の値: ${normalizedColor}`
+    );
+    return null;
+  }
 }
