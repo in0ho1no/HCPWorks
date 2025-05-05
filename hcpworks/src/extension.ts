@@ -1,9 +1,8 @@
 import * as vscode from 'vscode';
-import * as fs from 'fs';
-import * as Encoding from 'encoding-japanese';
 
 import { SvgContent } from './svg_content';
-import { ConfigManager } from './config_manager';
+import { ConfigManager } from './utils/config_manager';
+import { FileManager } from './utils/file_manager';
 
 import { ModuleTreeProvider } from './provider/tree_provider';
 import { ModuleTreeElement } from './provider/tree_element';
@@ -139,13 +138,8 @@ function registerCommands(
       const svgContent = currentSvgContent.getSvgContent();
 
       // ファイルに保存
-      fs.writeFile(savePath, svgContent, (err) => {
-        if (err) {
-          vscode.window.showErrorMessage(`Failed to save preview: ${err.message}`);
-        } else {
-          vscode.window.showInformationMessage(`Preview saved to ${savePath}`);
-        }
-      });
+      const fileManager = new FileManager();
+      fileManager.saveSvgToFile(savePath, svgContent);
     }),
 
     vscode.commands.registerCommand('hcpworks.configLevelLimit', () => {
@@ -328,7 +322,8 @@ function checkOnStartup(
  * @param moduleTreeProvider - モジュールツリープロバイダ
  */
 function updateModuleTreeProvider(filePath: string, moduleTreeProvider: ModuleTreeProvider) {
-  const fileContent = convertFileContent(filePath);
+  const fileManager = new FileManager();
+  const fileContent = fileManager.convertFileContent(filePath);
   moduleTreeProvider.updateRootElements(filePath, fileContent);
   moduleTreeProvider.refresh();
 }
@@ -362,34 +357,4 @@ function updatePreviewByElement(moduleTreeElement: ModuleTreeElement) {
   // SVG コンテンツを生成してパネルに設定する
   currentSvgContent = createSvgContent(moduleTreeElement);
   previewPanel.webview.html = currentSvgContent.getHtmlWrappedSvg();
-}
-
-/**
- * ファイルをUTF-8で読み込む
- * 
- * 生データを取得するためにファイルパスから直接読み出す
- * 
- * @param filePath - ファイルパス
- * @returns - UTF-8に変換された文字列
- */
-function convertFileContent(filePath: string): string {
-  const fileBuffer = fs.readFileSync(filePath);
-
-  // 文字コードを自動検出
-  const detectedEncoding = Encoding.detect(fileBuffer);
-  const encodingToUse = detectedEncoding && detectedEncoding !== 'BINARY' ? detectedEncoding : 'SJIS';
-
-  // 文字コード変換
-  const unicodeArray = Encoding.convert(fileBuffer, {
-    to: 'UNICODE',
-    from: encodingToUse,
-    type: 'array'
-  });
-
-  // UnicodeArrayを文字列に変換
-  const decodedContent = Encoding.codeToString(unicodeArray);
-
-  // 改行コードを統一
-  const unifiedContent = decodedContent.replace(/\r\n/g, '\n');
-  return unifiedContent;
 }

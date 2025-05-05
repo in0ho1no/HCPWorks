@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { DiagramDefine } from './render/render_define';
+import { DiagramDefine } from '../render/render_define';
 
 /**
  * 設定を管理する
