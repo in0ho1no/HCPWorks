@@ -2,10 +2,10 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as Encoding from 'encoding-japanese';
 
-import { ModuleTreeProvider } from './tree_provider';
-import { ModuleTreeElement } from './tree_element';
+import { ModuleTreeProvider } from './provider/tree_provider';
+import { ModuleTreeElement } from './provider/tree_element';
 
-import { NumberInputViewProvider } from './webview_settings';
+import { NumberInputViewProvider } from './provider/webview_settings';
 
 import { SvgContent } from './svg_content';
 import { cleanTextLines } from './parse/file_parse';
