@@ -6,7 +6,7 @@ export class DiagramDefine {
   static readonly IMG_MARGIN = 30;    // 画像周辺のマージン
 
   static readonly LINE_OFFSET = 10;
-  static readonly COLOR_TABLE = [
+  static readonly WIRE_COLOR_TABLE = [
     "000000", // black
     "FF0000", // red
     "00FF00", // green

@@ -18,7 +18,7 @@ export class SvgFigureParts {
     radius: number,
   ): string {
     return `<circle cx="${centerX}" cy="${centerY}" ` +
-      `r="${radius}" fill="white" stroke="black"/>` +
+      `r="${radius}" fill="#FFFFFF" stroke="#000000"/>` +
       `${SvgFigureDefine.LINE_BREAK}`;
   }
 
@@ -35,7 +35,7 @@ export class SvgFigureParts {
       `${vertices[0][0]} ${vertices[0][1]} ` +
       `${vertices[1][0]} ${vertices[1][1]} ` +
       `${vertices[2][0]} ${vertices[2][1]}" ` +
-      `fill="white" stroke="black"/>` +
+      `fill="#FFFFFF" stroke="#000000"/>` +
       `${SvgFigureDefine.LINE_BREAK}`;
   }
 
@@ -67,13 +67,13 @@ export class SvgFigureParts {
       `A ${radius} ${radius}, ` +   // X軸方向・Y軸方向の半径
       `${xAxisRotation} ${largeArcFlag} ${sweepFlag} ` +
       `${endX} ${endY}" ` +         // 終点
-      `stroke="black" fill="transparent"/>` +
+      `stroke="#000000" fill="transparent"/>` +
       `${SvgFigureDefine.LINE_BREAK}`;
 
     const svgArrowText = `<path d="` +
       `M ${endX} ${endY} L ${endX + 2} ${endY - 4} ` + // 始点へ移動して、描画
       `L ${endX + 4} ${endY + 0.5} Z" ` +             // パスを閉じる
-      `stroke="black" fill="black"/>` +
+      `stroke="#000000" fill="#000000"/>` +
       `${SvgFigureDefine.LINE_BREAK}`;
 
     return svgArcText + svgArrowText;
@@ -93,7 +93,7 @@ export class SvgFigureParts {
     return `<rect ` +
       `x="${centerX - SvgFigureDefine.CIRCLE_R}" y="${centerY - SvgFigureDefine.CIRCLE_R}" ` +
       `width="${SvgFigureDefine.FIGURE_WIDTH}" height="${SvgFigureDefine.FIGURE_HEIGHT}" ` +
-      `fill="white" stroke="black"/>` +
+      `fill="#FFFFFF" stroke="#000000"/>` +
       `${SvgFigureDefine.LINE_BREAK}`;
   }
 
@@ -112,7 +112,7 @@ export class SvgFigureParts {
       `L ${centerX} ${centerY - SvgFigureDefine.CIRCLE_R} ` +                 // 上弦描画
       `L ${centerX} ${centerY + SvgFigureDefine.CIRCLE_R} ` +                 // 縦線描画
       `Z" ` +                                                                 // パスを閉じる
-      `stroke="black" fill="fuchsia" />` +
+      `stroke="#000000" fill="#ff00ff" />` +
       `${SvgFigureDefine.LINE_BREAK}`;
   }
 
@@ -128,7 +128,7 @@ export class SvgFigureParts {
       `L ${centerX} ${centerY - SvgFigureDefine.CIRCLE_R} ` +                 // 上弦描画
       `L ${centerX} ${centerY + SvgFigureDefine.CIRCLE_R} ` +                 // 縦線描画
       `Z" ` +                                                                 // パスを閉じる
-      `stroke="black" fill="aqua" />` +
+      `stroke="#000000" fill="#00ffff" />` +
       `${SvgFigureDefine.LINE_BREAK}`;
   }
 

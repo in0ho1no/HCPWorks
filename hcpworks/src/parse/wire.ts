@@ -50,6 +50,6 @@ export class Process2Data {
     this.exitFromProcess = null;
     this.betweenProcessData = null;
     this.enterToData = null;
-    this.color = 'black';
+    this.color = '000000';  // black
   }
 }

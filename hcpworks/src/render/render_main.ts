@@ -53,7 +53,7 @@ export class SVGRenderer {
     this._svgWidth = 0;
     this._svgHeight = 0;
     this._svgBgColor = DiagramDefine.DEFAULT_BG_COLOR;
-    this._svgWireColorTable = DiagramDefine.COLOR_TABLE;
+    this._svgWireColorTable = DiagramDefine.WIRE_COLOR_TABLE;
   }
 
   /**
@@ -547,7 +547,7 @@ export class SVGRenderer {
   getWireColorTable(): string[] {
     let wireColorTable;
     if (!this._svgWireColorTable || this._svgWireColorTable.length === 0) {
-      wireColorTable = DiagramDefine.COLOR_TABLE;
+      wireColorTable = DiagramDefine.WIRE_COLOR_TABLE;
     } else {
       wireColorTable = this._svgWireColorTable;
     }

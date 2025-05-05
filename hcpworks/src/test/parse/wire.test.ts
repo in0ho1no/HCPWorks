@@ -53,7 +53,7 @@ suite('Process2Data - Class', () => {
     assert.strictEqual(connection.exitFromProcess, null);
     assert.strictEqual(connection.betweenProcessData, null);
     assert.strictEqual(connection.enterToData, null);
-    assert.strictEqual(connection.color, 'black');
+    assert.strictEqual(connection.color, '000000');
   });
 
   test('should allow setting wires and color', () => {
