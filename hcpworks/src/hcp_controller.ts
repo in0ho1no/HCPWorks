@@ -208,8 +208,18 @@ export class HCPController {
     // 設定変更を監視
     this.context.subscriptions.push(
       vscode.workspace.onDidChangeConfiguration((event) => {
-        // hcpworks.SvgBgColorの更新
+        let isUpdatePreview = false;
+
         if (event.affectsConfiguration('hcpworks.SvgBgColor')) {
+          this.updatePreviewByTree();
+          isUpdatePreview = true;
+        }
+
+        if (event.affectsConfiguration('hcpworks.WireColorTable')) {
+          isUpdatePreview = true;
+        }
+
+        if (isUpdatePreview) {
           this.updatePreviewByTree();
         }
       })
@@ -268,8 +278,9 @@ export class HCPController {
     parseInfo4Render.mergeIoData();
 
     // レンダリング実行
-    const renderer = new SVGRenderer(svgContent.getName(), parseInfo4Render);
-    renderer.setSvgBgColor(this.configManager.getConfigSvgBgColor());
+    const renderer = new SVGRenderer(svgContent.getName(), parseInfo4Render)
+      .setSvgBgColor(this.configManager.getConfigSvgBgColor())
+      .setWireColorTable(this.configManager.getConfigWireColorTable());
     const svgText = renderer.render();
 
     return svgContent.setSvgContent(svgText);
