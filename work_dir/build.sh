@@ -14,4 +14,4 @@ fi
 # パッケージングする
 npx vsce package
 npm run prepare-readme
-npm run prepare-readme-ja
+npm run prepare-readme-en

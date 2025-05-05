@@ -222,7 +222,7 @@
     "lint": "eslint src",
     "test": "vscode-test",
     "prepare-readme": "cp ./README.md ../README.md",
-    "prepare-readme-ja": "cp ./README.ja.md ../README.ja.md"
+    "prepare-readme-en": "cp ./README.en.md ../README.en.md"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.10",
