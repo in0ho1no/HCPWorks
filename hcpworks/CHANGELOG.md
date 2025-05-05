@@ -2,6 +2,12 @@
 
 All notable changes to the "hcpworks" extension will be documented in this file.
 
+## [0.0.8]
+
+- update Readme
+- Supports drawing level specification
+- Supports configuration to wire color table
+
 ## [0.0.7]
 
 - bux Fixed
