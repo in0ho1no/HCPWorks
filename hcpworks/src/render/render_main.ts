@@ -1,3 +1,5 @@
+import * as vscode from 'vscode';
+
 import { ParseInfo4Render } from '../parse/parse_info_4_render';
 import { BaseLineProcessor } from '../parse/line_info_list_base';
 import { ProcessLineProcessor } from '../parse/line_info_list_process';
@@ -34,7 +36,7 @@ export class SVGRenderer {
 
   private _svgWidth: number;
   private _svgHeight: number;
-  private _svgColor: string;
+  private _svgBgColor: string;
 
   constructor(name: string, parseInfo4Render: ParseInfo4Render) {
     this._name = name;
@@ -49,7 +51,7 @@ export class SVGRenderer {
 
     this._svgWidth = 0;
     this._svgHeight = 0;
-    this._svgColor = DiagramDefine.DEFAULT_BG_COLOR;
+    this._svgBgColor = DiagramDefine.DEFAULT_BG_COLOR;
   }
 
   /**
@@ -466,7 +468,7 @@ export class SVGRenderer {
     const margin = 50;
     const width = this._svgWidth;
     const height = this._svgHeight + margin;
-    const color = this._svgColor;
+    const color = this._svgBgColor;
 
     this._svgText.unshift(`<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" style="background-color: #${color}">`);
     this._svgText.splice(1, 0, `<rect x="0" y="0" width="${width}" height="${height}" fill="#${color}" stroke="#${color}"/>`);
@@ -476,6 +478,60 @@ export class SVGRenderer {
 
   getSvgWidth(): number { return this._svgWidth; }
   getSvgHeight(): number { return this._svgHeight; }
-  getSvgColor(): string { return this._svgColor; }
-  setSvgColor(svgColor: string) { this._svgColor = svgColor; }
+
+  /**
+   * Previewの背景色を設定する
+   * 
+   * @param bgColor 設定する背景色 (#RRGGBBまたはRRGGBB形式)
+ * @returns 設定の成功・失敗を示すboolean値
+   */
+  setSvgBgColor(bgColor: string) {
+    // undefinedのチェック
+    if (!bgColor) {
+      vscode.window.showErrorMessage(`背景色が指定されていません。`);
+      return false;
+    }
+
+    // 色文字列の正規化（前後の空白を削除）
+    const normalizedColor = bgColor.trim();
+
+    // 正規表現による入力のパターンチェック
+    // パターン1: #で始まる場合、#の後に6桁の16進数が続く
+    // パターン2: #がない場合、6桁の16進数のみ
+    const validFormat1 = /^#[0-9A-Fa-f]{6}$/;  // #RRGGBB
+    const validFormat2 = /^[0-9A-Fa-f]{6}$/;   // RRGGBB
+    let colorValue: string;
+    if (validFormat1.test(normalizedColor)) {
+      // #RRGGBB形式の場合、#を除去
+      colorValue = normalizedColor.substring(1);
+    } else if (validFormat2.test(normalizedColor)) {
+      // RRGGBB形式の場合はそのまま
+      colorValue = normalizedColor;
+    } else {
+      // どちらの形式にも合致しない場合
+      vscode.window.showErrorMessage(
+        `6桁の16進数形式の色を指定してください。例: #RRGGBB または RRGGBB。現在の値: ${normalizedColor}`
+      );
+      return false;
+    }
+
+    // 値更新
+    this._svgBgColor = colorValue;
+    console.log(`背景色を更新しました。現在の値: ${this._svgBgColor}`);
+    return true;
+  }
+
+  /**
+   * 現在設定されている背景色を取得する
+   * 
+   * @returns 背景色の16進数表現（#RRGGBB形式）
+   */
+  getSvgBgColor(): string {
+    // 未設定の場合はデフォルト値を返す
+    if (!this._svgBgColor) {
+      return DiagramDefine.DEFAULT_BG_COLOR;
+    }
+    return this._svgBgColor;
+  }
+
 }

@@ -2,18 +2,19 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as Encoding from 'encoding-japanese';
 
+import { SvgContent } from './svg_content';
+import { ConfigManager } from './config_manager';
+
 import { ModuleTreeProvider } from './provider/tree_provider';
 import { ModuleTreeElement } from './provider/tree_element';
-
 import { NumberInputViewProvider } from './provider/webview_settings';
 
-import { SvgContent } from './svg_content';
 import { cleanTextLines } from './parse/file_parse';
 import { LineInfo } from './parse/line_info';
 import { ProcessLineProcessor } from './parse/line_info_list_process';
 import { DataLineProcessor } from './parse/line_info_list_data';
 import { ParseInfo4Render } from './parse/parse_info_4_render';
-import { DiagramDefine } from './render/render_define';
+
 import { SVGRenderer } from './render/render_main';
 
 const TIMEOUT = 300;
@@ -233,7 +234,8 @@ function createSvgContent(selectedElement: ModuleTreeElement): SvgContent {
 
   // レンダリング実行
   const renderer = new SVGRenderer(svgContent.getName(), parseInfo4Render);
-  renderer.setSvgColor(getSvgBgColor());
+  const configManger = new ConfigManager();
+  renderer.setSvgBgColor(configManger.getConfigSvgBgColor());
   const svgText = renderer.render();
 
   return svgContent.setSvgContent(svgText);
@@ -390,33 +392,4 @@ function convertFileContent(filePath: string): string {
   // 改行コードを統一
   const unifiedContent = decodedContent.replace(/\r\n/g, '\n');
   return unifiedContent;
-}
-
-/**
- * Previewの背景色を取得する
- * @returns 背景色
- */
-function getSvgBgColor(): string {
-  const configKey = "hcpworks.SvgBgColor";
-  const rawSvgBgColor = vscode.workspace.getConfiguration().get<string>(configKey, DiagramDefine.DEFAULT_BG_COLOR);
-
-  // #を除外
-  const defaultColorValue = DiagramDefine.DEFAULT_BG_COLOR.replace("#", "");
-  const userColorValue = rawSvgBgColor.replace("#", "");
-
-  // 16進文字列チェック（0-9、A-F、a-fのみを許可）
-  const hexRegex = /^[0-9A-Fa-f]+$/;
-  if (!hexRegex.test(userColorValue)) {
-    vscode.window.showErrorMessage(`${configKey}: 16進数（0-9、A-F）で指定してください。現在の値: ${rawSvgBgColor}`);
-    return defaultColorValue;
-  }
-
-  // 文字列長チェック
-  const colorLength = defaultColorValue.length;
-  if (userColorValue.length !== colorLength) {
-    vscode.window.showErrorMessage(`${configKey}: ${colorLength}文字の16進数で指定してください。現在の値: ${rawSvgBgColor}`);
-    return defaultColorValue;
-  }
-
-  return userColorValue;
 }
