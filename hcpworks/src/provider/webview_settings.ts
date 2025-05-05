@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { LineLevel } from './parse/line_level';
+import { LineLevel } from '../parse/line_level';
 
 export class NumberInputViewProvider implements vscode.WebviewViewProvider {
   private readonly INPUT_LEVEL_MIN = LineLevel.LEVEL_MIN + 1;
