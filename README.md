@@ -46,6 +46,16 @@ HCPチャートを保存します。
 
 ![saveHCPCharts](hcpworks/resources/videos/saveHCPCharts.gif)
 
+#### 描画レベルの指定
+
+HCPチャートで描画するレベルを指定できます。
+
+1. 描画したいレべルを入力します。 / 描画したいレべルをスピンボタンで指定します。  
+1. 「描画レベル確定」をクリックします。  
+1. プレビューが自動的に更新されます。  
+
+![levelLimit](hcpworks/resources/videos/levelLimit.gif)
+
 ### シンタックスハイライト
 
 以下の画像に示すようにシンタックスハイライトをサポートしています。

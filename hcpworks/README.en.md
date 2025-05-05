@@ -46,6 +46,16 @@ The "Save" button will be displayed in the ".hcp" panel or the preview panel.
 
 ![saveHCPCharts](hcpworks/resources/videos/saveHCPCharts.gif)
 
+#### Specifying the drawing level
+
+You can specify the drawing level for the HCP chart.
+
+1. Enter the level you want to draw. / Use the spin button to specify the level you want to draw.
+1. Click "Apply drawing level".
+1. The preview will update automatically.
+
+![levelLimit](hcpworks/resources/videos/levelLimit.gif)
+
 ### Support Syntax Highlight
 
 This extension supports syntax highlighting as shown in the image below.
