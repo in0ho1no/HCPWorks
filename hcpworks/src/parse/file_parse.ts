@@ -24,29 +24,29 @@ export interface Module {
 export function parseModules(fileContent: string): Module[] {
   const lines = fileContent.split('\n');
   const modules: Module[] = [];
-  
+
   let currentModule: Module | null = null;
-  
+
   for (const line of lines) {
     const trimmedLine = line.trim();
-    
+
     // モジュール開始行を検出
     if (trimmedLine.startsWith(MODULE_PREFIX)) {
       // 前のモジュールが存在する場合は配列に追加
       if (currentModule !== null) {
         modules.push(currentModule);
       }
-      
+
       // モジュール名を抽出
       // 「\module  xxx」 のようなケースを想定して再度trimしておく
       const moduleName = trimmedLine.substring(MODULE_PREFIX.length).trim();
-      
+
       // 新しいモジュールを作成
       currentModule = {
         name: moduleName,
         content: []
       };
-      
+
     } else {
       if (currentModule !== null) {
         // 現在のモジュールにコンテンツを追加
@@ -56,12 +56,12 @@ export function parseModules(fileContent: string): Module[] {
       }
     }
   }
-  
+
   // 最後のモジュールを追加
   if (currentModule !== null) {
     modules.push(currentModule);
   }
-  
+
   return modules;
 }
 
