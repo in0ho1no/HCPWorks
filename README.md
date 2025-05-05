@@ -1,6 +1,7 @@
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](https://github.com/in0ho1no/HCPWorks/blob/main/hcpworks/LICENSE)
 [![VSCode Extension Test](https://github.com/in0ho1no/HCPWorks/actions/workflows/unittest.yml/badge.svg)](https://github.com/in0ho1no/HCPWorks/actions/workflows/unittest.yml)
 [![Release](https://img.shields.io/github/v/release/in0ho1no/HCPWorks)](https://github.com/in0ho1no/HCPWorks/releases)
+[![Known Vulnerabilities](https://snyk.io/test/github/in0ho1no/HCPWorks/badge.svg?targetFile=hcpworks/package.json)](https://snyk.io/test/github/in0ho1no/HCPWorks?targetFile=hcpworks/package.json)
 
 日本語版の README.md は <[こちら](README.ja.md)>.
 
@@ -50,6 +51,38 @@ The "Save" button will be displayed in the ".hcp" panel or the preview panel.
 This extension supports syntax highlighting as shown in the image below.
 
 ![syntaxHighlight](hcpworks/resources/images/syntaxHighlight.png)
+
+## HCP chart notation
+
+- Indentation (4 spaces ∪ tab) based on HCP notation to express levels.
+- Each notation described below starts with \\ (backslash) and continues up to the first space character.
+- If it does not correspond to the list, it is treated as a simple string.
+- A string starting with "#" is considered a comment to the end of the line.
+
+### Notation that can be written at level 0
+
+Notation | Content | Notes
+---| --- | ---
+\module | Start of module | Be sure to write it together with the module name.
+
+### Notation that can be written at level 0 or higher
+
+Notation | Content | Notes
+---| --- | ---
+\data | Definition of data used in the module | Do not define duplicate data names. If duplicates exist, only the first definition will be used for rendering.
+\fork | Conditional branch | -
+\true | If the condition of the conditional branch is true | There are no restrictions, but avoid writing two consecutive `\true` notations by mistake.
+\false | If the condition of the conditional branch is false |There are no restrictions, but avoid writing two consecutive `\false` notations by mistake.
+\branch | If the condition of the conditional branch is not true or false | -
+\repeat | Repeat | -
+\mod | Function call | -
+\return | End of processing | -
+### Notation that can be added to levels 0 and above
+
+Notation | Content | Notes
+---| --- | ---
+\in | Input to processing/function | If written at the lowest indentation level, it is treated as input to the function. <br>If written at any level other than the lowest indentation level, it is treated as simple processing input. <br>If there is no definition in `\data`, it is treated as new data. <br>Do not include spaces or periods.
+\out | Output from processing/function | If written at the lowest indentation level, it is treated as output from the function. <br>If written at any level other than the lowest indentation level, it is treated as simple processing output. <br>If there is no definition in `\data`, it will be treated as new data. <br>Do not include spaces or periods.
 
 ## Known Issues
 
