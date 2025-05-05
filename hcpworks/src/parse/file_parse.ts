@@ -70,6 +70,7 @@ export function parseModules(fileContent: string): Module[] {
  * 
  * 以下取り除く
  * - コメント("#"に続く文字列)
+ * - 丸括弧で囲まれたテキスト行（半角/全角の開始括弧で始まり、半角/全角の終了括弧で終わる行）
  * - 空行
  * @param textLines - 変換元のテキストデータ配列
  * @returns 不要な情報を除いたテキストデータ配列
@@ -77,13 +78,26 @@ export function parseModules(fileContent: string): Module[] {
 export function cleanTextLines(textLines: string[]): string[] {
   const cleanedLines: string[] = [];
 
+  // 開始括弧と終了括弧のパターン
+  const openBrackets = ["(", "（"];
+  const closeBrackets = [")", "）"];
+
   for (const text of textLines) {
     // コメントを削除する
     const uncommentedLine = text.split("#")[0];
 
+    // trimした文字列(判定用(保持する行は、行頭のタブ・空白を残す必要があるのでtrimした文字列は再利用しない))
+    const trimmedLine = uncommentedLine.trim();
+
     // 空行を無視する
-    // 保持する行は、行頭のタブ・空白を残す必要があるのでtrimした文字列は再利用しない
-    if (uncommentedLine.trim().length === 0) {
+    if (trimmedLine.length === 0) {
+      continue;
+    }
+
+    // 開始括弧で始まり、終了括弧で終わる行を無視する
+    const startsWithOpenBracket = openBrackets.some(bracket => trimmedLine.startsWith(bracket));
+    const endsWithCloseBracket = closeBrackets.some(bracket => trimmedLine.endsWith(bracket));
+    if (startsWithOpenBracket && endsWithCloseBracket) {
       continue;
     }
 
