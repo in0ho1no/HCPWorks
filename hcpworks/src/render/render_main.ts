@@ -37,6 +37,7 @@ export class SVGRenderer {
   private _svgWidth: number;
   private _svgHeight: number;
   private _svgBgColor: string;
+  private _svgWireColorTable: string[];
 
   constructor(name: string, parseInfo4Render: ParseInfo4Render) {
     this._name = name;
@@ -52,6 +53,7 @@ export class SVGRenderer {
     this._svgWidth = 0;
     this._svgHeight = 0;
     this._svgBgColor = DiagramDefine.DEFAULT_BG_COLOR;
+    this._svgWireColorTable = DiagramDefine.COLOR_TABLE;
   }
 
   /**
@@ -246,8 +248,8 @@ export class SVGRenderer {
         dataInfo.connectLine = connectWireP2D;
 
         // 線の色を保持
-        dataInfo.connectLine.color = DiagramDefine.COLOR_TABLE[colorIndex];
-        colorIndex = (colorIndex + 1) % DiagramDefine.COLOR_TABLE.length;
+        dataInfo.connectLine.color = this._svgWireColorTable[colorIndex];
+        colorIndex = (colorIndex + 1) % this._svgWireColorTable.length;
 
         // 線を描画
         const svgText = drawMethod(wireH.start.x, wireH.start.y, wireH.wireWidth(), dataInfo.connectLine.color);
