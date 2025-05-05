@@ -118,6 +118,23 @@
                 "type": "string",
                 "default": "FFFFFF",
                 "description": "HCP Preview SVG background color."
+            },
+            "hcpworks.WireColorTable": {
+                "type": "array",
+                "items": {
+                    "type": "string"
+                },
+                "default": [
+                  "000000",
+                  "FF0000",
+                  "00FF00",
+                  "0000FF",
+                  "FFFF00",
+                  "800080",
+                  "FFA500",
+                  "40E0D0"
+                ],
+                "description": "HCP Preview wire color table."
             }
         }
     },
