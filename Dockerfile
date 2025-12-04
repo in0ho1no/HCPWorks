@@ -1,4 +1,4 @@
-FROM ubuntu:25.04
+FROM ubuntu:questing-20251007
 
 RUN apt update
 RUN apt upgrade -y
