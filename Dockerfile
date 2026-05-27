@@ -1,4 +1,4 @@
-FROM ubuntu:25.04
+FROM ubuntu:25.10
 
 RUN apt update
 RUN apt upgrade -y
