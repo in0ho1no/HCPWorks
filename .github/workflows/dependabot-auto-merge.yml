@@ -1,0 +1,35 @@
+name: Dependabot auto-merge
+
+on: pull_request
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  auto-merge:
+    runs-on: ubuntu-latest
+    # Dependabotが作成したPRの時のみ実行
+    if: github.event.pull_request.user.login == 'dependabot[bot]'
+    steps:
+      # Dependabotのメタデータを取得（バージョンアップの種類を判別するため）
+      - name: Dependabot metadata
+        id: metadata
+        uses: dependabot/fetch-metadata@25dd0e34f4fe68f24cc83900b1fe3fe149efef98
+        with:
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+
+      # メジャーアップデート以外、github-actions 以外、docker 以外、かつ @types/vscode 以外の場合に自動マージを有効化
+      # github-actions は外部 Action の SHA 更新を人手レビューするため除外
+      # docker は Dockerfile ベースイメージ更新を人手レビューするため除外
+      # @types/vscode は engines.vscode と手動で合わせる必要があるため除外
+      - name: Enable auto-merge for non-major updates
+        if: |
+          steps.metadata.outputs.update-type != 'version-update:semver-major' &&
+          steps.metadata.outputs.package-ecosystem != 'github-actions' &&
+          steps.metadata.outputs.package-ecosystem != 'docker' &&
+          !contains(steps.metadata.outputs.dependency-names, '@types/vscode')
+        run: gh pr merge --auto --squash "$PR_URL"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

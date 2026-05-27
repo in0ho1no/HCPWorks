@@ -1,0 +1,98 @@
+name: Monthly Maintenance Reminder
+
+on:
+  schedule:
+    - cron: '0 8 1 * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  remind:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create maintenance reminder issue
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const assignees = ['in0ho1no'];
+            const titlePrefix = '月次メンテナンス確認';
+            const title = `${titlePrefix} ${new Date().toISOString().slice(0, 7)}`;
+            const maintenanceLabel = 'monthly-maintenance';
+
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner,
+              repo,
+              state: 'open',
+              creator: 'github-actions[bot]',
+              per_page: 100,
+            });
+
+            const existing = issues.find((issue) =>
+              issue.title.startsWith(`${titlePrefix} `) && !issue.pull_request
+            );
+
+            if (existing) {
+              core.info(`Reminder issue already exists: #${existing.number}`);
+              return;
+            }
+
+            try {
+              await github.rest.issues.getLabel({
+                owner,
+                repo,
+                name: maintenanceLabel,
+              });
+            } catch (error) {
+              if (error.status !== 404) {
+                throw error;
+              }
+
+              await github.rest.issues.createLabel({
+                owner,
+                repo,
+                name: maintenanceLabel,
+                color: '0E8A16',
+                description: 'Monthly repository maintenance reminder',
+              });
+            }
+
+            const labels = [maintenanceLabel];
+
+            try {
+              await github.rest.issues.getLabel({
+                owner,
+                repo,
+                name: 'dependencies',
+              });
+              labels.push('dependencies');
+            } catch (error) {
+              if (error.status !== 404) {
+                throw error;
+              }
+            }
+
+            const body = [
+              '月次メンテナンスの確認です。必要な項目だけ対応してください。',
+              '',
+              'チェックリスト:',
+              '- 未対応の Dependabot PR を確認し、依存更新ポリシーに合わないものは close する',
+              '- `engines.vscode` と `@types/vscode` に差分が出ていないか確認する',
+              '- 依存更新を取り込んだ場合はローカルで build と package を確認する',
+              '- 利用者向けの影響がある場合は README や CHANGELOG を更新する',
+            ].join('\n');
+
+            const { data: issue } = await github.rest.issues.create({
+              owner,
+              repo,
+              title,
+              body,
+              assignees,
+              labels,
+            });
+
+            core.info(`Created reminder issue #${issue.number}`);
