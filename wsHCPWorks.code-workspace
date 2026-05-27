@@ -2,11 +2,6 @@
 	"folders": [
 		{
 			"path": "."
-		},
-		{
-			// Yeoman extension generator
-			"name": "Extension generator",
-			"path": "./hcpworks"
 		}
 	],
 	"settings": {
