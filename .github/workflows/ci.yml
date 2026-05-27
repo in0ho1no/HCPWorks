@@ -1,0 +1,46 @@
+name: Build Check
+
+on:
+  pull_request:
+    branches:
+      - develop
+      - main
+  push:
+    branches:
+      - develop
+      - main
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v3.5.3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: hcpworks/package-lock.json
+
+      - name: Install dependencies
+        working-directory: hcpworks
+        env:
+          # Block lifecycle scripts during installation; add targeted npm rebuild only if a future dependency truly requires it.
+          NPM_CONFIG_IGNORE_SCRIPTS: true
+        run: npm ci
+
+      - name: Compile TypeScript
+        working-directory: hcpworks
+        run: npm run compile
+
+      - name: Package extension
+        working-directory: hcpworks
+        run: npx @vscode/vsce package --no-yarn
