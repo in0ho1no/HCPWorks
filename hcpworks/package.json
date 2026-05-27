@@ -221,6 +221,7 @@
     "pretest": "npm run compile-tests && npm run compile && npm run lint",
     "lint": "eslint src",
     "test": "vscode-test",
+    "test:unit": "npm run compile-tests && mocha --ui tdd --require src/test/__mocks__/setup.js 'out/test/**/*.test.js'",
     "prepare-readme": "cp ./README.md ../README.md",
     "prepare-readme-en": "cp ./README.en.md ../README.en.md"
   },
