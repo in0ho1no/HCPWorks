@@ -81,6 +81,7 @@ jobs:
               '',
               'チェックリスト:',
               '- 未対応の Dependabot PR を確認し、依存更新ポリシーに合わないものは close する',
+              '- GitHub Actions の更新 PR を確認し、actions/checkout と snyk/actions/setup の SHA 固定が古くなっていないか確認する',
               '- `engines.vscode` と `@types/vscode` に差分が出ていないか確認する',
               '- 依存更新を取り込んだ場合はローカルで build と package を確認する',
               '- 利用者向けの影響がある場合は README や CHANGELOG を更新する',
