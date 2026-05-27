@@ -2,7 +2,7 @@
   "name": "hcpworks",
   "displayName": "HCPWorks",
   "description": "This extension displays HCP chart.",
-  "version": "0.0.8",
+  "version": "0.0.10",
   "engines": {
     "vscode": "^1.99.0"
   },
@@ -221,8 +221,13 @@
     "pretest": "npm run compile-tests && npm run compile && npm run lint",
     "lint": "eslint src",
     "test": "vscode-test",
+    "test:unit": "npm run compile-tests && mocha --ui tdd --require src/test/__mocks__/setup.js 'out/test/**/*.test.js'",
     "prepare-readme": "cp ./README.md ../README.md",
-    "prepare-readme-en": "cp ./README.en.md ../README.en.md"
+    "prepare-readme-en": "cp ./README.en.md ../README.en.md",
+    "package-ext": "vsce package --no-yarn"
+  },
+  "overrides": {
+    "serialize-javascript": ">=7.0.5"
   },
   "devDependencies": {
     "@types/encoding-japanese": "^2.2.1",
@@ -233,8 +238,8 @@
     "@typescript-eslint/parser": "^8.31.1",
     "@vscode/test-cli": "^0.0.10",
     "@vscode/test-electron": "^2.5.2",
+    "@vscode/vsce": "^3.9.1",
     "eslint": "^9.24.0",
-    "mocha-github-actions-reporter": "^0.3.1",
     "mocha-junit-reporter": "^2.2.1",
     "ts-loader": "^9.5.2",
     "typescript": "^5.8.3",

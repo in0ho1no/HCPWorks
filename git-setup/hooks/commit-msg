@@ -1,0 +1,13 @@
+#!/bin/sh
+
+message_file="$1"
+
+for pattern in "テンプレ消してね"; do
+  if grep -Fq "$pattern" "$message_file"; then
+    echo "エラー: コミットメッセージにテンプレート用の文字列 '$pattern' が残っています。" >&2
+    echo "テンプレートの文言を削除または書き換えてから再実行してください。" >&2
+    exit 1
+  fi
+done
+
+exit 0

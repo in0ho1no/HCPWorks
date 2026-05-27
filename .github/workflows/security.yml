@@ -1,0 +1,61 @@
+name: Security Check
+
+on:
+  push:
+    branches:
+      - '**'
+  pull_request:
+    branches:
+      - develop
+      - main
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+permissions:
+  contents: read
+
+jobs:
+  dependency-review:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+
+      - name: Dependency review
+        uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
+        with:
+          fail-on-severity: high
+
+  security:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: hcpworks/package-lock.json
+
+      - name: Install dependencies
+        working-directory: hcpworks
+        env:
+          # Block lifecycle scripts during installation; add targeted npm rebuild only if a future dependency truly requires it.
+          NPM_CONFIG_IGNORE_SCRIPTS: true
+        run: npm ci
+
+      - name: Verify package signatures
+        working-directory: hcpworks
+        run: npm audit signatures
+
+      - name: Check vulnerabilities (production dependencies)
+        working-directory: hcpworks
+        run: npm audit --omit=dev --audit-level=high
+
+      - name: Check vulnerabilities (dev dependencies)
+        working-directory: hcpworks
+        run: npm audit --audit-level=high

@@ -1,3 +1,7 @@
 dist
 node_modules
 *.vsix
+*.bak
+.claude/settings.local.json
+out/
+.vscode-test/

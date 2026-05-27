@@ -6,12 +6,29 @@
 
 version: 2
 updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "friday"
+      time: "17:15"
+      timezone: "Asia/Tokyo"
+    open-pull-requests-limit: 10
+    assignees:
+      - "in0ho1no"
+    labels:
+      - "dependencies"
+    commit-message:
+      prefix: "github-actions"
+      include: "scope"
+    target-branch: "develop"
+
   - package-ecosystem: "npm"
     directory: "/hcpworks/"
     schedule:
       interval: "weekly"
       day: "friday"
-      time: "17:00"
+      time: "17:15"
       timezone: "Asia/Tokyo"
     open-pull-requests-limit: 10
     assignees:
@@ -21,4 +38,20 @@ updates:
     commit-message:
       prefix: "npm"
       include: "scope"
-    target-branch: "dependency-eliminate"
+    target-branch: "develop"
+
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "friday"
+      time: "17:15"
+      timezone: "Asia/Tokyo"
+    assignees:
+      - "in0ho1no"
+    labels:
+      - "dependencies"
+    commit-message:
+      prefix: "docker"
+      include: "scope"
+    target-branch: "develop"

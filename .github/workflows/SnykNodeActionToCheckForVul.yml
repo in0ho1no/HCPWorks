@@ -5,20 +5,29 @@ on:
     branches: [ main , develop, ]
   pull_request:
     branches: [ main , develop, ]
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+permissions:
+  contents: read
+
 jobs:
   security:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
-      - uses: snyk/actions/setup@master
+      - uses: snyk/actions/setup@9adf32b1121593767fc3c057af55b55db032dc04 # v1.0.0
 
       - name: Install dependencies
-        run: npm ci
         working-directory: ./hcpworks
+        env:
+          NPM_CONFIG_IGNORE_SCRIPTS: true
+        run: npm ci
 
       - name: Run Snyk test
-        run: snyk test
         working-directory: ./hcpworks
+        run: snyk test
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
