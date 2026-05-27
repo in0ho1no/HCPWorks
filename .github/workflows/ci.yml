@@ -43,4 +43,4 @@ jobs:
 
       - name: Package extension
         working-directory: hcpworks
-        run: npx @vscode/vsce package --no-yarn
+        run: npm run package-ext

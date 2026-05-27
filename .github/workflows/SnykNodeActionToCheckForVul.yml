@@ -22,6 +22,8 @@ jobs:
 
       - name: Install dependencies
         working-directory: ./hcpworks
+        env:
+          NPM_CONFIG_IGNORE_SCRIPTS: true
         run: npm ci
 
       - name: Run Snyk test

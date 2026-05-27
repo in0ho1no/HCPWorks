@@ -19,13 +19,15 @@ jobs:
         with:
           github-token: "${{ secrets.GITHUB_TOKEN }}"
 
-      # メジャーアップデート以外、github-actions 以外、かつ @types/vscode 以外の場合に自動マージを有効化
+      # メジャーアップデート以外、github-actions 以外、docker 以外、かつ @types/vscode 以外の場合に自動マージを有効化
       # github-actions は外部 Action の SHA 更新を人手レビューするため除外
+      # docker は Dockerfile ベースイメージ更新を人手レビューするため除外
       # @types/vscode は engines.vscode と手動で合わせる必要があるため除外
       - name: Enable auto-merge for non-major updates
         if: |
           steps.metadata.outputs.update-type != 'version-update:semver-major' &&
           steps.metadata.outputs.package-ecosystem != 'github-actions' &&
+          steps.metadata.outputs.package-ecosystem != 'docker' &&
           !contains(steps.metadata.outputs.dependency-names, '@types/vscode')
         run: gh pr merge --auto --squash "$PR_URL"
         env:
