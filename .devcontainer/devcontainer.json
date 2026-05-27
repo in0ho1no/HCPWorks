@@ -14,7 +14,8 @@
 				"mhutchie.git-graph",
 				"eamodio.gitlens",
 				"amodio.tsl-problem-matcher",
-				"dbaeumer.vscode-eslint"
+				"dbaeumer.vscode-eslint",
+				"Anthropic.claude-code"
 			]
 		}
 	}
