@@ -226,6 +226,9 @@
     "prepare-readme-en": "cp ./README.en.md ../README.en.md",
     "package-ext": "vsce package --no-yarn"
   },
+  "overrides": {
+    "serialize-javascript": ">=7.0.5"
+  },
   "devDependencies": {
     "@types/encoding-japanese": "^2.2.1",
     "@types/mocha": "^10.0.10",
@@ -237,7 +240,6 @@
     "@vscode/test-electron": "^2.5.2",
     "@vscode/vsce": "^3.9.1",
     "eslint": "^9.24.0",
-    "mocha-github-actions-reporter": "^0.2.3",
     "mocha-junit-reporter": "^2.2.1",
     "ts-loader": "^9.5.2",
     "typescript": "^5.8.3",
