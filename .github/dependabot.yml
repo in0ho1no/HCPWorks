@@ -44,4 +44,27 @@ updates:
       day: "friday"
       time: "17:15"
       timezone: "Asia/Tokyo"
+    assignees:
+      - "in0ho1no"
+    labels:
+      - "dependencies"
+    commit-message:
+      prefix: "devcontainers"
+      include: "scope"
+    target-branch: "develop"
+
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "friday"
+      time: "17:15"
+      timezone: "Asia/Tokyo"
+    assignees:
+      - "in0ho1no"
+    labels:
+      - "dependencies"
+    commit-message:
+      prefix: "docker"
+      include: "scope"
     target-branch: "develop"
