@@ -4,7 +4,7 @@
   "description": "This extension displays HCP chart.",
   "version": "0.0.10",
   "engines": {
-    "vscode": "^1.99.0"
+    "vscode": "^1.120.0"
   },
   "categories": [
     "Other"
