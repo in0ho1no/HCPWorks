@@ -4,7 +4,7 @@
   "description": "This extension displays HCP chart.",
   "version": "0.0.10",
   "engines": {
-    "vscode": "^1.99.0"
+    "vscode": "^1.120.0"
   },
   "categories": [
     "Other"
@@ -233,19 +233,19 @@
   "devDependencies": {
     "@types/encoding-japanese": "^2.2.1",
     "@types/mocha": "^10.0.10",
-    "@types/node": "22.x",
-    "@types/vscode": "^1.99.1",
-    "@typescript-eslint/eslint-plugin": "^8.31.1",
+    "@types/node": "25.x",
+    "@types/vscode": "^1.120.0",
+    "@typescript-eslint/eslint-plugin": "^8.60.0",
     "@typescript-eslint/parser": "^8.31.1",
-    "@vscode/test-cli": "^0.0.10",
+    "@vscode/test-cli": "^0.0.12",
     "@vscode/test-electron": "^2.5.2",
     "@vscode/vsce": "^3.9.1",
-    "eslint": "^9.24.0",
+    "eslint": "^10.4.0",
     "mocha-junit-reporter": "^2.2.1",
-    "ts-loader": "^9.5.2",
+    "ts-loader": "^9.5.7",
     "typescript": "^5.8.3",
     "webpack": "^5.99.7",
-    "webpack-cli": "^6.0.1"
+    "webpack-cli": "^7.0.2"
   },
   "dependencies": {
     "encoding-japanese": "^2.2.0"
