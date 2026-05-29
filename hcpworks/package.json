@@ -243,7 +243,7 @@
     "eslint": "^10.4.0",
     "mocha-junit-reporter": "^2.2.1",
     "ts-loader": "^9.5.7",
-    "typescript": "^5.8.3",
+    "typescript": "^6.0.3",
     "webpack": "^5.99.7",
     "webpack-cli": "^7.0.2"
   },
