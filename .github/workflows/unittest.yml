@@ -11,7 +11,6 @@ env:
 
 permissions:
   contents: read
-  checks: write    # テスト結果を書き込むために必要
 
 jobs:
   test:
@@ -55,11 +54,3 @@ jobs:
         with:
           name: test-results
           path: ./hcpworks/test-results
-
-      - name: Test Report
-        uses: dorny/test-reporter@a43b3a5f7366b97d083190328d2c652e1a8b6aa2 # v3.0.0
-        if: success() || failure()
-        with:
-          name: Mocha Tests
-          path: ./hcpworks/test-results/*.xml
-          reporter: java-junit
