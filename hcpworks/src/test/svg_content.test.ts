@@ -169,7 +169,13 @@ suite('SvgContent - Method - getHtmlWrappedSvg', () => {
   test('should render a table with header and data cells', () => {
     const content = new SvgContent();
     const tables: TableData[] = [
-      { caption: '', rows: [['名称', '目的'], ['ループカウンタ', '繰り返す']] },
+      {
+        caption: '',
+        rows: [
+          { cells: ['名称', '目的'], depth: 0 },
+          { cells: ['ループカウンタ', '繰り返す'], depth: 0 },
+        ],
+      },
     ];
     content.setTables(tables);
     const html = content.getHtmlWrappedSvg();
@@ -181,15 +187,36 @@ suite('SvgContent - Method - getHtmlWrappedSvg', () => {
 
   test('should render the table caption when present', () => {
     const content = new SvgContent();
-    content.setTables([{ caption: 'データ定義', rows: [['a']] }]);
+    content.setTables([{ caption: 'データ定義', rows: [{ cells: ['a'], depth: 0 }] }]);
     const html = content.getHtmlWrappedSvg();
 
     assert.ok(html.includes('<caption>データ定義</caption>'), 'Should include the caption');
   });
 
+  test('should indent the first cell according to row depth', () => {
+    const content = new SvgContent();
+    content.setTables([
+      {
+        caption: '',
+        rows: [
+          { cells: ['名称'], depth: 0 }, // ヘッダー行
+          { cells: ['記録'], depth: 0 },
+          { cells: ['年月日'], depth: 1 },
+          { cells: ['年'], depth: 2 },
+        ],
+      },
+    ]);
+    const html = content.getHtmlWrappedSvg();
+
+    // depth 0 は字下げ無し、depth>0 は padding-left が付く
+    assert.ok(html.includes('<td>記録</td>'), 'Depth 0 cell should have no indentation style');
+    assert.ok(html.includes('padding-left: calc(10px + 1.5em)'), 'Depth 1 cell should be indented one step');
+    assert.ok(html.includes('padding-left: calc(10px + 3em)'), 'Depth 2 cell should be indented two steps');
+  });
+
   test('should escape HTML special characters in cells', () => {
     const content = new SvgContent();
-    content.setTables([{ caption: '', rows: [['<b> & "x"']] }]);
+    content.setTables([{ caption: '', rows: [{ cells: ['<b> & "x"'], depth: 0 }] }]);
     const html = content.getHtmlWrappedSvg();
 
     assert.ok(html.includes('&lt;b&gt; &amp; &quot;x&quot;'), 'Should escape special characters');

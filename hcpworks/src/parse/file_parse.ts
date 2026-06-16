@@ -1,3 +1,5 @@
+import { LineLevel } from './line_level';
+
 /**
  * モジュール定義のプレフィックス
  * モジュール開始行を識別するために使用する文字列
@@ -121,14 +123,25 @@ export function cleanTextLines(textLines: string[]): string[] {
 }
 
 /**
+ * 表の1行を表すインターフェース
+ */
+export interface TableRow {
+  /** 行のセル(連続カンマは集約済み) */
+  cells: string[];
+
+  /** 行頭インデントによる階層(0が最上位)。構造体メンバの親子関係を表す */
+  depth: number;
+}
+
+/**
  * 表ブロックを表すインターフェース
  */
 export interface TableData {
   /** 表のキャプション(\table に続く文字列。無指定なら空文字) */
   caption: string;
 
-  /** 表の行データ(各行はセルの配列)。先頭行をヘッダーとして扱う */
-  rows: string[][];
+  /** 表の行データ。先頭行をヘッダーとして扱う */
+  rows: TableRow[];
 }
 
 /**
@@ -146,6 +159,26 @@ function parseTableRow(line: string): string[] {
     .split(",")
     .map(cell => cell.trim())
     .filter(cell => cell.length > 0);
+}
+
+/**
+ * 行頭インデントから階層(depth)を求める
+ *
+ * HCPのインデント規則に合わせ、タブ1個または半角4スペースを1階層とみなす。
+ * getLineLevel と異なり、半端なインデントでも例外を投げず切り捨てる。
+ *
+ * @param line - 対象の行(コメント除去済みを想定)
+ * @returns 階層(0が最上位)
+ */
+function getRowDepth(line: string): number {
+  const indent = line.match(/^[ \t]*/)?.[0] ?? "";
+
+  // タブを半角スペース換算してから1階層あたりの幅で割る
+  let spaceCount = 0;
+  for (const char of indent) {
+    spaceCount += char === "\t" ? LineLevel.TAB2SPACE : 1;
+  }
+  return Math.floor(spaceCount / LineLevel.TAB2SPACE);
 }
 
 /**
@@ -245,7 +278,7 @@ export function extractTables(textLines: string[]): { tables: TableData[]; remai
       // セルへ分割して行を追加する(有効なセルがあれば)
       const cells = parseTableRow(uncommentedLine);
       if (cells.length > 0) {
-        currentTable.rows.push(cells);
+        currentTable.rows.push({ cells, depth: getRowDepth(uncommentedLine) });
       }
       continue;
     }

@@ -110,9 +110,16 @@ export class SvgContent {
 
       const rowsHtml = table.rows.map((row, rowIndex) => {
         const tag = rowIndex === 0 ? "th" : "td";
-        const cellsHtml = row
-          .map(cell => `<${tag}>${this.escapeHtml(cell)}</${tag}>`)
-          .join("");
+        const cellsHtml = row.cells.map((cell, cellIndex) => {
+          const escaped = this.escapeHtml(cell);
+
+          // 先頭列のみ、階層(depth)に応じて左へ字下げする
+          if (cellIndex === 0 && row.depth > 0) {
+            const indentEm = row.depth * 1.5;
+            return `<${tag} style="padding-left: calc(10px + ${indentEm}em)">${escaped}</${tag}>`;
+          }
+          return `<${tag}>${escaped}</${tag}>`;
+        }).join("");
         return `<tr>${cellsHtml}</tr>`;
       }).join("");
 

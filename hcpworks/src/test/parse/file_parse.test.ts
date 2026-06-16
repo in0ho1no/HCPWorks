@@ -1,5 +1,8 @@
 import * as assert from 'assert';
-import { parseModules, cleanTextLines, extractTables, Module, TableData } from '../../parse/file_parse';
+import { parseModules, cleanTextLines, extractTables, Module, TableRow } from '../../parse/file_parse';
+
+/** 表の行配列からセルだけを取り出す(depthを無視して比較するためのヘルパー) */
+const cellsOf = (rows: TableRow[]): string[][] => rows.map(row => row.cells);
 
 suite('file_parse - Function - parseModules', () => {
 	test('Should parse a single module correctly', () => {
@@ -130,16 +133,12 @@ suite('file_parse - Function - extractTables', () => {
 		];
 		const { tables, remainingLines } = extractTables(input);
 
-		const expected: TableData[] = [
-			{
-				caption: '',
-				rows: [
-					['名称', '目的', '初期値'],
-					['チェック対象', 'Byteデータ', '引数依存'],
-				],
-			},
-		];
-		assert.deepStrictEqual(tables, expected);
+		assert.strictEqual(tables.length, 1);
+		assert.strictEqual(tables[0].caption, '');
+		assert.deepStrictEqual(cellsOf(tables[0].rows), [
+			['名称', '目的', '初期値'],
+			['チェック対象', 'Byteデータ', '引数依存'],
+		]);
 		assert.deepStrictEqual(remainingLines, []);
 	});
 
@@ -155,14 +154,14 @@ suite('file_parse - Function - extractTables', () => {
 		// 3行とも同じ3列になる
 		const expectedRow = ['ループカウンタ', 'コマンド種別だけ繰り返す', '0'];
 		assert.strictEqual(tables.length, 1);
-		assert.deepStrictEqual(tables[0].rows, [expectedRow, expectedRow, expectedRow]);
+		assert.deepStrictEqual(cellsOf(tables[0].rows), [expectedRow, expectedRow, expectedRow]);
 	});
 
 	test('Should trim leading/trailing commas and whitespace', () => {
 		const input = ['\\table', ' , a , , b , '];
 		const { tables } = extractTables(input);
 
-		assert.deepStrictEqual(tables[0].rows, [['a', 'b']]);
+		assert.deepStrictEqual(cellsOf(tables[0].rows), [['a', 'b']]);
 	});
 
 	test('Should capture caption after the marker', () => {
@@ -170,7 +169,7 @@ suite('file_parse - Function - extractTables', () => {
 		const { tables } = extractTables(input);
 
 		assert.strictEqual(tables[0].caption, '設定一覧');
-		assert.deepStrictEqual(tables[0].rows, [['a', 'b']]);
+		assert.deepStrictEqual(cellsOf(tables[0].rows), [['a', 'b']]);
 	});
 
 	test('Should terminate a table at a blank line', () => {
@@ -182,7 +181,7 @@ suite('file_parse - Function - extractTables', () => {
 		];
 		const { tables, remainingLines } = extractTables(input);
 
-		assert.deepStrictEqual(tables[0].rows, [['a', 'b']]);
+		assert.deepStrictEqual(cellsOf(tables[0].rows), [['a', 'b']]);
 		assert.deepStrictEqual(remainingLines, ['', '通常行']);
 	});
 
@@ -195,7 +194,7 @@ suite('file_parse - Function - extractTables', () => {
 		];
 		const { tables, remainingLines } = extractTables(input);
 
-		assert.deepStrictEqual(tables[0].rows, [['a', 'b']]);
+		assert.deepStrictEqual(cellsOf(tables[0].rows), [['a', 'b']]);
 		assert.deepStrictEqual(remainingLines, ['\\module next', 'line1']);
 	});
 
@@ -209,7 +208,7 @@ suite('file_parse - Function - extractTables', () => {
 		];
 		const { tables, remainingLines } = extractTables(input);
 
-		assert.deepStrictEqual(tables[0].rows, [['名称', '目的'], ['チェック対象', 'Byteデータ']]);
+		assert.deepStrictEqual(cellsOf(tables[0].rows), [['名称', '目的'], ['チェック対象', 'Byteデータ']]);
 		assert.deepStrictEqual(remainingLines, ['\\data チェック対象', '    処理する \\in チェック対象']);
 	});
 
@@ -225,16 +224,36 @@ suite('file_parse - Function - extractTables', () => {
 
 		assert.strictEqual(tables.length, 2);
 		assert.strictEqual(tables[0].caption, '表1');
-		assert.deepStrictEqual(tables[0].rows, [['a', 'b']]);
+		assert.deepStrictEqual(cellsOf(tables[0].rows), [['a', 'b']]);
 		assert.strictEqual(tables[1].caption, '表2');
-		assert.deepStrictEqual(tables[1].rows, [['c', 'd']]);
+		assert.deepStrictEqual(cellsOf(tables[1].rows), [['c', 'd']]);
 	});
 
 	test('Should ignore comments within table rows', () => {
 		const input = ['\\table', 'a, b # コメント', 'c, d'];
 		const { tables } = extractTables(input);
 
-		assert.deepStrictEqual(tables[0].rows, [['a', 'b'], ['c', 'd']]);
+		assert.deepStrictEqual(cellsOf(tables[0].rows), [['a', 'b'], ['c', 'd']]);
+	});
+
+	test('Should record depth from leading indentation as struct hierarchy', () => {
+		const input = [
+			'\\table',
+			'記録, 作業日時を記録する, -',
+			'    年月日, 年月日を記録する, -',
+			'        年, 年を記録する, 2000',
+			'\t時分, 時分を記録する, -',
+		];
+		const { tables } = extractTables(input);
+
+		// 4スペース=1階層、タブ1個=1階層
+		assert.deepStrictEqual(tables[0].rows.map(row => row.depth), [0, 1, 2, 1]);
+		assert.deepStrictEqual(cellsOf(tables[0].rows), [
+			['記録', '作業日時を記録する', '-'],
+			['年月日', '年月日を記録する', '-'],
+			['年', '年を記録する', '2000'],
+			['時分', '時分を記録する', '-'],
+		]);
 	});
 
 	test('Should not produce a table when no rows follow the marker', () => {
@@ -276,16 +295,12 @@ suite('file_parse - Integration', () => {
 
 		const { tables, remainingLines } = extractTables(modules[0].content);
 
-		const expected: TableData[] = [
-			{
-				caption: 'データ定義',
-				rows: [
-					['名称', '目的', '初期値'],
-					['ループカウンタ', 'コマンド種別だけ繰り返す', '0'],
-				],
-			},
-		];
-		assert.deepStrictEqual(tables, expected);
+		assert.strictEqual(tables.length, 1);
+		assert.strictEqual(tables[0].caption, 'データ定義');
+		assert.deepStrictEqual(cellsOf(tables[0].rows), [
+			['名称', '目的', '初期値'],
+			['ループカウンタ', 'コマンド種別だけ繰り返す', '0'],
+		]);
 		// 表より後ろ(\data・処理行)は残る
 		assert.deepStrictEqual(remainingLines, ['\\data ループカウンタ', '    処理する \\in ループカウンタ']);
 	});
@@ -307,8 +322,8 @@ suite('file_parse - Integration', () => {
 		const tables1 = extractTables(modules[0].content).tables;
 		const tables2 = extractTables(modules[1].content).tables;
 
-		assert.deepStrictEqual(tables1[0].rows, [['a', 'b']]);
-		assert.deepStrictEqual(tables2[0].rows, [['c', 'd']]);
+		assert.deepStrictEqual(cellsOf(tables1[0].rows), [['a', 'b']]);
+		assert.deepStrictEqual(cellsOf(tables2[0].rows), [['c', 'd']]);
 	});
 });
 
