@@ -2,6 +2,10 @@
 
 All notable changes to the "hcpworks" extension will be documented in this file.
 
+## [0.0.9]
+
+- vulnerability fix
+
 ## [0.0.8]
 
 - update Readme
