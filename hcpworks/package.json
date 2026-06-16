@@ -2,7 +2,7 @@
   "name": "hcpworks",
   "displayName": "HCPWorks",
   "description": "This extension displays HCP chart.",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "engines": {
     "vscode": "^1.120.0"
   },
@@ -145,6 +145,12 @@
             "scope": "keyword.control.module.hcp",
             "settings": {
               "foreground": "#4dabf7"
+            }
+          },
+          {
+            "scope": "keyword.control.table.hcp",
+            "settings": {
+              "foreground": "#ffce93"
             }
           },
           {
