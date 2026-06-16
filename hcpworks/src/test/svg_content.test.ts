@@ -1,5 +1,6 @@
 import * as assert from 'assert';
 import { SvgContent } from '../svg_content';
+import { TableData } from '../parse/file_parse';
 
 suite('SvgContent - Constructor - default values', () => {
   test('should initialize with empty name', () => {
@@ -163,6 +164,44 @@ suite('SvgContent - Method - getHtmlWrappedSvg', () => {
     const html = content.getHtmlWrappedSvg();
     assert.ok(typeof html === 'string', 'Should return a string even with empty svg');
     assert.ok(html.includes('<!DOCTYPE html>'));
+  });
+
+  test('should render a table with header and data cells', () => {
+    const content = new SvgContent();
+    const tables: TableData[] = [
+      { caption: '', rows: [['名称', '目的'], ['ループカウンタ', '繰り返す']] },
+    ];
+    content.setTables(tables);
+    const html = content.getHtmlWrappedSvg();
+
+    assert.ok(html.includes('<table class="hcp-table">'), 'Should include the table element');
+    assert.ok(html.includes('<th>名称</th>'), 'First row should be header cells');
+    assert.ok(html.includes('<td>ループカウンタ</td>'), 'Following rows should be data cells');
+  });
+
+  test('should render the table caption when present', () => {
+    const content = new SvgContent();
+    content.setTables([{ caption: 'データ定義', rows: [['a']] }]);
+    const html = content.getHtmlWrappedSvg();
+
+    assert.ok(html.includes('<caption>データ定義</caption>'), 'Should include the caption');
+  });
+
+  test('should escape HTML special characters in cells', () => {
+    const content = new SvgContent();
+    content.setTables([{ caption: '', rows: [['<b> & "x"']] }]);
+    const html = content.getHtmlWrappedSvg();
+
+    assert.ok(html.includes('&lt;b&gt; &amp; &quot;x&quot;'), 'Should escape special characters');
+    assert.ok(!html.includes('<b> & "x"'), 'Should not contain raw special characters');
+  });
+
+  test('should not render a table element when no tables set', () => {
+    const content = new SvgContent();
+    content.setSvgContent('<svg></svg>');
+    const html = content.getHtmlWrappedSvg();
+
+    assert.ok(!html.includes('<table'), 'Should not include any table element');
   });
 });
 

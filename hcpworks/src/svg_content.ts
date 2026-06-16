@@ -1,12 +1,15 @@
+import { TableData } from './parse/file_parse';
+
 /**
  * SVGコンテンツを管理する
- * 
+ *
  * このクラスはSVG要素の名前、変換元のテキスト、変換後のSVGを管理します。
  */
 export class SvgContent {
   private _name: string;
   private _textContent: string[];
   private _svgContent: string;
+  private _tables: TableData[];
 
   /**
    * SvgContentクラスの新しいインスタンスを作成する
@@ -15,6 +18,7 @@ export class SvgContent {
     this._name = "";
     this._textContent = [];
     this._svgContent = "";
+    this._tables = [];
   }
 
   /**
@@ -50,11 +54,72 @@ export class SvgContent {
 
   /**
    * SVG要素の変換元となるテキストを取得する
-   * 
+   *
    * @returns テキストコンテンツの配列
    */
   getTextContent(): string[] {
     return this._textContent;
+  }
+
+  /**
+   * 表データを設定する
+   *
+   * @param tables - 設定する表データの配列
+   * @returns このインスタンスへの参照（メソッドチェーン用）
+   */
+  setTables(tables: TableData[]): SvgContent {
+    this._tables = tables;
+    return this;
+  }
+
+  /**
+   * 表データを取得する
+   *
+   * @returns 表データの配列
+   */
+  getTables(): TableData[] {
+    return this._tables;
+  }
+
+  /**
+   * HTMLとして安全に埋め込めるよう文字列をエスケープする
+   *
+   * @param text - エスケープ対象の文字列
+   * @returns エスケープ済みの文字列
+   */
+  private escapeHtml(text: string): string {
+    return text
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  /**
+   * 保持している表データをHTMLの表へ変換する
+   *
+   * 先頭行をヘッダー(th)、残りをデータ行(td)として描画する。
+   *
+   * @returns 表のHTML文字列(表が無ければ空文字)
+   */
+  private getTablesHtml(): string {
+    const tablesHtml = this._tables.map(table => {
+      const captionHtml = table.caption
+        ? `<caption>${this.escapeHtml(table.caption)}</caption>`
+        : "";
+
+      const rowsHtml = table.rows.map((row, rowIndex) => {
+        const tag = rowIndex === 0 ? "th" : "td";
+        const cellsHtml = row
+          .map(cell => `<${tag}>${this.escapeHtml(cell)}</${tag}>`)
+          .join("");
+        return `<tr>${cellsHtml}</tr>`;
+      }).join("");
+
+      return `<table class="hcp-table">${captionHtml}${rowsHtml}</table>`;
+    }).join("");
+
+    return tablesHtml;
   }
 
   /**
@@ -82,16 +147,46 @@ export class SvgContent {
             // コンテナの幅を明示的に設定せず、SVGが自然なサイズを持てるようにする
             display: inline-block;
             min-width: min-content;
-            
+
             transform-origin: 0 0;
           }
 
           svg {
             display: block; // SVGをブロック要素として表示
           }
+
+          .hcp-tables {
+            padding: 8px;
+          }
+
+          .hcp-table {
+            border-collapse: collapse;
+            margin: 0 0 12px 0;
+          }
+
+          .hcp-table caption {
+            text-align: left;
+            font-weight: bold;
+            padding: 4px 0;
+          }
+
+          .hcp-table th,
+          .hcp-table td {
+            border: 1px solid currentColor;
+            padding: 4px 10px;
+            text-align: left;
+            white-space: nowrap;
+          }
+
+          .hcp-table th {
+            font-weight: bold;
+          }
         </style>
       </head>
       <body>
+      <div class="hcp-tables">
+        ${this.getTablesHtml()}
+      </div>
       <div class="svg-container" id="svgContainer">
         ${this._svgContent}
       </div>
