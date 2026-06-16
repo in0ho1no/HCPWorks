@@ -2,6 +2,15 @@
 
 All notable changes to the "hcpworks" extension will be documented in this file.
 
+## [0.0.10]
+
+- Supports `\table` notation (CSV-like tables)
+    - Write it between `\module` and `\data`
+    - Consecutive commas are merged into a single separator
+    - Leading indentation expresses struct-member (parent-child) hierarchy
+    - Caption can be added with `\table <name>`
+    - Rendered in preview only (not included in image output)
+
 ## [0.0.9]
 
 - vulnerability fix
