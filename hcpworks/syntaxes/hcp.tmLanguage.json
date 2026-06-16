@@ -6,6 +6,10 @@
             "name": "keyword.control.module.hcp"
         },
         {
+            "match": "\\\\table\\b",
+            "name": "keyword.control.table.hcp"
+        },
+        {
             "match": "\\\\data ",
             "name": "keyword.control.data.hcp"
         },

@@ -148,6 +148,12 @@
             }
           },
           {
+            "scope": "keyword.control.table.hcp",
+            "settings": {
+              "foreground": "#ffce93"
+            }
+          },
+          {
             "scope": "keyword.control.data.hcp",
             "settings": {
               "foreground": "#ffb92d"
