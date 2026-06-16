@@ -32,6 +32,21 @@
 			"editor.padding.bottom": 250,
 		},
 
+		// git settings
+		// VSCode標準のGit blame(行末に表示される最終コミット情報)を無効化
+		"git.blame.editorDecoration.enabled": false,
+		// GitLensのCurrent Line Blame(カーソル行に表示される履歴情報)を無効化
+		"gitlens.currentLine.enabled": false,
+		// コミットメッセージのinstructions
+		"github.copilot.chat.commitMessageGeneration.instructions": [
+			{
+				"file": "git-setup/COMMIT_TEMPLATE"
+			},
+			{
+				"text": "コミットメッセージは必ず日本語で。丁寧語は不要。体言止めで。"
+			}
+		],
+
 		"[typescript]": {
 			"editor.tabSize": 2,
 			"editor.formatOnSave": true,

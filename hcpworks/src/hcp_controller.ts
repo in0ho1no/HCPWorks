@@ -14,7 +14,7 @@ import { ParseInfo4Render } from './parse/parse_info_4_render';
 import { ProcessLineProcessor } from './parse/line_info_list_process';
 import { DataLineProcessor } from './parse/line_info_list_data';
 import { LineInfo } from './parse/line_info';
-import { cleanTextLines } from './parse/file_parse';
+import { cleanTextLines, extractTables } from './parse/file_parse';
 import { SVGRenderer } from './render/render_main';
 
 import { HCP_ID, HCP_SUFFIX, TIMEOUT } from './extension';
@@ -253,10 +253,14 @@ export class HCPController {
    * SVGコンテンツを生成する
    */
   private createSvgContent(selectedElement: ModuleTreeElement): SvgContent {
+    // モジュール内の表ブロックを抽出する(空行を終端に用いるためcleanTextLinesより前に行う)
+    const { tables, remainingLines } = extractTables(selectedElement.content);
+
     // コンテンツを新規作成
     const svgContent = new SvgContent()
       .setName(selectedElement.name)
-      .setTextContent(cleanTextLines(selectedElement.content));
+      .setTextContent(cleanTextLines(remainingLines))
+      .setTables(tables);
 
     // テキストファイルをパース
     const lineInfoList: LineInfo[] = [];
