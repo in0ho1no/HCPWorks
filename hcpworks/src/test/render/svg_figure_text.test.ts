@@ -64,19 +64,19 @@ suite('SvgFigureText - Method - getSvgStringWidth', () => {
     assert.strictEqual(SvgFigureText.getSvgStringWidth('abc', -1), 0);
   });
 
-  test('should return stringWidth * fontPx for normal input', () => {
-    // 'ab' = width 1, fontPx=12 -> 12
-    assert.strictEqual(SvgFigureText.getSvgStringWidth('ab', 12), 12);
+  test('should accumulate half-width chars by HALF_WIDTH_CHAR_RATIO', () => {
+    // 'ab' = 2 * 12 * 0.6 = 14.4 -> ceil -> 15
+    assert.strictEqual(SvgFigureText.getSvgStringWidth('ab', 12), 15);
   });
 
   test('should return correct width for Japanese text', () => {
-    // 'あ' = width 1, fontPx=12 -> 12
+    // 'あ' = 1 * 12 * 1.0 = 12
     assert.strictEqual(SvgFigureText.getSvgStringWidth('あ', 12), 12);
   });
 
   test('should return correct width for 4 ASCII chars', () => {
-    // 'abcd' = width 2, fontPx=10 -> 20
-    assert.strictEqual(SvgFigureText.getSvgStringWidth('abcd', 10), 20);
+    // 'abcd' = 4 * 10 * 0.6 = 24
+    assert.strictEqual(SvgFigureText.getSvgStringWidth('abcd', 10), 24);
   });
 });
 
@@ -171,9 +171,9 @@ suite('SvgFigureText - Method - drawString', () => {
   });
 
   test('should return correct endX for ASCII text', () => {
-    // 'ab' at fontPx=12: width=1, textWidth=12, endX = startX + 12 + TEXT_MARGIN(15)
+    // 'ab' at fontPx=12: textWidth = ceil(2*12*0.6) = 15, endX = startX + 15 + TEXT_MARGIN(15)
     const [endX, svg] = SvgFigureText.drawString(0, 0, 'ab', 100);
-    assert.strictEqual(endX, 0 + 12 + SvgFigureDefine.TEXT_MARGIN);
+    assert.strictEqual(endX, 0 + 15 + SvgFigureDefine.TEXT_MARGIN);
   });
 
   test('should return SVG text element in the string', () => {
@@ -184,9 +184,9 @@ suite('SvgFigureText - Method - drawString', () => {
 
   test('endX should be startX + textWidth + TEXT_MARGIN', () => {
     const startX = 30;
-    // 'abcd' = width 2, fontPx=12 -> textWidth = 24
+    // 'abcd' at fontPx=12 -> textWidth = ceil(4*12*0.6) = ceil(28.8) = 29
     const [endX, svg] = SvgFigureText.drawString(startX, 0, 'abcd', 100);
-    const expectedEndX = startX + 24 + SvgFigureDefine.TEXT_MARGIN;
+    const expectedEndX = startX + 29 + SvgFigureDefine.TEXT_MARGIN;
     assert.strictEqual(endX, expectedEndX);
   });
 
