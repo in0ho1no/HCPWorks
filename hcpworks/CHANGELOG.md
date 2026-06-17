@@ -2,7 +2,7 @@
 
 All notable changes to the "hcpworks" extension will be documented in this file.
 
-## [0.0.10]
+## [0.0.11]
 
 - Supports `<ins>` notation (insertion highlight)
     - Highlights the range enclosed by `<ins>` and `</ins>` with a light-green background to indicate newly added or changed text
@@ -14,16 +14,20 @@ All notable changes to the "hcpworks" extension will be documented in this file.
 - Supports module metadata notation (`\kind`, `\scope`)
     - Write them between `\module` and `\table`; values are free-form
     - Shown below `Name:` as labeled lines (`scope: <value>` / `kind: <value>`, included in image output)
+- update `\table` notation (CSV-like tables)
+    - `<br>` in a cell becomes a line break (in-cell line break when pasted into Excel with formatting)
+- bug Fixed
+    - Arrow overlapped the trailing character when a text contained many consecutive half-width characters
+    - Text width is now accumulated directly in px per character type (instead of rounding to full-width units), matching the monospace font metrics
+
+## [0.0.10]
+
 - Supports `\table` notation (CSV-like tables)
     - Write it between `\module` and `\data`
     - Consecutive commas are merged into a single separator
     - Leading indentation expresses struct-member (parent-child) hierarchy
     - Caption can be added with `\table <name>`
-    - `<br>` in a cell becomes a line break (in-cell line break when pasted into Excel with formatting)
     - Rendered in preview only (not included in image output)
-- bug Fixed
-    - Arrow overlapped the trailing character when a text contained many consecutive half-width characters
-    - Text width is now accumulated directly in px per character type (instead of rounding to full-width units), matching the monospace font metrics
 
 ## [0.0.9]
 
