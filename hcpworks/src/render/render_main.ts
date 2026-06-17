@@ -11,6 +11,7 @@ import { LineLevel } from '../parse/line_level';
 import { Wire, Process2Data } from '../parse/wire';
 
 import { DataInfo } from '../parse/data_info';
+import { ModuleMeta } from '../parse/file_parse';
 
 import { DiagramDefine } from './render_define';
 import { DiagramElement } from './diagram_element';
@@ -25,6 +26,7 @@ import { SvgFigureParts } from './svg_figure_parts';
 export class SVGRenderer {
 
   private _name: string;
+  private _moduleMeta: ModuleMeta;
   private _processLines: ProcessLineProcessor;
   private _dataLines: DataLineProcessor;
 
@@ -41,6 +43,7 @@ export class SVGRenderer {
 
   constructor(name: string, parseInfo4Render: ParseInfo4Render) {
     this._name = name;
+    this._moduleMeta = { kind: "", scope: "" };
     this._processLines = parseInfo4Render.getProcessLines();
     this._dataLines = parseInfo4Render.getDataLines();
 
@@ -70,8 +73,22 @@ export class SVGRenderer {
     const [titleEndX, titleEndY, titleSvgText] = this.setTitle(titleX, startY);
     this._svgText.push(titleSvgText);
 
+    // メタ情報部を描画(あれば)。表示した行数分だけ処理部の開始位置を下げる
+    let contentStartY = titleEndY;
+    let metaEndX = titleEndX;
+    if (this._moduleMeta.kind || this._moduleMeta.scope) {
+      // タイトル直下に、Name:より狭い行間(META_LINE_SHIFT)で並べる
+      const metaFirstY = startY + DiagramDefine.META_LINE_SHIFT;
+      const [drawnEndX, lineCount, metaSvgText] = this.drawModuleMeta(titleX, metaFirstY);
+      this._svgText.push(metaSvgText);
+
+      metaEndX = Math.max(metaEndX, drawnEndX + DiagramDefine.IMG_MARGIN);
+      // メタ行数分だけ処理部を下げる(処理部以降の間隔は従来通り)
+      contentStartY = titleEndY + DiagramDefine.META_LINE_SHIFT * lineCount;
+    }
+
     // 処理部を描画
-    this._processElements = this.setElements(startX, titleEndY, this._processLines);
+    this._processElements = this.setElements(startX, contentStartY, this._processLines);
     const [processEndX, processEndY] = this.renderProcess();
 
     // 処理部からの水平線を描画
@@ -79,7 +96,7 @@ export class SVGRenderer {
 
     // データ部を描画
     const dataStartX = Math.max(processEndX, exitFromProcessEndX) + DiagramDefine.LEVEL_SHIFT;
-    this._dataElements = this.setElements(dataStartX, titleEndY, this._dataLines);
+    this._dataElements = this.setElements(dataStartX, contentStartY, this._dataLines);
     const [dataEndX, dataEndY] = this.renderData();
 
     // データ部への水平線を描画
@@ -89,7 +106,7 @@ export class SVGRenderer {
     this.connect_process2data();
 
     // 描画終了
-    this._svgWidth = Math.max(titleEndX, processEndX, dataEndX);
+    this._svgWidth = Math.max(titleEndX, metaEndX, processEndX, dataEndX);
     this._svgHeight = Math.max(titleEndY, processEndY, dataEndY);
     return this.renderFinish();
   }
@@ -111,6 +128,54 @@ export class SVGRenderer {
     const marginX = end_x + DiagramDefine.IMG_MARGIN;
     const marginY = end_y + DiagramDefine.IMG_MARGIN;
     return [marginX, marginY, svgStringText];
+  }
+
+  /**
+   * モジュールのメタ情報部を描画する
+   *
+   * Name: と同様に `scope: 値` `kind: 値` のラベル付きで縦に並べて描画する。
+   * 値が空の項目は描画しない。
+   *
+   * @param startX 描画開始位置 X座標
+   * @param startY 描画開始位置 Y座標(1行目のY座標)
+   * @returns [終了位置のX座標, 描画した行数, SVG文字列]
+   */
+  drawModuleMeta(startX: number, startY: number): [number, number, string] {
+    const fontSizePercent = 100;
+
+    // 表示順は scope, kind。値が空の項目は除外する
+    const labeledItems: [string, string][] = [
+      ["scope", this._moduleMeta.scope],
+      ["kind", this._moduleMeta.kind],
+    ];
+
+    const svgTextList: string[] = [];
+    let endX = startX;
+    let lineCount = 0;
+    for (const [label, value] of labeledItems) {
+      if (value.length === 0) {
+        continue;
+      }
+
+      const lineY = startY + DiagramDefine.META_LINE_SHIFT * lineCount;
+      const [lineEndX, svgText] = SvgFigureText.drawString(startX, lineY, `${label}: ${value}`, fontSizePercent);
+      svgTextList.push(svgText);
+      endX = Math.max(endX, lineEndX);
+      lineCount++;
+    }
+
+    return [endX, lineCount, svgTextList.join(SvgFigureDefine.LINE_BREAK)];
+  }
+
+  /**
+   * モジュールのメタ情報を設定する
+   *
+   * @param moduleMeta 設定するメタ情報
+   * @returns 現在のインスタンス
+   */
+  setModuleMeta(moduleMeta: ModuleMeta): SVGRenderer {
+    this._moduleMeta = moduleMeta;
+    return this;
   }
 
   /**

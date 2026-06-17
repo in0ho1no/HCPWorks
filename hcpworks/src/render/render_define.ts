@@ -3,6 +3,8 @@ export class DiagramDefine {
 
   static readonly LEVEL_SHIFT = 30;   // レベルの差を表す水平方向のシフト
 
+  static readonly META_LINE_SHIFT = 18;   // メタ情報(Name/scope/kind)の行間。LEVEL_SHIFTより狭くして詰める
+
   static readonly IMG_MARGIN = 30;    // 画像周辺のマージン
 
   static readonly LINE_OFFSET = 10;

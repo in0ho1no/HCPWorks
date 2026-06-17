@@ -1,5 +1,6 @@
 \module 有効なデータをチェックする
-
+\scope extern  # omission
+\kind new
 \table
 名称, 目的, 初期値
 チェック対象, Highが見つかるかチェックするByteデータ, 引数依存

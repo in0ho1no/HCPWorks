@@ -74,6 +74,8 @@ This extension supports syntax highlighting as shown in the image below.
 Notation | Content | Notes
 ---| --- | ---
 \module | Start of module | Be sure to write it together with the module name.
+\kind | Change type of the module | Write it between `\module` and `\table`. Free-form value (e.g. new / modified / reused). Shown below `Name:` as `kind: <value>` and included in image output.
+\scope | Visibility type of the module | Write it between `\module` and `\table`. Free-form value (e.g. public / private, extern / static). Shown below `Name:` as `scope: <value>` and included in image output.
 \table | Description of a table | Write it between `\module` and `\data`. CSV format; consecutive commas are merged into one separator.<br>A caption can be added with `\table <name>`.<br>Leading indentation (tab / 4 spaces = one level) expresses parent-child hierarchy like struct members.<br>Use `<br>` for a line break within a cell (it becomes an in-cell line break when pasted into Excel with formatting).<br>Not included in image output.
 
 ### Notation that can be written at level 0 or higher
