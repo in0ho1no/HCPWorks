@@ -60,10 +60,11 @@ export class LineInfo {
   setTextLessTypeIO(text: string): LineInfo { this._textLessTypeIo = text; return this; }
   getInOutData(): InOutData { return this._InOutData; }
   updateLineIO(): LineInfo {
-    // inとoutの正規表現を用意
+    // in/out/dropの正規表現を用意
     const common_ptn = "\\s+(\\S+)?";
     const in_ptn = new RegExp("\\" + IOTypeDefine.get_format_by_type(IOTypeEnum.IN).type_format + common_ptn, 'g');
     const out_ptn = new RegExp("\\" + IOTypeDefine.get_format_by_type(IOTypeEnum.OUT).type_format + common_ptn, 'g');
+    const drop_ptn = new RegExp("\\" + IOTypeDefine.get_format_by_type(IOTypeEnum.DROP).type_format + common_ptn, 'g');
 
     // inとoutのデータ名を抽出
     const inMatches = Array.from(this._textLessType.matchAll(in_ptn));
@@ -73,8 +74,13 @@ export class LineInfo {
     const inDataList = inMatches.map(match => new DataInfo(match[1]));
     const outDataList = outMatches.map(match => new DataInfo(match[1]));
 
-    // inとout要素を取り除いた行を取得
-    const cleanedText = this._textLessType.replace(in_ptn, "").replace(out_ptn, "").trim();
+    // in/out/drop要素を取り除いた行を取得
+    // \drop は出力データの読み捨てを表す。リストには加えず(データ部と接続せず)テキストからのみ除去する
+    const cleanedText = this._textLessType
+      .replace(in_ptn, "")
+      .replace(out_ptn, "")
+      .replace(drop_ptn, "")
+      .trim();
 
     this._InOutData = new InOutData().setInDataList(inDataList).setOutDataList(outDataList);
     this._textLessTypeIo = cleanedText;

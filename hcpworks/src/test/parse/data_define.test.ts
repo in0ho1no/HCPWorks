@@ -23,6 +23,10 @@ suite('IOTypeDefine - Method - get_format_by_type', () => {
     const forkFormat = IOTypeDefine.get_format_by_type(IOTypeEnum.OUT);
     assert.strictEqual(forkFormat.type_value, 1);
     assert.strictEqual(forkFormat.type_format, '\\out');
+
+    const dropFormat = IOTypeDefine.get_format_by_type(IOTypeEnum.DROP);
+    assert.strictEqual(dropFormat.type_value, 2);
+    assert.strictEqual(dropFormat.type_format, '\\drop');
   });
 });
 

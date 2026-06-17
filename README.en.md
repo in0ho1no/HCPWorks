@@ -96,6 +96,7 @@ Notation | Content | Notes
 ---| --- | ---
 \in | Input to processing/function | If written at the lowest indentation level, it is treated as input to the function. <br>If written at any level other than the lowest indentation level, it is treated as simple processing input. <br>If there is no definition in `\data`, it is treated as new data. <br>Do not include spaces or periods.
 \out | Output from processing/function | If written at the lowest indentation level, it is treated as output from the function. <br>If written at any level other than the lowest indentation level, it is treated as simple processing output. <br>If there is no definition in `\data`, it will be treated as new data. <br>Do not include spaces or periods.
+\drop | Discard of output data | Written like `\out`, but it is neither connected to the data section nor drawn. <br>Used to annotate an intentionally discarded output. <br>Do not include spaces or periods.
 
 ## Known Issues
 
