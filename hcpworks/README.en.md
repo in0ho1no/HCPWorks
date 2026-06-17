@@ -100,11 +100,12 @@ Notation | Content | Notes
 
 ### Text decoration
 
-Part of the text in a line can be decorated. It can be combined with line notations such as `\mod`.
+Part of the text in a line can be decorated. It can be combined with line notations such as `\mod`.<br>Each tag is used as a pair (`<del></del>` / `<ins></ins>`). Nested tags, a different tag mixed in, or unmatched open/close are shown as a notation error with a red background.
 
 Notation | Content | Notes
 ---| --- | ---
 `<del>...</del>` | Strikethrough | Draws a strikethrough over the range enclosed by `<del>` and `</del>`, and highlights it with a salmon-pink background.<br>Example: `\mod <del>送信する</del>受信解析する`<br>The decoration tags themselves are not drawn.
+`<ins>...</ins>` | Insertion (highlight) | Highlights the range enclosed by `<ins>` and `</ins>` with a light-green background to indicate newly added or changed text.<br>Example: `\mod <ins>受信解析する</ins>`<br>The decoration tags themselves are not drawn.
 
 ## Known Issues
 

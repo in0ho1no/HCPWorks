@@ -73,10 +73,10 @@
         判定する
             \repeat 下位bitから順に判定する \in ループカウンタ
                 <del> \fork ループカウンタの数だけ1を左にbitシフトし、論理積をとる(QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ) \in ループカウンタ \in チェック対象 </del>
-                    \true <del>bitがON</del>だった
+                    \true <del>bitがON</del><ins>だった</ins>
                         <del>High有りとする \out 判定結果
-                        \reutrn 判定を終えてループを抜ける</del>
-                    \false bitがONではなかった
+                        \reutrn <ins>判定を終えてループを抜ける</del>
+                    <ins>\false bitがONではなかった<ins>
                         何もしない
             
             \mod 結果を送信する \in 判定結果 \drop 送信結果

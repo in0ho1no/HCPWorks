@@ -198,72 +198,176 @@ suite('SvgFigureText - Method - drawString', () => {
   });
 });
 
-suite('SvgFigureText - Method - stripStrikeTags', () => {
+suite('SvgFigureText - Method - getDecorationDisplayText', () => {
   test('should return empty string for empty input', () => {
-    assert.strictEqual(SvgFigureText.stripStrikeTags(''), '');
+    assert.strictEqual(SvgFigureText.getDecorationDisplayText(''), '');
   });
 
-  test('should remove <del> and </del> tags', () => {
-    assert.strictEqual(SvgFigureText.stripStrikeTags('<del>送信する</del>受信解析する'), '送信する受信解析する');
+  test('should remove <del> tags on valid input', () => {
+    assert.strictEqual(
+      SvgFigureText.getDecorationDisplayText('<del>送信する</del>受信解析する'),
+      '送信する受信解析する'
+    );
+  });
+
+  test('should remove <ins> tags on valid input', () => {
+    assert.strictEqual(
+      SvgFigureText.getDecorationDisplayText('<ins>追加</ins>分'),
+      '追加分'
+    );
+  });
+
+  test('should keep the raw text (tags shown) on error input', () => {
+    // 入れ子はエラー扱いなので、タグごと表示文字列として残す
+    assert.strictEqual(
+      SvgFigureText.getDecorationDisplayText('<ins>a<del>b</del>c</ins>'),
+      '<ins>a<del>b</del>c</ins>'
+    );
   });
 
   test('should not change text without tags', () => {
-    assert.strictEqual(SvgFigureText.stripStrikeTags('hello'), 'hello');
+    assert.strictEqual(SvgFigureText.getDecorationDisplayText('hello'), 'hello');
   });
 });
 
-suite('SvgFigureText - Method - splitStrikeSegments', () => {
+suite('SvgFigureText - Method - parseDecorationSegments', () => {
   test('should return empty array for empty input', () => {
-    assert.deepStrictEqual(SvgFigureText.splitStrikeSegments(''), []);
-  });
-
-  test('should return single non-strike segment for plain text', () => {
     assert.deepStrictEqual(
-      SvgFigureText.splitStrikeSegments('hello'),
-      [{ text: 'hello', strike: false }]
+      SvgFigureText.parseDecorationSegments(''),
+      { segments: [], error: false }
     );
   });
 
-  test('should split leading strike and trailing normal text', () => {
+  test('should return single plain segment for plain text', () => {
     assert.deepStrictEqual(
-      SvgFigureText.splitStrikeSegments('<del>送信する</del>受信解析する'),
-      [
-        { text: '送信する', strike: true },
-        { text: '受信解析する', strike: false },
-      ]
+      SvgFigureText.parseDecorationSegments('hello'),
+      { segments: [{ text: 'hello', deco: '' }], error: false }
     );
   });
 
-  test('should handle normal text surrounding a strike segment', () => {
+  test('should split a <del> segment from surrounding text', () => {
     assert.deepStrictEqual(
-      SvgFigureText.splitStrikeSegments('前<del>中</del>後'),
-      [
-        { text: '前', strike: false },
-        { text: '中', strike: true },
-        { text: '後', strike: false },
-      ]
+      SvgFigureText.parseDecorationSegments('<del>送信する</del>受信解析する'),
+      {
+        segments: [
+          { text: '送信する', deco: 'del' },
+          { text: '受信解析する', deco: '' },
+        ],
+        error: false,
+      }
+    );
+  });
+
+  test('should split a <ins> segment from surrounding text', () => {
+    assert.deepStrictEqual(
+      SvgFigureText.parseDecorationSegments('前<ins>中</ins>後'),
+      {
+        segments: [
+          { text: '前', deco: '' },
+          { text: '中', deco: 'ins' },
+          { text: '後', deco: '' },
+        ],
+        error: false,
+      }
+    );
+  });
+
+  test('should accept sequential (non-nested) <del> and <ins>', () => {
+    const result = SvgFigureText.parseDecorationSegments('<del>a</del><ins>b</ins>');
+    assert.strictEqual(result.error, false);
+    assert.deepStrictEqual(result.segments, [
+      { text: 'a', deco: 'del' },
+      { text: 'b', deco: 'ins' },
+    ]);
+  });
+
+  test('should flag a different tag nested inside another as error', () => {
+    assert.strictEqual(
+      SvgFigureText.parseDecorationSegments('<ins>a<del>b</del>c</ins>').error,
+      true
+    );
+  });
+
+  test('should flag a same tag nested inside itself as error', () => {
+    assert.strictEqual(
+      SvgFigureText.parseDecorationSegments('<ins>a<ins>b</ins></ins>').error,
+      true
+    );
+  });
+
+  test('should flag a closing tag without an opening as error', () => {
+    assert.strictEqual(
+      SvgFigureText.parseDecorationSegments('abc</del>').error,
+      true
+    );
+  });
+
+  test('should flag a mismatched closing tag as error', () => {
+    assert.strictEqual(
+      SvgFigureText.parseDecorationSegments('<ins>abc</del>').error,
+      true
+    );
+  });
+
+  test('should flag an unclosed tag as error', () => {
+    assert.strictEqual(
+      SvgFigureText.parseDecorationSegments('<ins>abc').error,
+      true
     );
   });
 });
 
-suite('SvgFigureText - Method - svgString with strike', () => {
-  test('width functions should ignore the strike tags', () => {
+suite('SvgFigureText - Method - hasDecorationTag', () => {
+  test('should be false for plain text', () => {
+    assert.strictEqual(SvgFigureText.hasDecorationTag('hello'), false);
+  });
+
+  test('should be true when a <del> tag exists', () => {
+    assert.strictEqual(SvgFigureText.hasDecorationTag('a<del>b</del>'), true);
+  });
+
+  test('should be true when a <ins> tag exists', () => {
+    assert.strictEqual(SvgFigureText.hasDecorationTag('a<ins>b</ins>'), true);
+  });
+
+  test('should be true even for a lone closing tag (so it can be flagged)', () => {
+    assert.strictEqual(SvgFigureText.hasDecorationTag('a</ins>'), true);
+  });
+});
+
+suite('SvgFigureText - Method - svgString with decoration', () => {
+  test('width functions should ignore the decoration tags', () => {
     assert.strictEqual(
       SvgFigureText.getSvgStringWidth('<del>ab</del>', 12),
       SvgFigureText.getSvgStringWidth('ab', 12)
     );
+    assert.strictEqual(
+      SvgFigureText.getSvgStringWidth('<ins>ab</ins>', 12),
+      SvgFigureText.getSvgStringWidth('ab', 12)
+    );
   });
 
-  test('should wrap struck text in a line-through tspan', () => {
+  test('should wrap struck text in a line-through tspan with salmon background', () => {
     const result = SvgFigureText.svgString(0, 0, '<del>あ</del>い');
     assert.ok(result.includes('<tspan text-decoration="line-through">あ</tspan>'));
+    assert.ok(result.includes(`fill="${SvgFigureDefine.STRIKE_BG_COLOR}"`));
     assert.ok(result.includes('い'));
   });
 
-  test('should draw a background rect with the strike background color', () => {
-    const result = SvgFigureText.svgString(0, 0, '<del>あ</del>');
+  test('should highlight inserted text with light-green background and no strikethrough', () => {
+    const result = SvgFigureText.svgString(0, 0, '<ins>あ</ins>い');
     assert.ok(result.includes('<rect '));
-    assert.ok(result.includes(`fill="${SvgFigureDefine.STRIKE_BG_COLOR}"`));
+    assert.ok(result.includes(`fill="${SvgFigureDefine.INSERT_BG_COLOR}"`));
+    // <ins>は取り消し線を引かない
+    assert.ok(!result.includes('line-through'));
+  });
+
+  test('should render an error background and show the raw tags on nested tags', () => {
+    const result = SvgFigureText.svgString(0, 0, '<ins>a<del>b</del>c</ins>');
+    assert.ok(result.includes(`fill="${SvgFigureDefine.DECORATION_ERROR_BG_COLOR}"`));
+    // タグごと(エスケープして)表示し、エラー箇所を可視化する
+    assert.ok(result.includes('&lt;ins&gt;'));
+    assert.ok(result.includes('&lt;del&gt;'));
   });
 
   test('should size the background rect with the tighter background ratio', () => {
@@ -271,7 +375,7 @@ suite('SvgFigureText - Method - svgString with strike', () => {
     const text = 'a'.repeat(87);
     const result = SvgFigureText.svgString(0, 0, `<del>${text}</del>`);
     const expectedBgWidth = SvgFigureText.getSvgStringWidth(
-      text, 12, SvgFigureDefine.STRIKE_BG_HALF_WIDTH_RATIO
+      text, 12, SvgFigureDefine.DECORATION_BG_HALF_WIDTH_RATIO
     );
     assert.ok(result.includes(`width="${expectedBgWidth}"`));
     // 背景の幅はレイアウト用の幅(矢印基準)より狭いこと
@@ -287,7 +391,7 @@ suite('SvgFigureText - Method - svgString with strike', () => {
     assert.ok(result.indexOf('<rect ') < result.indexOf('<text '));
   });
 
-  test('should keep plain text output unchanged when no strike tag', () => {
+  test('should keep plain text output unchanged when no decoration tag', () => {
     const result = SvgFigureText.svgString(0, 0, 'hello');
     assert.ok(result.includes('>hello</text>'));
     assert.ok(!result.includes('<rect '));
