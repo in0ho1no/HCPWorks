@@ -14,9 +14,9 @@ export class SvgFigureDefine {
    * 文字幅をpx換算する際の、フォントサイズに対する1文字あたりの送り幅の比率。
    * 描画フォント(Consolas等のmonospace)の実測値に合わせる。
    * - 全角文字: 約1.0em
-   * - 半角文字: Consolasの送り幅は約0.55emだが、矢印との重なりを避けるため
-   *   わずかに余裕を持たせた値とする。
+   * - 半角文字: Consolasの送り幅は約0.55em。実描画で重なり/余計な隙間が
+   *   生じない値として0.54を採用(半角87文字連続でも重なりなしを確認)。
    */
   static readonly FULL_WIDTH_CHAR_RATIO = 1.0;
-  static readonly HALF_WIDTH_CHAR_RATIO = 0.6;
+  static readonly HALF_WIDTH_CHAR_RATIO = 0.54;
 }
