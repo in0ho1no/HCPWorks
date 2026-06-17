@@ -2,12 +2,12 @@ import { SvgFigureDefine } from './svg_figure_define';
 
 export class SvgFigureText {
   /**
-   * 文字列の幅を計算する
+   * 文字列の幅を全角文字単位で計算する
    * 2バイト文字を基準に積算する
    * 1バイト文字は、0.5文字扱いとする
-   * 
+   *
    * @param text 幅を取得したい文字列
-   * @returns 文字列の幅。端数は切り上げ。
+   * @returns 文字列の幅(全角文字単位)。端数は切り上げ。
    */
   static calcStringWidth(text: string): number {
     if (!text) { return 0; }
@@ -27,17 +27,29 @@ export class SvgFigureText {
 
   /**
    * テキスト図形の幅をピクセル単位で取得する
-   * 
+   *
+   * 全角文字単位への丸め(切り上げ)を経由せず、文字種ごとにpxを直接積算する。
+   * これにより半角文字が連続したときの過小評価(矢印と末尾文字の重なり)を防ぐ。
+   *
    * @param text 幅を取得したいテキスト図形の文字列
    * @param fontPx テキスト図形のフォントサイズ(px)
-   * @returns テキスト図形の幅(px)
+   * @returns テキスト図形の幅(px)。端数は切り上げ。
    */
   static getSvgStringWidth(text: string, fontPx: number): number {
     if (!text) { return 0; }
     if (fontPx <= 0) { return 0; }
 
-    const stringWidth = SvgFigureText.calcStringWidth(text);
-    return stringWidth * fontPx;
+    let widthPx = 0;
+    for (const char of text) {
+      // ASCII文字(1バイト文字)
+      if (char.charCodeAt(0) < 128) {
+        widthPx += fontPx * SvgFigureDefine.HALF_WIDTH_CHAR_RATIO;
+      } else {
+        // それ以外(2バイト文字)
+        widthPx += fontPx * SvgFigureDefine.FULL_WIDTH_CHAR_RATIO;
+      }
+    }
+    return Math.ceil(widthPx);
   }
 
   /**

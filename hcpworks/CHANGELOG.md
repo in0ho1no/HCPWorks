@@ -16,6 +16,9 @@ All notable changes to the "hcpworks" extension will be documented in this file.
     - Caption can be added with `\table <name>`
     - `<br>` in a cell becomes a line break (in-cell line break when pasted into Excel with formatting)
     - Rendered in preview only (not included in image output)
+- bug Fixed
+    - Arrow overlapped the trailing character when a text contained many consecutive half-width characters
+    - Text width is now accumulated directly in px per character type (instead of rounding to full-width units), matching the monospace font metrics
 
 ## [0.0.9]
 
