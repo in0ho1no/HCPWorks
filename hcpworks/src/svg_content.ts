@@ -127,12 +127,12 @@ export class SvgContent {
       const rowsHtml = table.rows.map((row, rowIndex) => {
         const tag = rowIndex === 0 ? "th" : "td";
         const cellsHtml = row.cells.map((cell, cellIndex) => {
-          const content = this.renderCellContent(cell);
+          let content = this.renderCellContent(cell);
 
-          // 先頭列のみ、階層(depth)に応じて左へ字下げする
+          // 先頭列のみ、階層(depth)に応じて全角スペースで字下げする
+          // CSSではなく実文字にすることで、Excelへ書式あり貼り付けしても字下げが残る
           if (cellIndex === 0 && row.depth > 0) {
-            const indentEm = row.depth * 1.5;
-            return `<${tag} style="padding-left: calc(10px + ${indentEm}em)">${content}</${tag}>`;
+            content = "　".repeat(row.depth) + content;
           }
           return `<${tag}>${content}</${tag}>`;
         }).join("");
