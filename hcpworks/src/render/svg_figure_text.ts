@@ -1,6 +1,50 @@
 import { SvgFigureDefine } from './svg_figure_define';
 
 export class SvgFigureText {
+  /** 見え消し(取り消し線)記法の開始/終了タグ */
+  static readonly STRIKE_TAG_OPEN = '<del>';
+  static readonly STRIKE_TAG_CLOSE = '</del>';
+
+  /**
+   * 見え消し記法(<del>～</del>)を取り除いた、純粋な表示文字列を返す。
+   * 幅計算は表示文字数で行う必要があるため、タグを除去してから計算する。
+   *
+   * @param text 元の文字列
+   * @returns タグを除去した文字列
+   */
+  static stripStrikeTags(text: string): string {
+    if (!text) { return ''; }
+    return text.replace(/<\/?del>/g, '');
+  }
+
+  /**
+   * 文字列を見え消し(取り消し線)の有無でセグメントに分割する。
+   * <del>～</del>で囲まれた範囲は strike=true となる。
+   *
+   * @param text 元の文字列
+   * @returns セグメントの配列(出現順)
+   */
+  static splitStrikeSegments(text: string): { text: string; strike: boolean }[] {
+    if (!text) { return []; }
+
+    const segments: { text: string; strike: boolean }[] = [];
+    const regex = /<del>([\s\S]*?)<\/del>/g;
+    let lastIndex = 0;
+    let match: RegExpExecArray | null;
+
+    while ((match = regex.exec(text)) !== null) {
+      if (match.index > lastIndex) {
+        segments.push({ text: text.slice(lastIndex, match.index), strike: false });
+      }
+      segments.push({ text: match[1], strike: true });
+      lastIndex = regex.lastIndex;
+    }
+    if (lastIndex < text.length) {
+      segments.push({ text: text.slice(lastIndex), strike: false });
+    }
+    return segments;
+  }
+
   /**
    * 文字列の幅を全角文字単位で計算する
    * 2バイト文字を基準に積算する
@@ -11,6 +55,9 @@ export class SvgFigureText {
    */
   static calcStringWidth(text: string): number {
     if (!text) { return 0; }
+
+    // 見え消しタグは表示されないので、幅計算からは除外する
+    text = SvgFigureText.stripStrikeTags(text);
 
     let countBytes = 0;
     for (const char of text) {
@@ -38,6 +85,9 @@ export class SvgFigureText {
   static getSvgStringWidth(text: string, fontPx: number): number {
     if (!text) { return 0; }
     if (fontPx <= 0) { return 0; }
+
+    // 見え消しタグは表示されないので、幅計算からは除外する
+    text = SvgFigureText.stripStrikeTags(text);
 
     let widthPx = 0;
     for (const char of text) {
@@ -83,13 +133,45 @@ export class SvgFigureText {
 
     const fontSizePx = SvgFigureText.getFontSizePx(fontSizePercent);
 
-    // エスケープが必要な特殊文字の処理
-    const escapedText = SvgFigureText.escapeXml(text);
+    // 見え消し(取り消し線)記法を含まない場合は従来通り単純に描画する
+    if (!text.includes(SvgFigureText.STRIKE_TAG_OPEN)) {
+      const escapedText = SvgFigureText.escapeXml(text);
+      return `<text x="${startX}" y="${startY}" ` +
+        `text-anchor="start" dominant-baseline="middle" ` +
+        `font-family="Consolas, Courier New, monospace" ` +
+        `font-size="${fontSizePx}px">${escapedText}</text>` +
+        `${SvgFigureDefine.LINE_BREAK}`;
+    }
 
-    return `<text x="${startX}" y="${startY}" ` +
+    // 見え消し記法を含む場合は、セグメント単位で<tspan>と背景<rect>を生成する
+    const segments = SvgFigureText.splitStrikeSegments(text);
+    let rects = '';
+    let tspans = '';
+    let offsetX = 0;
+    for (const seg of segments) {
+      if (!seg.text) { continue; }
+
+      const segWidth = SvgFigureText.getSvgStringWidth(seg.text, fontSizePx);
+      const escaped = SvgFigureText.escapeXml(seg.text);
+      if (seg.strike) {
+        // 見え消し対象: 背景(サーモンピンク)を敷き、取り消し線を引く
+        rects += `<rect x="${startX + offsetX}" y="${startY - fontSizePx / 2}" ` +
+          `width="${segWidth}" height="${fontSizePx}" ` +
+          `fill="${SvgFigureDefine.STRIKE_BG_COLOR}" />` +
+          `${SvgFigureDefine.LINE_BREAK}`;
+        tspans += `<tspan text-decoration="line-through">${escaped}</tspan>`;
+      } else {
+        tspans += escaped;
+      }
+      offsetX += segWidth;
+    }
+
+    // 背景<rect>はテキストより先に描画して背面に配置する
+    return rects +
+      `<text x="${startX}" y="${startY}" ` +
       `text-anchor="start" dominant-baseline="middle" ` +
       `font-family="Consolas, Courier New, monospace" ` +
-      `font-size="${fontSizePx}px">${escapedText}</text>` +
+      `font-size="${fontSizePx}px">${tspans}</text>` +
       `${SvgFigureDefine.LINE_BREAK}`;
   }
 

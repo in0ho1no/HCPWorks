@@ -198,6 +198,87 @@ suite('SvgFigureText - Method - drawString', () => {
   });
 });
 
+suite('SvgFigureText - Method - stripStrikeTags', () => {
+  test('should return empty string for empty input', () => {
+    assert.strictEqual(SvgFigureText.stripStrikeTags(''), '');
+  });
+
+  test('should remove <del> and </del> tags', () => {
+    assert.strictEqual(SvgFigureText.stripStrikeTags('<del>送信する</del>受信解析する'), '送信する受信解析する');
+  });
+
+  test('should not change text without tags', () => {
+    assert.strictEqual(SvgFigureText.stripStrikeTags('hello'), 'hello');
+  });
+});
+
+suite('SvgFigureText - Method - splitStrikeSegments', () => {
+  test('should return empty array for empty input', () => {
+    assert.deepStrictEqual(SvgFigureText.splitStrikeSegments(''), []);
+  });
+
+  test('should return single non-strike segment for plain text', () => {
+    assert.deepStrictEqual(
+      SvgFigureText.splitStrikeSegments('hello'),
+      [{ text: 'hello', strike: false }]
+    );
+  });
+
+  test('should split leading strike and trailing normal text', () => {
+    assert.deepStrictEqual(
+      SvgFigureText.splitStrikeSegments('<del>送信する</del>受信解析する'),
+      [
+        { text: '送信する', strike: true },
+        { text: '受信解析する', strike: false },
+      ]
+    );
+  });
+
+  test('should handle normal text surrounding a strike segment', () => {
+    assert.deepStrictEqual(
+      SvgFigureText.splitStrikeSegments('前<del>中</del>後'),
+      [
+        { text: '前', strike: false },
+        { text: '中', strike: true },
+        { text: '後', strike: false },
+      ]
+    );
+  });
+});
+
+suite('SvgFigureText - Method - svgString with strike', () => {
+  test('width functions should ignore the strike tags', () => {
+    assert.strictEqual(
+      SvgFigureText.getSvgStringWidth('<del>ab</del>', 12),
+      SvgFigureText.getSvgStringWidth('ab', 12)
+    );
+  });
+
+  test('should wrap struck text in a line-through tspan', () => {
+    const result = SvgFigureText.svgString(0, 0, '<del>あ</del>い');
+    assert.ok(result.includes('<tspan text-decoration="line-through">あ</tspan>'));
+    assert.ok(result.includes('い'));
+  });
+
+  test('should draw a background rect with the strike background color', () => {
+    const result = SvgFigureText.svgString(0, 0, '<del>あ</del>');
+    assert.ok(result.includes('<rect '));
+    assert.ok(result.includes(`fill="${SvgFigureDefine.STRIKE_BG_COLOR}"`));
+  });
+
+  test('should place the rect before the text so it renders behind', () => {
+    const result = SvgFigureText.svgString(0, 0, '<del>あ</del>');
+    assert.ok(result.indexOf('<rect ') < result.indexOf('<text '));
+  });
+
+  test('should keep plain text output unchanged when no strike tag', () => {
+    const result = SvgFigureText.svgString(0, 0, 'hello');
+    assert.ok(result.includes('>hello</text>'));
+    assert.ok(!result.includes('<rect '));
+    assert.ok(!result.includes('<tspan'));
+  });
+});
+
 suite('SvgFigureText - Method - escapeXml', () => {
   test('should return empty string for empty input', () => {
     assert.strictEqual(SvgFigureText.escapeXml(''), '');

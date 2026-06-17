@@ -11,6 +11,12 @@ export class SvgFigureDefine {
   static readonly LINE_BREAK = "\r\n";
 
   /**
+   * 見え消し(取り消し線)対象の文字列に敷く背景色。
+   * サーモンピンク系の薄い色。<del>～</del>で囲った範囲に適用する。
+   */
+  static readonly STRIKE_BG_COLOR = "#ffc9c4";
+
+  /**
    * 文字幅をpx換算する際の、フォントサイズに対する1文字あたりの送り幅の比率。
    * 描画フォント(Consolas等のmonospace)の実測値に合わせる。
    * - 全角文字: 約1.0em
