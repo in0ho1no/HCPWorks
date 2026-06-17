@@ -4,6 +4,11 @@ All notable changes to the "hcpworks" extension will be documented in this file.
 
 ## [0.0.10]
 
+- Supports `<ins>` notation (insertion highlight)
+    - Highlights the range enclosed by `<ins>` and `</ins>` with a light-green background to indicate newly added or changed text
+    - Nested tags, a different tag mixed in, or unmatched open/close are shown as a notation error with a red background (applies to `<del>` as well)
+- Supports `<del>` notation (strikethrough)
+    - Draws a strikethrough over the range enclosed by `<del>` and `</del>`, and highlights it with a salmon-pink background
 - Supports `\drop` notation (discard of output data)
     - Written like `\out` but neither connected to the data section nor drawn
 - Supports module metadata notation (`\kind`, `\scope`)
