@@ -80,9 +80,15 @@ export class SvgFigureText {
    *
    * @param text 幅を取得したいテキスト図形の文字列
    * @param fontPx テキスト図形のフォントサイズ(px)
+   * @param halfWidthRatio 半角文字の送り幅比率。省略時はレイアウト用の既定値。
+   *   見え消し背景など、実描画グリフに寄せたい場合に詰めた値を渡す。
    * @returns テキスト図形の幅(px)。端数は切り上げ。
    */
-  static getSvgStringWidth(text: string, fontPx: number): number {
+  static getSvgStringWidth(
+    text: string,
+    fontPx: number,
+    halfWidthRatio: number = SvgFigureDefine.HALF_WIDTH_CHAR_RATIO
+  ): number {
     if (!text) { return 0; }
     if (fontPx <= 0) { return 0; }
 
@@ -93,7 +99,7 @@ export class SvgFigureText {
     for (const char of text) {
       // ASCII文字(1バイト文字)
       if (char.charCodeAt(0) < 128) {
-        widthPx += fontPx * SvgFigureDefine.HALF_WIDTH_CHAR_RATIO;
+        widthPx += fontPx * halfWidthRatio;
       } else {
         // それ以外(2バイト文字)
         widthPx += fontPx * SvgFigureDefine.FULL_WIDTH_CHAR_RATIO;
@@ -151,12 +157,17 @@ export class SvgFigureText {
     for (const seg of segments) {
       if (!seg.text) { continue; }
 
+      // セグメントの配置(offsetX)はレイアウト用の比率で揃える(矢印位置と同基準)
       const segWidth = SvgFigureText.getSvgStringWidth(seg.text, fontSizePx);
       const escaped = SvgFigureText.escapeXml(seg.text);
       if (seg.strike) {
+        // 背景rectの幅だけは実描画グリフに寄せた比率で計算し、右端のはみ出しを抑える
+        const bgWidth = SvgFigureText.getSvgStringWidth(
+          seg.text, fontSizePx, SvgFigureDefine.STRIKE_BG_HALF_WIDTH_RATIO
+        );
         // 見え消し対象: 背景(サーモンピンク)を敷き、取り消し線を引く
         rects += `<rect x="${startX + offsetX}" y="${startY - fontSizePx / 2}" ` +
-          `width="${segWidth}" height="${fontSizePx}" ` +
+          `width="${bgWidth}" height="${fontSizePx}" ` +
           `fill="${SvgFigureDefine.STRIKE_BG_COLOR}" />` +
           `${SvgFigureDefine.LINE_BREAK}`;
         tspans += `<tspan text-decoration="line-through">${escaped}</tspan>`;

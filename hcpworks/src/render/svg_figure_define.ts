@@ -25,4 +25,12 @@ export class SvgFigureDefine {
    */
   static readonly FULL_WIDTH_CHAR_RATIO = 1.0;
   static readonly HALF_WIDTH_CHAR_RATIO = 0.54;
+
+  /**
+   * 見え消し背景(rect)の幅計算に用いる半角文字の送り幅比率。
+   * レイアウト/矢印用の HALF_WIDTH_CHAR_RATIO は重なり防止のため広めに
+   * 見積もっているが、塗りつぶしの背景ではその上振れが右端のはみ出しとして
+   * 見えてしまう。背景は実描画グリフに寄せるため、やや詰めた値を用いる。
+   */
+  static readonly STRIKE_BG_HALF_WIDTH_RATIO = 0.53;
 }

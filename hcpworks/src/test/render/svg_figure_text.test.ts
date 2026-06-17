@@ -266,6 +266,22 @@ suite('SvgFigureText - Method - svgString with strike', () => {
     assert.ok(result.includes(`fill="${SvgFigureDefine.STRIKE_BG_COLOR}"`));
   });
 
+  test('should size the background rect with the tighter background ratio', () => {
+    // 87 half-width chars at fontPx=12
+    const text = 'a'.repeat(87);
+    const result = SvgFigureText.svgString(0, 0, `<del>${text}</del>`);
+    const expectedBgWidth = SvgFigureText.getSvgStringWidth(
+      text, 12, SvgFigureDefine.STRIKE_BG_HALF_WIDTH_RATIO
+    );
+    assert.ok(result.includes(`width="${expectedBgWidth}"`));
+    // 背景の幅はレイアウト用の幅(矢印基準)より狭いこと
+    assert.ok(expectedBgWidth < SvgFigureText.getSvgStringWidth(text, 12));
+  });
+
+  test('getSvgStringWidth should honor a custom half-width ratio', () => {
+    assert.strictEqual(SvgFigureText.getSvgStringWidth('aa', 100, 0.5), 100);
+  });
+
   test('should place the rect before the text so it renders behind', () => {
     const result = SvgFigureText.svgString(0, 0, '<del>あ</del>');
     assert.ok(result.indexOf('<rect ') < result.indexOf('<text '));
