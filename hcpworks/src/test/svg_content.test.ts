@@ -223,6 +223,31 @@ suite('SvgContent - Method - getHtmlWrappedSvg', () => {
     assert.ok(!html.includes('<b> & "x"'), 'Should not contain raw special characters');
   });
 
+  test('should convert <br> in a cell to a real line break', () => {
+    const content = new SvgContent();
+    content.setTables([{ caption: '', rows: [{ cells: ['作業日時を記録<br>（年月日）'], depth: 0 }] }]);
+    const html = content.getHtmlWrappedSvg();
+
+    assert.ok(html.includes('作業日時を記録<br>（年月日）'), 'Should keep <br> as a real line break');
+  });
+
+  test('should accept <br/> and <br /> variants', () => {
+    const content = new SvgContent();
+    content.setTables([{ caption: '', rows: [{ cells: ['a<br/>b<br />c'], depth: 0 }] }]);
+    const html = content.getHtmlWrappedSvg();
+
+    assert.ok(html.includes('a<br>b<br>c'), 'Should normalize <br/> and <br /> to <br>');
+  });
+
+  test('should still escape other HTML around a <br>', () => {
+    const content = new SvgContent();
+    content.setTables([{ caption: '', rows: [{ cells: ['<b><br>x'], depth: 0 }] }]);
+    const html = content.getHtmlWrappedSvg();
+
+    assert.ok(html.includes('&lt;b&gt;<br>x'), 'Should escape surrounding HTML but keep <br>');
+    assert.ok(!html.includes('<b>'), 'Should not contain a raw <b> tag');
+  });
+
   test('should not render a table element when no tables set', () => {
     const content = new SvgContent();
     content.setSvgContent('<svg></svg>');
