@@ -19,6 +19,13 @@ const TABLE_MARKER = '\\table';
 const DATA_MARKER = '\\data';
 
 /**
+ * モジュールのメタ情報マーカー
+ * \module 直下に記載するモジュール属性を識別するための文字列
+ */
+const KIND_MARKER = '\\kind';   // 変更種別(新規作成/既存変更/既存流用 など)
+const SCOPE_MARKER = '\\scope'; // 公開種別(公開関数/非公開関数 など)
+
+/**
  * モジュール情報を表すインターフェース
  */
 export interface Module {
@@ -120,6 +127,64 @@ export function cleanTextLines(textLines: string[]): string[] {
   }
 
   return cleanedLines;
+}
+
+/**
+ * モジュールのメタ情報を表すインターフェース
+ */
+export interface ModuleMeta {
+  /** 変更種別(\kind の値。無ければ空文字) */
+  kind: string;
+
+  /** 公開種別(\scope の値。無ければ空文字) */
+  scope: string;
+}
+
+/**
+ * テキストデータからモジュールのメタ情報を抽出する
+ *
+ * \module 直下に記載する `\kind <値>` `\scope <値>` の行を取り出す。
+ * 値は自由記述で、コメント除去後の文字列をそのまま用いる。
+ * メタ情報行は remainingLines から取り除く。
+ *
+ * @param textLines - 解析対象のテキストデータ配列
+ * @returns 抽出したメタ情報と、メタ情報以外の残りの行
+ */
+export function extractModuleMeta(textLines: string[]): { meta: ModuleMeta; remainingLines: string[] } {
+  const meta: ModuleMeta = { kind: "", scope: "" };
+  const remainingLines: string[] = [];
+
+  // マーカー行なら値を取り出す。マーカーでなければnullを返す
+  const getMarkerValue = (trimmedLine: string, marker: string): string | null => {
+    if (trimmedLine === marker) {
+      return "";
+    }
+    if (trimmedLine.startsWith(marker + " ")) {
+      return trimmedLine.substring(marker.length).trim();
+    }
+    return null;
+  };
+
+  for (const line of textLines) {
+    // コメントを除去して判定する
+    const trimmedLine = line.split("#")[0].trim();
+
+    const kindValue = getMarkerValue(trimmedLine, KIND_MARKER);
+    if (kindValue !== null) {
+      meta.kind = kindValue;
+      continue;
+    }
+
+    const scopeValue = getMarkerValue(trimmedLine, SCOPE_MARKER);
+    if (scopeValue !== null) {
+      meta.scope = scopeValue;
+      continue;
+    }
+
+    remainingLines.push(line);
+  }
+
+  return { meta, remainingLines };
 }
 
 /**

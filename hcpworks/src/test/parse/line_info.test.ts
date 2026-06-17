@@ -220,6 +220,32 @@ suite('LineInfo - Method - updateLineIO', () => {
     assert.strictEqual(li.getTextLessTypeIO(), 'plainProcess');
   });
 
+  test('should strip \\drop without adding it to in/out lists', () => {
+    const li = new LineInfo();
+    li.setTextOrg('\\mod 結果を送信する \\in 判定結果 \\drop 送信結果');
+    li.updateType();
+    li.updateLineIO();
+
+    // \in はリストへ、\drop はリストへ入らない
+    const inList = li.getInOutData().getInDataList();
+    assert.strictEqual(inList.length, 1);
+    assert.strictEqual(inList[0].name, '判定結果');
+    assert.deepStrictEqual(li.getInOutData().getOutDataList(), []);
+
+    // \drop 送信結果 は描画テキストから除去される
+    assert.strictEqual(li.getTextLessTypeIO(), '結果を送信する');
+  });
+
+  test('should strip a standalone \\drop from textLessTypeIO', () => {
+    const li = new LineInfo();
+    li.setTextOrg('processE \\drop dataZ');
+    li.updateType();
+    li.updateLineIO();
+    assert.deepStrictEqual(li.getInOutData().getInDataList(), []);
+    assert.deepStrictEqual(li.getInOutData().getOutDataList(), []);
+    assert.strictEqual(li.getTextLessTypeIO(), 'processE');
+  });
+
   test('should return this for method chaining', () => {
     const li = new LineInfo();
     li.setTextOrg('processA');

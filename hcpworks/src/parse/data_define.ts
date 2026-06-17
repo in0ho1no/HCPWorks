@@ -17,6 +17,7 @@ export class IOTypeFormat {
 export enum IOTypeEnum {
   IN = 0,
   OUT,
+  DROP,
 }
 
 /**
@@ -27,6 +28,7 @@ export class IOTypeDefine {
   private static TYPE_FORMATS: Record<IOTypeEnum, IOTypeFormat> = {
     [IOTypeEnum.IN]: new IOTypeFormat(0, "\\in"),
     [IOTypeEnum.OUT]: new IOTypeFormat(1, "\\out"),
+    [IOTypeEnum.DROP]: new IOTypeFormat(2, "\\drop"),
   };
 
   // 形式から種別へのマッピングを構築

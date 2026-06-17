@@ -2,6 +2,24 @@
 
 All notable changes to the "hcpworks" extension will be documented in this file.
 
+## [0.0.11]
+
+- Supports `<ins>` notation (insertion highlight)
+    - Highlights the range enclosed by `<ins>` and `</ins>` with a light-green background to indicate newly added or changed text
+    - Nested tags, a different tag mixed in, or unmatched open/close are shown as a notation error with a red background (applies to `<del>` as well)
+- Supports `<del>` notation (strikethrough)
+    - Draws a strikethrough over the range enclosed by `<del>` and `</del>`, and highlights it with a salmon-pink background
+- Supports `\drop` notation (discard of output data)
+    - Written like `\out` but neither connected to the data section nor drawn
+- Supports module metadata notation (`\kind`, `\scope`)
+    - Write them between `\module` and `\table`; values are free-form
+    - Shown below `Name:` as labeled lines (`scope: <value>` / `kind: <value>`, included in image output)
+- update `\table` notation (CSV-like tables)
+    - `<br>` in a cell becomes a line break (in-cell line break when pasted into Excel with formatting)
+- bug Fixed
+    - Arrow overlapped the trailing character when a text contained many consecutive half-width characters
+    - Text width is now accumulated directly in px per character type (instead of rounding to full-width units), matching the monospace font metrics
+
 ## [0.0.10]
 
 - Supports `\table` notation (CSV-like tables)

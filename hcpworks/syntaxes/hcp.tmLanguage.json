@@ -10,6 +10,14 @@
             "name": "keyword.control.table.hcp"
         },
         {
+            "match": "\\\\kind ",
+            "name": "keyword.control.kind.hcp"
+        },
+        {
+            "match": "\\\\scope ",
+            "name": "keyword.control.scope.hcp"
+        },
+        {
             "match": "\\\\data ",
             "name": "keyword.control.data.hcp"
         },
@@ -48,6 +56,10 @@
         {
             "match": "\\\\out ",
             "name": "keyword.control.out.hcp"
+        },
+        {
+            "match": "\\\\drop ",
+            "name": "keyword.control.drop.hcp"
         }
     ]
 }

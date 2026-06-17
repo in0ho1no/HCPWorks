@@ -1,5 +1,6 @@
 \module 有効なデータをチェックする
-
+\scope extern  # omission
+\kind new
 \table
 名称, 目的, 初期値
 チェック対象, Highが見つかるかチェックするByteデータ, 引数依存
@@ -55,3 +56,28 @@
                         \reutrn 判定を終えてループを抜ける
                     \false bitがONではなかった
                         何もしない
+            
+            \mod 結果を送信する \in 判定結果 \drop 送信結果
+
+\module 有効なデータをチェックする3
+
+\table テスト3
+名称, 目的, 初期値
+ループカウンタ,, コマンド種別だけ繰り返す,,,, 0
+
+\data チェック対象
+<del>\data ループカウンタ</del>
+
+    有効なデータをチェックする \in チェック対象 \out 判定結果
+
+        判定する
+            \repeat 下位bitから順に判定する \in ループカウンタ
+                <del> \fork ループカウンタの数だけ1を左にbitシフトし、論理積をとる(QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ) \in ループカウンタ \in チェック対象 </del>
+                    \true <del>bitがON</del><ins>だった</ins>
+                        <del>High有りとする \out 判定結果
+                        \reutrn <ins>判定を終えてループを抜ける</del>
+                    <ins>\false bitがONではなかった<ins>
+                        何もしない
+            
+            \mod 結果を送信する \in 判定結果 \drop 送信結果
+

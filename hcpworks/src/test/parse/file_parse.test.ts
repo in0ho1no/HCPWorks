@@ -1,5 +1,5 @@
 import * as assert from 'assert';
-import { parseModules, cleanTextLines, extractTables, Module, TableRow } from '../../parse/file_parse';
+import { parseModules, cleanTextLines, extractTables, extractModuleMeta, Module, TableRow } from '../../parse/file_parse';
 
 /** 表の行配列からセルだけを取り出す(depthを無視して比較するためのヘルパー) */
 const cellsOf = (rows: TableRow[]): string[][] => rows.map(row => row.cells);
@@ -121,6 +121,50 @@ suite('file_parse - Function - cleanTextLines', () => {
 
 	test('Should return empty array for empty input', () => {
 		assert.deepStrictEqual(cleanTextLines([]), []);
+	});
+});
+
+suite('file_parse - Function - extractModuleMeta', () => {
+	test('Should extract kind and scope values', () => {
+		const input = [
+			'\\kind 新規作成',
+			'\\scope 公開関数',
+			'通常行',
+		];
+		const { meta, remainingLines } = extractModuleMeta(input);
+
+		assert.strictEqual(meta.kind, '新規作成');
+		assert.strictEqual(meta.scope, '公開関数');
+		assert.deepStrictEqual(remainingLines, ['通常行']);
+	});
+
+	test('Should default to empty strings when no meta exists', () => {
+		const input = ['通常行1', '通常行2'];
+		const { meta, remainingLines } = extractModuleMeta(input);
+
+		assert.deepStrictEqual(meta, { kind: '', scope: '' });
+		assert.deepStrictEqual(remainingLines, input);
+	});
+
+	test('Should strip comments from meta values', () => {
+		const input = ['\\kind 既存変更 # メモ'];
+		const { meta } = extractModuleMeta(input);
+
+		assert.strictEqual(meta.kind, '既存変更');
+	});
+
+	test('Should accept free-form values such as extern/static', () => {
+		const input = ['\\scope static'];
+		const { meta } = extractModuleMeta(input);
+
+		assert.strictEqual(meta.scope, 'static');
+	});
+
+	test('Should keep the last value when a marker repeats', () => {
+		const input = ['\\kind 新規作成', '\\kind 既存流用'];
+		const { meta } = extractModuleMeta(input);
+
+		assert.strictEqual(meta.kind, '既存流用');
 	});
 });
 

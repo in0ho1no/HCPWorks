@@ -96,6 +96,22 @@ export class SvgContent {
   }
 
   /**
+   * セルの文字列をHTMLへ変換する
+   *
+   * `<br>`(`<br/>` `<br />` 等)のみ改行として通し、それ以外はエスケープする。
+   * セル内の改行はExcelへ「書式あり貼り付け」した際にセル内改行として扱われる。
+   *
+   * @param cell - セルの文字列
+   * @returns 改行を反映したHTML文字列
+   */
+  private renderCellContent(cell: string): string {
+    return cell
+      .split(/<br\s*\/?>/i)
+      .map(part => this.escapeHtml(part))
+      .join("<br>");
+  }
+
+  /**
    * 保持している表データをHTMLの表へ変換する
    *
    * 先頭行をヘッダー(th)、残りをデータ行(td)として描画する。
@@ -111,14 +127,14 @@ export class SvgContent {
       const rowsHtml = table.rows.map((row, rowIndex) => {
         const tag = rowIndex === 0 ? "th" : "td";
         const cellsHtml = row.cells.map((cell, cellIndex) => {
-          const escaped = this.escapeHtml(cell);
+          let content = this.renderCellContent(cell);
 
-          // 先頭列のみ、階層(depth)に応じて左へ字下げする
+          // 先頭列のみ、階層(depth)に応じて全角スペースで字下げする
+          // CSSではなく実文字にすることで、Excelへ書式あり貼り付けしても字下げが残る
           if (cellIndex === 0 && row.depth > 0) {
-            const indentEm = row.depth * 1.5;
-            return `<${tag} style="padding-left: calc(10px + ${indentEm}em)">${escaped}</${tag}>`;
+            content = "　".repeat(row.depth) + content;
           }
-          return `<${tag}>${escaped}</${tag}>`;
+          return `<${tag}>${content}</${tag}>`;
         }).join("");
         return `<tr>${cellsHtml}</tr>`;
       }).join("");
