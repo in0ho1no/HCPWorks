@@ -307,3 +307,31 @@ suite('SVGRenderer - Method - render', () => {
     assert.ok(svg.includes('<svg'), 'Should produce valid SVG with data lines');
   });
 });
+
+suite('SVGRenderer - Method - drawModuleMeta', () => {
+  test('should include kind and scope values with labels in rendered svg', () => {
+    const renderer = makeRenderer('MetaModule')
+      .setModuleMeta({ kind: '新規作成', scope: '公開関数' });
+    const svg = renderer.render();
+    assert.ok(svg.includes('scope: 公開関数'), 'SVG should include the labeled scope line');
+    assert.ok(svg.includes('kind: 新規作成'), 'SVG should include the labeled kind line');
+  });
+
+  test('should not break rendering when meta is empty', () => {
+    const renderer = makeRenderer('NoMeta').setModuleMeta({ kind: '', scope: '' });
+    const svg = renderer.render();
+    assert.ok(svg.includes('<svg'), 'Should still produce valid SVG without meta');
+  });
+
+  test('setModuleMeta should return the renderer for chaining', () => {
+    const renderer = makeRenderer('Chain');
+    assert.strictEqual(renderer.setModuleMeta({ kind: 'a', scope: 'b' }), renderer);
+  });
+
+  test('should render only the provided value when one is empty', () => {
+    const renderer = makeRenderer('OneMeta').setModuleMeta({ kind: '既存変更', scope: '' });
+    const svg = renderer.render();
+    assert.ok(svg.includes('kind: 既存変更'), 'SVG should include the labeled kind line');
+    assert.ok(!svg.includes('scope:'), 'SVG should not include an empty scope line');
+  });
+});

@@ -4,6 +4,11 @@ All notable changes to the "hcpworks" extension will be documented in this file.
 
 ## [0.0.10]
 
+- Supports `\drop` notation (discard of output data)
+    - Written like `\out` but neither connected to the data section nor drawn
+- Supports module metadata notation (`\kind`, `\scope`)
+    - Write them between `\module` and `\table`; values are free-form
+    - Shown below `Name:` as labeled lines (`scope: <value>` / `kind: <value>`, included in image output)
 - Supports `\table` notation (CSV-like tables)
     - Write it between `\module` and `\data`
     - Consecutive commas are merged into a single separator

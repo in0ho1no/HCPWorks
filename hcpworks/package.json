@@ -154,6 +154,18 @@
             }
           },
           {
+            "scope": "keyword.control.kind.hcp",
+            "settings": {
+              "foreground": "#7f7bb1"
+            }
+          },
+          {
+            "scope": "keyword.control.scope.hcp",
+            "settings": {
+              "foreground": "#7f7bb1"
+            }
+          },
+          {
             "scope": "keyword.control.data.hcp",
             "settings": {
               "foreground": "#ffb92d"
@@ -211,6 +223,12 @@
             "scope": "keyword.control.out.hcp",
             "settings": {
               "foreground": "#e67700"
+            }
+          },
+          {
+            "scope": "keyword.control.drop.hcp",
+            "settings": {
+              "foreground": "#9c5202"
             }
           }
         ]

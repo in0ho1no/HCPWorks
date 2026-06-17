@@ -14,7 +14,7 @@ import { ParseInfo4Render } from './parse/parse_info_4_render';
 import { ProcessLineProcessor } from './parse/line_info_list_process';
 import { DataLineProcessor } from './parse/line_info_list_data';
 import { LineInfo } from './parse/line_info';
-import { cleanTextLines, extractTables } from './parse/file_parse';
+import { cleanTextLines, extractTables, extractModuleMeta } from './parse/file_parse';
 import { SVGRenderer } from './render/render_main';
 
 import { HCP_ID, HCP_SUFFIX, TIMEOUT } from './extension';
@@ -253,8 +253,11 @@ export class HCPController {
    * SVGコンテンツを生成する
    */
   private createSvgContent(selectedElement: ModuleTreeElement): SvgContent {
+    // モジュールのメタ情報を抽出する(\module 直下の \kind \scope)
+    const { meta, remainingLines: afterMeta } = extractModuleMeta(selectedElement.content);
+
     // モジュール内の表ブロックを抽出する(空行を終端に用いるためcleanTextLinesより前に行う)
-    const { tables, remainingLines } = extractTables(selectedElement.content);
+    const { tables, remainingLines } = extractTables(afterMeta);
 
     // コンテンツを新規作成
     const svgContent = new SvgContent()
@@ -283,6 +286,7 @@ export class HCPController {
 
     // レンダリング実行
     const renderer = new SVGRenderer(svgContent.getName(), parseInfo4Render)
+      .setModuleMeta(meta)
       .setSvgBgColor(this.configManager.getConfigSvgBgColor())
       .setWireColorTable(this.configManager.getConfigWireColorTable());
     const svgText = renderer.render();

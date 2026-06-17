@@ -1,5 +1,6 @@
 \module 有効なデータをチェックする
-
+\scope extern  # omission
+\kind new
 \table
 名称, 目的, 初期値
 チェック対象, Highが見つかるかチェックするByteデータ, 引数依存
@@ -55,3 +56,5 @@
                         \reutrn 判定を終えてループを抜ける
                     \false bitがONではなかった
                         何もしない
+            
+            \mod 結果を送信する \in 判定結果 \drop 送信結果
