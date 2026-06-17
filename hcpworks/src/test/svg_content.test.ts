@@ -193,7 +193,7 @@ suite('SvgContent - Method - getHtmlWrappedSvg', () => {
     assert.ok(html.includes('<caption>データ定義</caption>'), 'Should include the caption');
   });
 
-  test('should indent the first cell according to row depth', () => {
+  test('should indent the first cell with full-width spaces according to row depth', () => {
     const content = new SvgContent();
     content.setTables([
       {
@@ -208,10 +208,11 @@ suite('SvgContent - Method - getHtmlWrappedSvg', () => {
     ]);
     const html = content.getHtmlWrappedSvg();
 
-    // depth 0 は字下げ無し、depth>0 は padding-left が付く
-    assert.ok(html.includes('<td>記録</td>'), 'Depth 0 cell should have no indentation style');
-    assert.ok(html.includes('padding-left: calc(10px + 1.5em)'), 'Depth 1 cell should be indented one step');
-    assert.ok(html.includes('padding-left: calc(10px + 3em)'), 'Depth 2 cell should be indented two steps');
+    // depth 0 は字下げ無し、depth>0 は全角スペース×depth を前置(Excel貼付でも残る実文字)
+    assert.ok(html.includes('<td>記録</td>'), 'Depth 0 cell should have no indentation');
+    assert.ok(html.includes('<td>　年月日</td>'), 'Depth 1 cell should be prefixed with one full-width space');
+    assert.ok(html.includes('<td>　　年</td>'), 'Depth 2 cell should be prefixed with two full-width spaces');
+    assert.ok(!html.includes('padding-left'), 'Should no longer use CSS padding for indentation');
   });
 
   test('should escape HTML special characters in cells', () => {
@@ -221,6 +222,31 @@ suite('SvgContent - Method - getHtmlWrappedSvg', () => {
 
     assert.ok(html.includes('&lt;b&gt; &amp; &quot;x&quot;'), 'Should escape special characters');
     assert.ok(!html.includes('<b> & "x"'), 'Should not contain raw special characters');
+  });
+
+  test('should convert <br> in a cell to a real line break', () => {
+    const content = new SvgContent();
+    content.setTables([{ caption: '', rows: [{ cells: ['作業日時を記録<br>（年月日）'], depth: 0 }] }]);
+    const html = content.getHtmlWrappedSvg();
+
+    assert.ok(html.includes('作業日時を記録<br>（年月日）'), 'Should keep <br> as a real line break');
+  });
+
+  test('should accept <br/> and <br /> variants', () => {
+    const content = new SvgContent();
+    content.setTables([{ caption: '', rows: [{ cells: ['a<br/>b<br />c'], depth: 0 }] }]);
+    const html = content.getHtmlWrappedSvg();
+
+    assert.ok(html.includes('a<br>b<br>c'), 'Should normalize <br/> and <br /> to <br>');
+  });
+
+  test('should still escape other HTML around a <br>', () => {
+    const content = new SvgContent();
+    content.setTables([{ caption: '', rows: [{ cells: ['<b><br>x'], depth: 0 }] }]);
+    const html = content.getHtmlWrappedSvg();
+
+    assert.ok(html.includes('&lt;b&gt;<br>x'), 'Should escape surrounding HTML but keep <br>');
+    assert.ok(!html.includes('<b>'), 'Should not contain a raw <b> tag');
   });
 
   test('should not render a table element when no tables set', () => {
