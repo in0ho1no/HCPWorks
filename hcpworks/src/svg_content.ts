@@ -237,18 +237,21 @@ export class SvgContent {
             const svgString = new XMLSerializer().serializeToString(svgElement);
             const svgDataUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgString);
 
-            // SVGのwidth/heightを取得する(等倍でラスタライズ)
+            // SVGのwidth/heightを取得する
             const width = svgElement.width.baseVal.value || svgElement.viewBox.baseVal.width;
             const height = svgElement.height.baseVal.value || svgElement.viewBox.baseVal.height;
+
+            // 粗さを抑えるため2倍解像度でラスタライズする
+            const scale = 2;
 
             const image = new Image();
             image.onload = () => {
               try {
                 const canvas = document.createElement('canvas');
-                canvas.width = width;
-                canvas.height = height;
+                canvas.width = width * scale;
+                canvas.height = height * scale;
                 const ctx = canvas.getContext('2d');
-                ctx.drawImage(image, 0, 0, width, height);
+                ctx.drawImage(image, 0, 0, width * scale, height * scale);
                 const dataUrl = canvas.toDataURL('image/png');
                 vscode.postMessage({ command: 'exportImageResult', requestId, dataUrl });
               } catch (err) {
