@@ -244,6 +244,10 @@ export class SvgContent {
             // 粗さを抑えるため2倍解像度でラスタライズする
             const scale = 2;
 
+            // 形式に応じたMIMEタイプを決定する(未知の形式はPNG扱い)
+            const mimeMap = { png: 'image/png', jpeg: 'image/jpeg', webp: 'image/webp' };
+            const mime = mimeMap[message.format] || 'image/png';
+
             const image = new Image();
             image.onload = () => {
               try {
@@ -252,7 +256,7 @@ export class SvgContent {
                 canvas.height = height * scale;
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(image, 0, 0, width * scale, height * scale);
-                const dataUrl = canvas.toDataURL('image/png');
+                const dataUrl = canvas.toDataURL(mime);
                 vscode.postMessage({ command: 'exportImageResult', requestId, dataUrl });
               } catch (err) {
                 vscode.postMessage({ command: 'exportImageResult', requestId, error: String(err) });

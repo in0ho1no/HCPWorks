@@ -23,7 +23,7 @@ function waitForFile(filePath: string, expectedSize: number, timeoutMs = 2000): 
   });
 }
 
-suite('FileManager - Method - savePngToFile', () => {
+suite('FileManager - Method - saveImageToFile', () => {
   let tmpDir: string;
 
   setup(() => {
@@ -42,7 +42,21 @@ suite('FileManager - Method - savePngToFile', () => {
     const originalBytes = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]); // PNGシグネチャ
     const dataUrl = 'data:image/png;base64,' + originalBytes.toString('base64');
 
-    fileManager.savePngToFile(filePath, dataUrl);
+    fileManager.saveImageToFile(filePath, dataUrl);
+    await waitForFile(filePath, originalBytes.length);
+
+    const written = fs.readFileSync(filePath);
+    assert.ok(written.equals(originalBytes), 'written bytes should match the decoded data URL');
+  });
+
+  test('should decode a webp data URL and write the original bytes', async () => {
+    const fileManager = new FileManager();
+    const filePath = path.join(tmpDir, 'out.webp');
+
+    const originalBytes = Buffer.from([0x52, 0x49, 0x46, 0x46]); // "RIFF" (WebP先頭)
+    const dataUrl = 'data:image/webp;base64,' + originalBytes.toString('base64');
+
+    fileManager.saveImageToFile(filePath, dataUrl);
     await waitForFile(filePath, originalBytes.length);
 
     const written = fs.readFileSync(filePath);
@@ -56,7 +70,7 @@ suite('FileManager - Method - savePngToFile', () => {
     const originalBytes = Buffer.from([0x01, 0x02, 0x03, 0x04]);
     const base64Only = originalBytes.toString('base64');
 
-    fileManager.savePngToFile(filePath, base64Only);
+    fileManager.saveImageToFile(filePath, base64Only);
     await waitForFile(filePath, originalBytes.length);
 
     const written = fs.readFileSync(filePath);

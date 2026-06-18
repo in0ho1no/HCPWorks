@@ -135,11 +135,21 @@ export class HCPController {
           return;
         }
 
-        // 出力形式を選択する
-        const format = await vscode.window.showQuickPick(['SVG', 'PNG'], {
+        // 出力形式を選択する(ラベル右の description は薄い文字で表示される)
+        interface FormatQuickPickItem extends vscode.QuickPickItem {
+          format: 'svg' | 'png' | 'jpeg' | 'webp';
+          ext: string;
+        }
+        const formatItems: FormatQuickPickItem[] = [
+          { label: 'PNG', description: '標準。文字や線をきれいに出力したい場合に適している。', format: 'png', ext: '.png' },
+          { label: 'SVG', description: '拡大・再編集向け。線や図形を劣化なく扱える。', format: 'svg', ext: '.svg' },
+          { label: 'WebP', description: '軽量化向け。環境によっては表示できない場合がある。', format: 'webp', ext: '.webp' },
+          { label: 'JPEG', description: '非可逆圧縮。文字や細線は滲みやすい。', format: 'jpeg', ext: '.jpg' },
+        ];
+        const picked = await vscode.window.showQuickPick(formatItems, {
           placeHolder: 'Select the format to save the preview as',
         });
-        if (!format) {
+        if (!picked) {
           // キャンセルされた場合は何もしない
           return;
         }
@@ -148,17 +158,17 @@ export class HCPController {
         const savePathBase = this.selectedItem.filePath.split('.')[0] + '_' +
           this.currentSvgContent.getName();
 
-        if (format === 'SVG') {
+        if (picked.format === 'svg') {
           const svgContent = this.currentSvgContent.getSvgContent();
-          this.fileManager.saveSvgToFile(savePathBase + '.svg', svgContent);
+          this.fileManager.saveSvgToFile(savePathBase + picked.ext, svgContent);
         } else {
-          // PNGはWebview側でラスタライズした結果を受け取って保存する
+          // ラスタ形式はWebview側でラスタライズした結果を受け取って保存する
           try {
-            const dataUrl = await this.previewManager.exportImage('png');
-            this.fileManager.savePngToFile(savePathBase + '.png', dataUrl);
+            const dataUrl = await this.previewManager.exportImage(picked.format);
+            this.fileManager.saveImageToFile(savePathBase + picked.ext, dataUrl);
           } catch (err) {
             const message = err instanceof Error ? err.message : String(err);
-            vscode.window.showErrorMessage(`Failed to export PNG: ${message}`);
+            vscode.window.showErrorMessage(`Failed to export ${picked.label}: ${message}`);
           }
         }
       }),

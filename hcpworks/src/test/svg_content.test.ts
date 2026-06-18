@@ -163,12 +163,21 @@ suite('SvgContent - Method - getHtmlWrappedSvg', () => {
     assert.ok(html.includes('exportImageResult'), 'HTML should post back exportImageResult');
   });
 
-  test('should rasterize the svg to png via canvas', () => {
+  test('should rasterize the svg via canvas', () => {
     const content = new SvgContent();
     content.setSvgContent('');
     const html = content.getHtmlWrappedSvg();
     assert.ok(html.includes('createElement(\'canvas\')'), 'HTML should create a canvas for rasterization');
-    assert.ok(html.includes("toDataURL('image/png')"), 'HTML should export the canvas as PNG');
+    assert.ok(html.includes('toDataURL(mime)'), 'HTML should export the canvas using the requested mime type');
+  });
+
+  test('should map png, jpeg and webp formats to mime types', () => {
+    const content = new SvgContent();
+    content.setSvgContent('');
+    const html = content.getHtmlWrappedSvg();
+    assert.ok(html.includes('image/png'), 'HTML should support png');
+    assert.ok(html.includes('image/jpeg'), 'HTML should support jpeg');
+    assert.ok(html.includes('image/webp'), 'HTML should support webp');
   });
 
   test('should reflect updated svg when called after setSvgContent', () => {

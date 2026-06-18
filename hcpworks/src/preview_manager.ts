@@ -34,7 +34,7 @@ export class PreviewManager {
    * @param format - エクスポート形式
    * @returns 画像のdata URL文字列を解決するPromise
    */
-  public exportImage(format: 'png'): Promise<string> {
+  public exportImage(format: 'png' | 'jpeg' | 'webp'): Promise<string> {
     return new Promise<string>((resolve, reject) => {
       if (!this.previewPanel) {
         reject(new Error('No preview panel available to export.'));
