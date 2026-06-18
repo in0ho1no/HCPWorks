@@ -2,6 +2,14 @@
 
 All notable changes to the "hcpworks" extension will be documented in this file.
 
+## [0.0.12]
+
+- Supports multiple image formats on save (PNG / SVG / WebP / JPEG)
+    - A format picker is shown when saving; each option lists a short description
+    - PNG / WebP / JPEG are rasterized in the preview at 2x resolution (no extra dependencies; uses the webview canvas)
+    - SVG is saved as before (vector, lossless)
+    - File naming convention is now `<fileName>_<moduleName>.<extension>`
+
 ## [0.0.11]
 
 - Supports `<ins>` notation (insertion highlight)

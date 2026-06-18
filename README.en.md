@@ -37,12 +37,17 @@ Automatically update preview when file is saved.
 
 #### Save
 
-Save HCP charts.
+Save HCP charts as an image.
 
 1. Push the "Save" button displayed on the tab bar.  
 The "Save" button will be displayed in the ".hcp" panel or the preview panel.
-1. "SVG" images are saved.
-1. The naming convention for the created SVG file is: \<fileName>_\<moduleName>.svg
+1. Choose an output format. The following four formats are available:
+    - PNG: Standard. Good for rendering text and lines cleanly.
+    - SVG: For zooming and re-editing. Lines and shapes stay lossless.
+    - WebP: For smaller files. May not display in some environments.
+    - JPEG: Lossy compression. Text and thin lines tend to blur.
+1. The image is saved in the selected format. PNG / WebP / JPEG are rasterized at 2x resolution.
+1. The naming convention for the created image file is: \<fileName>_\<moduleName>.\<extension>
 
 ![saveHCPCharts](hcpworks/resources/videos/saveHCPCharts.gif)
 
