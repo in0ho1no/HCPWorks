@@ -75,13 +75,24 @@ export class NumberInputViewProvider implements vscode.WebviewViewProvider {
         const numberInput = document.getElementById('numberInput');
         const applyButton = document.getElementById('applyButton');
 
-        // 値が変更されたときのイベント
-        applyButton.addEventListener('click', () => {
+        // 描画レベルを確定する
+        const applyLevel = () => {
           const value = parseInt(numberInput.value, 10);
           vscode.postMessage({
             type: 'valueChanged',
             value: value
           });
+        };
+
+        // 確定ボタン押下で確定
+        applyButton.addEventListener('click', applyLevel);
+
+        // 入力欄でEnter押下でも確定
+        numberInput.addEventListener('keydown', (event) => {
+          if (event.key === 'Enter') {
+            event.preventDefault();
+            applyLevel();
+          }
         });
       </script>
     </body>

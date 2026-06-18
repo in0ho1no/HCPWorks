@@ -40,7 +40,7 @@ Automatically update preview when file is saved.
 Save HCP charts as an image.
 
 1. Push the "Save" button displayed on the tab bar.  
-The "Save" button will be displayed in the ".hcp" panel or the preview panel.
+The "Save" button will be displayed in the preview panel.
 1. Choose an output format. The following four formats are available:
     - PNG: Standard. Good for rendering text and lines cleanly.
     - SVG: For zooming and re-editing. Lines and shapes stay lossless.
@@ -56,7 +56,7 @@ The "Save" button will be displayed in the ".hcp" panel or the preview panel.
 You can specify the drawing level for the HCP chart.
 
 1. Enter the level you want to draw. / Use the spin button to specify the level you want to draw.
-1. Click "Apply drawing level".
+1. Click "Apply drawing level". / Press the Enter key in the input field.
 1. The preview will update automatically.
 
 ![levelLimit](hcpworks/resources/videos/levelLimit.gif)

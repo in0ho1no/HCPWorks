@@ -11,3 +11,6 @@ exports.workspace = {
     get: (_key, defaultValue) => defaultValue,
   }),
 };
+exports.commands = {
+  executeCommand: () => Promise.resolve(undefined),
+};
