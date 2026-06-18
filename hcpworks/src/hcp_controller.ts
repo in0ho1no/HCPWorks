@@ -121,7 +121,7 @@ export class HCPController {
         }
       }),
 
-      vscode.commands.registerCommand('hcpworks.savePreview', () => {
+      vscode.commands.registerCommand('hcpworks.savePreview', async () => {
         if (!this.previewManager.getPreviewPanel()) {
           vscode.window.showInformationMessage('No preview panel available to save.');
           return;
@@ -135,12 +135,42 @@ export class HCPController {
           return;
         }
 
-        const savePath = this.selectedItem.filePath.split('.')[0] + '_' +
-          this.currentSvgContent.getName() + '.svg';
-        const svgContent = this.currentSvgContent.getSvgContent();
+        // 出力形式を選択する(ラベル右の description は薄い文字で表示される)
+        interface FormatQuickPickItem extends vscode.QuickPickItem {
+          format: 'svg' | 'png' | 'jpeg' | 'webp';
+          ext: string;
+        }
+        const formatItems: FormatQuickPickItem[] = [
+          { label: 'PNG', description: '標準。文字や線をきれいに出力したい場合に適している。', format: 'png', ext: '.png' },
+          { label: 'SVG', description: '拡大・再編集向け。線や図形を劣化なく扱える。', format: 'svg', ext: '.svg' },
+          { label: 'WebP', description: '軽量化向け。環境によっては表示できない場合がある。', format: 'webp', ext: '.webp' },
+          { label: 'JPEG', description: '非可逆圧縮。文字や細線は滲みやすい。', format: 'jpeg', ext: '.jpg' },
+        ];
+        const picked = await vscode.window.showQuickPick(formatItems, {
+          placeHolder: 'Select the format to save the preview as',
+        });
+        if (!picked) {
+          // キャンセルされた場合は何もしない
+          return;
+        }
 
-        // ファイルに保存
-        this.fileManager.saveSvgToFile(savePath, svgContent);
+        // 拡張子を除いた共通の保存ベースパスを作成する
+        const savePathBase = this.selectedItem.filePath.split('.')[0] + '_' +
+          this.currentSvgContent.getName();
+
+        if (picked.format === 'svg') {
+          const svgContent = this.currentSvgContent.getSvgContent();
+          this.fileManager.saveSvgToFile(savePathBase + picked.ext, svgContent);
+        } else {
+          // ラスタ形式はWebview側でラスタライズした結果を受け取って保存する
+          try {
+            const dataUrl = await this.previewManager.exportImage(picked.format);
+            this.fileManager.saveImageToFile(savePathBase + picked.ext, dataUrl);
+          } catch (err) {
+            const message = err instanceof Error ? err.message : String(err);
+            vscode.window.showErrorMessage(`Failed to export ${picked.label}: ${message}`);
+          }
+        }
       }),
 
       vscode.commands.registerCommand('hcpworks.configLevelLimit', () => {

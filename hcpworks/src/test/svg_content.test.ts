@@ -148,6 +148,38 @@ suite('SvgContent - Method - getHtmlWrappedSvg', () => {
     assert.ok(html.includes('dblclick'), 'HTML should include dblclick handler');
   });
 
+  test('should acquire the vscode api for messaging', () => {
+    const content = new SvgContent();
+    content.setSvgContent('');
+    const html = content.getHtmlWrappedSvg();
+    assert.ok(html.includes('acquireVsCodeApi()'), 'HTML should acquire the vscode api');
+  });
+
+  test('should include an exportImage message handler', () => {
+    const content = new SvgContent();
+    content.setSvgContent('');
+    const html = content.getHtmlWrappedSvg();
+    assert.ok(html.includes('exportImage'), 'HTML should handle exportImage requests');
+    assert.ok(html.includes('exportImageResult'), 'HTML should post back exportImageResult');
+  });
+
+  test('should rasterize the svg via canvas', () => {
+    const content = new SvgContent();
+    content.setSvgContent('');
+    const html = content.getHtmlWrappedSvg();
+    assert.ok(html.includes('createElement(\'canvas\')'), 'HTML should create a canvas for rasterization');
+    assert.ok(html.includes('toDataURL(mime)'), 'HTML should export the canvas using the requested mime type');
+  });
+
+  test('should map png, jpeg and webp formats to mime types', () => {
+    const content = new SvgContent();
+    content.setSvgContent('');
+    const html = content.getHtmlWrappedSvg();
+    assert.ok(html.includes('image/png'), 'HTML should support png');
+    assert.ok(html.includes('image/jpeg'), 'HTML should support jpeg');
+    assert.ok(html.includes('image/webp'), 'HTML should support webp');
+  });
+
   test('should reflect updated svg when called after setSvgContent', () => {
     const content = new SvgContent();
     content.setSvgContent('<svg>A</svg>');
