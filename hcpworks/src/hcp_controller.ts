@@ -121,7 +121,7 @@ export class HCPController {
         }
       }),
 
-      vscode.commands.registerCommand('hcpworks.savePreview', () => {
+      vscode.commands.registerCommand('hcpworks.savePreview', async () => {
         if (!this.previewManager.getPreviewPanel()) {
           vscode.window.showInformationMessage('No preview panel available to save.');
           return;
@@ -135,12 +135,32 @@ export class HCPController {
           return;
         }
 
-        const savePath = this.selectedItem.filePath.split('.')[0] + '_' +
-          this.currentSvgContent.getName() + '.svg';
-        const svgContent = this.currentSvgContent.getSvgContent();
+        // 出力形式を選択する
+        const format = await vscode.window.showQuickPick(['SVG', 'PNG'], {
+          placeHolder: 'Select the format to save the preview as',
+        });
+        if (!format) {
+          // キャンセルされた場合は何もしない
+          return;
+        }
 
-        // ファイルに保存
-        this.fileManager.saveSvgToFile(savePath, svgContent);
+        // 拡張子を除いた共通の保存ベースパスを作成する
+        const savePathBase = this.selectedItem.filePath.split('.')[0] + '_' +
+          this.currentSvgContent.getName();
+
+        if (format === 'SVG') {
+          const svgContent = this.currentSvgContent.getSvgContent();
+          this.fileManager.saveSvgToFile(savePathBase + '.svg', svgContent);
+        } else {
+          // PNGはWebview側でラスタライズした結果を受け取って保存する
+          try {
+            const dataUrl = await this.previewManager.exportImage('png');
+            this.fileManager.savePngToFile(savePathBase + '.png', dataUrl);
+          } catch (err) {
+            const message = err instanceof Error ? err.message : String(err);
+            vscode.window.showErrorMessage(`Failed to export PNG: ${message}`);
+          }
+        }
       }),
 
       vscode.commands.registerCommand('hcpworks.configLevelLimit', () => {

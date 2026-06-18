@@ -148,6 +148,29 @@ suite('SvgContent - Method - getHtmlWrappedSvg', () => {
     assert.ok(html.includes('dblclick'), 'HTML should include dblclick handler');
   });
 
+  test('should acquire the vscode api for messaging', () => {
+    const content = new SvgContent();
+    content.setSvgContent('');
+    const html = content.getHtmlWrappedSvg();
+    assert.ok(html.includes('acquireVsCodeApi()'), 'HTML should acquire the vscode api');
+  });
+
+  test('should include an exportImage message handler', () => {
+    const content = new SvgContent();
+    content.setSvgContent('');
+    const html = content.getHtmlWrappedSvg();
+    assert.ok(html.includes('exportImage'), 'HTML should handle exportImage requests');
+    assert.ok(html.includes('exportImageResult'), 'HTML should post back exportImageResult');
+  });
+
+  test('should rasterize the svg to png via canvas', () => {
+    const content = new SvgContent();
+    content.setSvgContent('');
+    const html = content.getHtmlWrappedSvg();
+    assert.ok(html.includes('createElement(\'canvas\')'), 'HTML should create a canvas for rasterization');
+    assert.ok(html.includes("toDataURL('image/png')"), 'HTML should export the canvas as PNG');
+  });
+
   test('should reflect updated svg when called after setSvgContent', () => {
     const content = new SvgContent();
     content.setSvgContent('<svg>A</svg>');

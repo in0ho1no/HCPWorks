@@ -215,6 +215,55 @@ export class SvgContent {
       </div>
 
       <script>
+        // 拡張機能との通信用API
+        const vscode = acquireVsCodeApi();
+
+        // 拡張機能からのエクスポート要求を受けて画像へラスタライズする
+        window.addEventListener('message', (event) => {
+          const message = event.data;
+          if (!message || message.command !== 'exportImage') {
+            return;
+          }
+
+          const requestId = message.requestId;
+          try {
+            const svgElement = document.querySelector('#svgContainer svg');
+            if (!svgElement) {
+              vscode.postMessage({ command: 'exportImageResult', requestId, error: 'SVG element not found.' });
+              return;
+            }
+
+            // SVGを文字列化してdata URL化する
+            const svgString = new XMLSerializer().serializeToString(svgElement);
+            const svgDataUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgString);
+
+            // SVGのwidth/heightを取得する(等倍でラスタライズ)
+            const width = svgElement.width.baseVal.value || svgElement.viewBox.baseVal.width;
+            const height = svgElement.height.baseVal.value || svgElement.viewBox.baseVal.height;
+
+            const image = new Image();
+            image.onload = () => {
+              try {
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(image, 0, 0, width, height);
+                const dataUrl = canvas.toDataURL('image/png');
+                vscode.postMessage({ command: 'exportImageResult', requestId, dataUrl });
+              } catch (err) {
+                vscode.postMessage({ command: 'exportImageResult', requestId, error: String(err) });
+              }
+            };
+            image.onerror = () => {
+              vscode.postMessage({ command: 'exportImageResult', requestId, error: 'Failed to load SVG image.' });
+            };
+            image.src = svgDataUrl;
+          } catch (err) {
+            vscode.postMessage({ command: 'exportImageResult', requestId, error: String(err) });
+          }
+        });
+
         // 初期ズームレベル
         let scale = 1;
         // 最小・最大ズームレベル

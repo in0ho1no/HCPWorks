@@ -49,4 +49,26 @@ export class FileManager {
       }
     });
   }
+
+  /**
+   * PNGをファイルに保存する
+   *
+   * Webviewから受け取ったdata URL(`data:image/png;base64,...`)をデコードして書き込む。
+   *
+   * @param filePath - 保存先のファイルパス
+   * @param dataUrl - PNGのdata URL文字列
+   */
+  public savePngToFile(filePath: string, dataUrl: string): void {
+    // data URLのプレフィックスを除去してbase64部分のみを取り出す
+    const base64Data = dataUrl.replace(/^data:image\/png;base64,/, '');
+    const buffer = Buffer.from(base64Data, 'base64');
+
+    fs.writeFile(filePath, buffer, (err) => {
+      if (err) {
+        vscode.window.showErrorMessage(`Failed to save preview: ${err.message}`);
+      } else {
+        vscode.window.showInformationMessage(`Preview saved to ${filePath}`);
+      }
+    });
+  }
 }
