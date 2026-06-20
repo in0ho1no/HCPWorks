@@ -4,7 +4,7 @@
   "description": "This extension displays HCP chart.",
   "version": "0.0.12",
   "engines": {
-    "vscode": "^1.120.0"
+    "vscode": "^1.125.0"
   },
   "categories": [
     "Other"
@@ -258,7 +258,7 @@
     "@types/encoding-japanese": "^2.2.1",
     "@types/mocha": "^10.0.10",
     "@types/node": "26.x",
-    "@types/vscode": "^1.120.0",
+    "@types/vscode": "^1.125.0",
     "@typescript-eslint/eslint-plugin": "^8.61.1",
     "@typescript-eslint/parser": "^8.61.0",
     "@vscode/test-cli": "^0.0.12",
