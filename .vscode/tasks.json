@@ -6,6 +6,7 @@
 		{
 			"type": "npm",
 			"script": "watch",
+			"path": "hcpworks/",
 			"problemMatcher": "$ts-webpack-watch",
 			"isBackground": true,
 			"presentation": {
@@ -20,6 +21,7 @@
 		{
 			"type": "npm",
 			"script": "watch-tests",
+			"path": "hcpworks/",
 			"problemMatcher": "$tsc-watch",
 			"isBackground": true,
 			"presentation": {
@@ -31,8 +33,8 @@
 		{
 			"label": "tasks: watch-tests",
 			"dependsOn": [
-				"npm: watch",
-				"npm: watch-tests"
+				"npm: watch - hcpworks",
+				"npm: watch-tests - hcpworks"
 			],
 			"problemMatcher": []
 		}

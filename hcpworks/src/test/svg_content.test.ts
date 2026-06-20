@@ -288,6 +288,59 @@ suite('SvgContent - Method - getHtmlWrappedSvg', () => {
 
     assert.ok(!html.includes('<table'), 'Should not include any table element');
   });
+
+  test('should include split-container, svgPane and svgContainer in the layout', () => {
+    const content = new SvgContent();
+    content.setSvgContent('<svg></svg>');
+    const html = content.getHtmlWrappedSvg();
+
+    assert.ok(html.includes('split-container'), 'Should include split-container');
+    assert.ok(html.includes('id="svgPane"'), 'Should include svgPane');
+    assert.ok(html.includes('id="svgContainer"'), 'Should include svgContainer');
+  });
+
+  test('should hide table-pane and splitter when no tables are set', () => {
+    const content = new SvgContent();
+    content.setSvgContent('<svg></svg>');
+    const html = content.getHtmlWrappedSvg();
+
+    assert.ok(html.includes('id="tablePane"'), 'Should include tablePane element');
+    assert.ok(html.includes('id="splitter"'), 'Should include splitter element');
+    // テーブルが無い場合、table-pane と splitter は display:none で非表示になる
+    const tablePaneMatch = html.match(/id="tablePane"[^>]*style="([^"]*)"/);
+    const splitterMatch = html.match(/id="splitter"[^>]*style="([^"]*)"/);
+    assert.ok(tablePaneMatch && tablePaneMatch[1].includes('display:none'), 'tablePane should be hidden');
+    assert.ok(splitterMatch && splitterMatch[1].includes('display:none'), 'splitter should be hidden');
+  });
+
+  test('should show table-pane and splitter when tables are set', () => {
+    const content = new SvgContent();
+    content.setTables([{ caption: '', rows: [{ cells: ['A'], depth: 0 }] }]);
+    const html = content.getHtmlWrappedSvg();
+
+    const tablePaneMatch = html.match(/id="tablePane"[^>]*style="([^"]*)"/);
+    const splitterMatch = html.match(/id="splitter"[^>]*style="([^"]*)"/);
+    // テーブルがある場合は display:none が付かない(空スタイル)
+    assert.ok(!tablePaneMatch || !tablePaneMatch[1].includes('display:none'), 'tablePane should be visible');
+    assert.ok(!splitterMatch || !splitterMatch[1].includes('display:none'), 'splitter should be visible');
+  });
+
+  test('should attach zoom wheel listener to svgPane, not document', () => {
+    const content = new SvgContent();
+    content.setSvgContent('');
+    const html = content.getHtmlWrappedSvg();
+
+    assert.ok(html.includes("svgPane.addEventListener('wheel'"), 'Zoom should be bound to svgPane');
+    assert.ok(!html.includes("document.addEventListener('wheel'"), 'Zoom should not be bound to document');
+  });
+
+  test('should include row-resize cursor for the splitter drag handler', () => {
+    const content = new SvgContent();
+    content.setSvgContent('');
+    const html = content.getHtmlWrappedSvg();
+
+    assert.ok(html.includes('row-resize'), 'Splitter drag should use row-resize cursor');
+  });
 });
 
 suite('SvgContent - Method chaining', () => {

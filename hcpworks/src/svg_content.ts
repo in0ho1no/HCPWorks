@@ -151,6 +151,9 @@ export class SvgContent {
    * @returns HTMLコンテンツ
    */
   getHtmlWrappedSvg(): string {
+    const hasTables = this._tables.length > 0;
+    const hiddenStyle = 'display:none';
+
     return `
       <!DOCTYPE html>
       <html lang="en">
@@ -162,20 +165,51 @@ export class SvgContent {
           body {
             margin: 0;
             padding: 0;
-            overflow-x: auto;
-            overflow-y: auto;
+            overflow: hidden;
+            height: 100vh;
+          }
+
+          .split-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            width: 100vw;
+          }
+
+          .table-pane {
+            flex: 0 0 40%;
+            min-height: 60px;
+            max-height: 85%;
+            overflow: auto;
+          }
+
+          .splitter {
+            flex: none;
+            height: 5px;
+            cursor: row-resize;
+            background-color: var(--vscode-sash-hoverBorder, #888);
+            opacity: 0.4;
+            transition: opacity 0.15s;
+          }
+
+          .splitter:hover {
+            opacity: 1;
+          }
+
+          .svg-pane {
+            flex: 1;
+            min-height: 60px;
+            overflow: auto;
           }
 
           .svg-container {
-            // コンテナの幅を明示的に設定せず、SVGが自然なサイズを持てるようにする
             display: inline-block;
             min-width: min-content;
-
             transform-origin: 0 0;
           }
 
           svg {
-            display: block; // SVGをブロック要素として表示
+            display: block;
           }
 
           .hcp-tables {
@@ -207,11 +241,18 @@ export class SvgContent {
         </style>
       </head>
       <body>
-      <div class="hcp-tables">
-        ${this.getTablesHtml()}
-      </div>
-      <div class="svg-container" id="svgContainer">
-        ${this._svgContent}
+      <div class="split-container">
+        <div class="table-pane" id="tablePane" style="${hasTables ? '' : hiddenStyle}">
+          <div class="hcp-tables">
+            ${this.getTablesHtml()}
+          </div>
+        </div>
+        <div class="splitter" id="splitter" style="${hasTables ? '' : hiddenStyle}"></div>
+        <div class="svg-pane" id="svgPane">
+          <div class="svg-container" id="svgContainer">
+            ${this._svgContent}
+          </div>
+        </div>
       </div>
 
       <script>
@@ -278,30 +319,56 @@ export class SvgContent {
         const maxScale = 10;
         // スケーリング速度
         const scaleSpeed = 0.1;
-        
+
         const container = document.getElementById('svgContainer');
-        
-        // マウスホイールイベントのリスナー
-        document.addEventListener('wheel', (event) => {
-          // Ctrlキーが押されているかチェック
+        const svgPane = document.getElementById('svgPane');
+
+        // SVGペインのみCtrl+Wheelでズーム（テーブルペインのスクロールと干渉しない）
+        svgPane.addEventListener('wheel', (event) => {
           if (event.ctrlKey) {
-            // デフォルトの動作を防止（ブラウザのズーム）
             event.preventDefault();
-            
-            // ホイールの方向に応じてスケールを調整
             const delta = event.deltaY > 0 ? -scaleSpeed : scaleSpeed;
             scale = Math.max(minScale, Math.min(maxScale, scale + delta));
-            
-            // コンテナに変換を適用（トランジションなし）
             container.style.transform = \`scale(\${scale})\`;
           }
         }, { passive: false });
-        
+
         // ダブルクリックでズームをリセット
         container.addEventListener('dblclick', () => {
           scale = 1;
           container.style.transform = 'scale(1)';
         });
+
+        // スプリッターのドラッグでテーブルペインの幅を変更する
+        const splitter = document.getElementById('splitter');
+        const tablePane = document.getElementById('tablePane');
+        if (splitter && tablePane) {
+          let isResizing = false;
+          let startY = 0;
+          let startHeight = 0;
+
+          splitter.addEventListener('mousedown', (e) => {
+            isResizing = true;
+            startY = e.clientY;
+            startHeight = tablePane.getBoundingClientRect().height;
+            document.body.style.userSelect = 'none';
+            document.body.style.cursor = 'row-resize';
+          });
+
+          document.addEventListener('mousemove', (e) => {
+            if (!isResizing) { return; }
+            const newHeight = Math.max(60, startHeight + e.clientY - startY);
+            tablePane.style.flex = \`0 0 \${newHeight}px\`;
+          });
+
+          document.addEventListener('mouseup', () => {
+            if (isResizing) {
+              isResizing = false;
+              document.body.style.userSelect = '';
+              document.body.style.cursor = '';
+            }
+          });
+        }
       </script>
       </body>
       </html>
