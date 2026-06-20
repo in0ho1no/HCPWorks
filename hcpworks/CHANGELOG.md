@@ -2,6 +2,10 @@
 
 All notable changes to the "hcpworks" extension will be documented in this file.
 
+## [0.0.13]
+
+- Preview no longer steals focus when opened from the module list
+
 ## [0.0.12]
 
 - Supports multiple image formats on save (PNG / SVG / WebP / JPEG)

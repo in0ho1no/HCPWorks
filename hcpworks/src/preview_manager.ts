@@ -86,7 +86,7 @@ export class PreviewManager {
     const panel = vscode.window.createWebviewPanel(
       'hcpPreview',  // 識別子
       'HCP Preview', // タイトル
-      vscode.ViewColumn.Beside,  // 表示位置
+      { viewColumn: vscode.ViewColumn.Beside, preserveFocus: true },  // 表示位置とフォーカス制御
       {
         enableScripts: true,  // スクリプトを有効化
         retainContextWhenHidden: true,  // 非表示時にコンテキストを保持
