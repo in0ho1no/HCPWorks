@@ -1,4 +1,4 @@
-FROM ubuntu:questing-20251217
+FROM ubuntu:questing-20260610
 
 RUN apt-get update && \
     apt-get upgrade -y && \
