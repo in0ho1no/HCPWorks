@@ -17,15 +17,8 @@ check "Did you update the CHANGELOG?"
 check "Did you update the version in package.json?"
 check "Did you run 'npm install' and commit the updated package-lock.json if dependencies changed?"
 
-# --- 自動チェック ---
-echo "Installing dependencies..."
-npm ci
-
-echo "Running lint..."
-npm run lint
-
 # --- パッケージング ---
 echo "Packaging extension..."
-npx @vscode/vsce package
+npm run package-ext
 
 echo "Done."
