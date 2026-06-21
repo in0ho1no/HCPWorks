@@ -319,11 +319,7 @@ export class HCPController {
       .setModuleMeta(meta)
       .setSvgBgColor(this.configManager.getConfigSvgBgColor())
       .setWireColorTable(this.configManager.getConfigWireColorTable())
-      .setDisplayOptions(
-        this.configManager.getConfigShowName(),
-        this.configManager.getConfigShowScope(),
-        this.configManager.getConfigShowKind()
-      );
+      .setDisplayOptions(this.configManager.getConfigHeaderDisplayOptions());
     const svgText = renderer.render();
 
     return svgContent.setSvgContent(svgText);

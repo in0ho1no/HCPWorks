@@ -339,11 +339,11 @@ suite('SVGRenderer - Method - drawModuleMeta', () => {
 suite('SVGRenderer - Method - setDisplayOptions', () => {
   test('setDisplayOptions should return the renderer for chaining', () => {
     const renderer = makeRenderer('Chain');
-    assert.strictEqual(renderer.setDisplayOptions(true, true, true), renderer);
+    assert.strictEqual(renderer.setDisplayOptions({ showName: true, showScope: true, showKind: true }), renderer);
   });
 
   test('should omit Name when showName is false', () => {
-    const renderer = makeRenderer('HideName').setDisplayOptions(false, true, true);
+    const renderer = makeRenderer('HideName').setDisplayOptions({ showName: false, showScope: true, showKind: true });
     const svg = renderer.render();
     assert.ok(!svg.includes('Name:'), 'SVG should not include Name when showName is false');
   });
@@ -351,7 +351,7 @@ suite('SVGRenderer - Method - setDisplayOptions', () => {
   test('should omit scope when showScope is false', () => {
     const renderer = makeRenderer('HideScope')
       .setModuleMeta({ kind: 'new', scope: 'extern' })
-      .setDisplayOptions(true, false, true);
+      .setDisplayOptions({ showName: true, showScope: false, showKind: true });
     const svg = renderer.render();
     assert.ok(!svg.includes('scope:'), 'SVG should not include scope when showScope is false');
     assert.ok(svg.includes('kind: new'), 'SVG should still include kind');
@@ -360,7 +360,7 @@ suite('SVGRenderer - Method - setDisplayOptions', () => {
   test('should omit kind when showKind is false', () => {
     const renderer = makeRenderer('HideKind')
       .setModuleMeta({ kind: 'new', scope: 'extern' })
-      .setDisplayOptions(true, true, false);
+      .setDisplayOptions({ showName: true, showScope: true, showKind: false });
     const svg = renderer.render();
     assert.ok(!svg.includes('kind:'), 'SVG should not include kind when showKind is false');
     assert.ok(svg.includes('scope: extern'), 'SVG should still include scope');
@@ -369,7 +369,7 @@ suite('SVGRenderer - Method - setDisplayOptions', () => {
   test('should produce valid SVG when all display options are false', () => {
     const renderer = makeRenderer('HideAll')
       .setModuleMeta({ kind: 'new', scope: 'extern' })
-      .setDisplayOptions(false, false, false);
+      .setDisplayOptions({ showName: false, showScope: false, showKind: false });
     const svg = renderer.render();
     assert.ok(svg.includes('<svg'), 'Should still produce valid SVG');
     assert.ok(!svg.includes('Name:'), 'SVG should not include Name');

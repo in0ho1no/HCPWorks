@@ -120,9 +120,9 @@ Setting key | Type | Default | Description
 --- | --- | --- | ---
 `hcpworks.SvgBgColor` | string | `FFFFFF` | SVG background color for preview/export (RRGGBB format).
 `hcpworks.WireColorTable` | string[] | (8 colors) | Wire color table (array of RRGGBB strings).
-`hcpworks.ShowName` | boolean | `true` | Whether to show the `Name:` field in preview/export.
-`hcpworks.ShowScope` | boolean | `true` | Whether to show the `scope:` field in preview/export.
-`hcpworks.ShowKind` | boolean | `true` | Whether to show the `kind:` field in preview/export.
+`hcpworks.headerDisplay.showName` | boolean | `true` | Whether to show the `Name:` field in preview/export.
+`hcpworks.headerDisplay.showScope` | boolean | `true` | Whether to show the `scope:` field in preview/export.
+`hcpworks.headerDisplay.showKind` | boolean | `true` | Whether to show the `kind:` field in preview/export.
 
 ## Known Issues
 
