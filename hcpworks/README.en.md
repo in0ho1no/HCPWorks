@@ -95,6 +95,7 @@ Notation | Content | Notes
 \repeat | Repeat | -
 \mod | Function call | -
 \return | End of processing | -
+
 ### Notation that can be added to levels 0 and above
 
 Notation | Content | Notes
@@ -109,8 +110,8 @@ Part of the text in a line can be decorated. It can be combined with line notati
 
 Notation | Content | Notes
 ---| --- | ---
-`<del>...</del>` | Strikethrough | Draws a strikethrough over the range enclosed by `<del>` and `</del>`, and highlights it with a salmon-pink background.<br>Example: `\mod <del>送信する</del>受信解析する`<br>The decoration tags themselves are not drawn.
-`<ins>...</ins>` | Insertion (highlight) | Highlights the range enclosed by `<ins>` and `</ins>` with a light-green background to indicate newly added or changed text.<br>Example: `\mod <ins>受信解析する</ins>`<br>The decoration tags themselves are not drawn.
+`<del>...</del>` | Strikethrough | Draws a strikethrough over the range enclosed by `<del>` and `</del>`, and highlights it with a salmon-pink background.<br>Example: `\mod <del>send data</del>receive and parse`<br>The decoration tags themselves are not drawn.
+`<ins>...</ins>` | Insertion (highlight) | Highlights the range enclosed by `<ins>` and `</ins>` with a light-green background to indicate newly added or changed text.<br>Example: `\mod <ins>receive and parse</ins>`<br>The decoration tags themselves are not drawn.
 
 ## Configuration
 
