@@ -135,6 +135,21 @@
             "40E0D0"
           ],
           "description": "HCP Preview wire color table."
+        },
+        "hcpworks.ShowName": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show 'Name' field in HCP chart preview/export."
+        },
+        "hcpworks.ShowScope": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show 'scope' field in HCP chart preview/export."
+        },
+        "hcpworks.ShowKind": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show 'kind' field in HCP chart preview/export."
         }
       }
     },

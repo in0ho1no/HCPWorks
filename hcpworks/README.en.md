@@ -112,6 +112,18 @@ Notation | Content | Notes
 `<del>...</del>` | Strikethrough | Draws a strikethrough over the range enclosed by `<del>` and `</del>`, and highlights it with a salmon-pink background.<br>Example: `\mod <del>送信する</del>受信解析する`<br>The decoration tags themselves are not drawn.
 `<ins>...</ins>` | Insertion (highlight) | Highlights the range enclosed by `<ins>` and `</ins>` with a light-green background to indicate newly added or changed text.<br>Example: `\mod <ins>受信解析する</ins>`<br>The decoration tags themselves are not drawn.
 
+## Configuration
+
+You can change the following settings from VSCode Settings (`File > Preferences > Settings`, search for "HCPWorks").
+
+Setting key | Type | Default | Description
+--- | --- | --- | ---
+`hcpworks.SvgBgColor` | string | `FFFFFF` | SVG background color for preview/export (RRGGBB format).
+`hcpworks.WireColorTable` | string[] | (8 colors) | Wire color table (array of RRGGBB strings).
+`hcpworks.ShowName` | boolean | `true` | Whether to show the `Name:` field in preview/export.
+`hcpworks.ShowScope` | boolean | `true` | Whether to show the `scope:` field in preview/export.
+`hcpworks.ShowKind` | boolean | `true` | Whether to show the `kind:` field in preview/export.
+
 ## Known Issues
 
 For a list of known issues, please refer to our [GitHub issue tracker](https://github.com/in0ho1no/HCPWorks/issues).  

@@ -19,4 +19,16 @@ export class ConfigManager {
   public getConfigWireColorTable(): string[] {
     return vscode.workspace.getConfiguration('hcpworks').get('WireColorTable', DiagramDefine.WIRE_COLOR_TABLE);
   }
+
+  public getConfigShowName(): boolean {
+    return vscode.workspace.getConfiguration('hcpworks').get('ShowName', true);
+  }
+
+  public getConfigShowScope(): boolean {
+    return vscode.workspace.getConfiguration('hcpworks').get('ShowScope', true);
+  }
+
+  public getConfigShowKind(): boolean {
+    return vscode.workspace.getConfiguration('hcpworks').get('ShowKind', true);
+  }
 }
