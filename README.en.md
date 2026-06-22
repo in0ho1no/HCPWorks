@@ -87,7 +87,7 @@ Notation | Content | Notes
 
 Notation | Content | Notes
 ---| --- | ---
-\data | Definition of data used in the module | Do not define duplicate data names. If duplicates exist, only the first definition will be used for rendering.
+\data | Definition of data used in the module | Do not define duplicate data names. If duplicates exist, only the first definition will be used for rendering.<br>Writing `\data (text)` with parenthesized text displays it as grey supplementary text in the data column.
 \fork | Conditional branch | -
 \true | If the condition of the conditional branch is true | There are no restrictions, but avoid writing two consecutive `\true` notations by mistake.
 \false | If the condition of the conditional branch is false |There are no restrictions, but avoid writing two consecutive `\false` notations by mistake.
@@ -103,6 +103,15 @@ Notation | Content | Notes
 \in | Input to processing/function | If written at the lowest indentation level, it is treated as input to the function. <br>If written at any level other than the lowest indentation level, it is treated as simple processing input. <br>If there is no definition in `\data`, it is treated as new data. <br>Do not include spaces or periods.
 \out | Output from processing/function | If written at the lowest indentation level, it is treated as output from the function. <br>If written at any level other than the lowest indentation level, it is treated as simple processing output. <br>If there is no definition in `\data`, it will be treated as new data. <br>Do not include spaces or periods.
 \drop | Discard of output data | Written like `\out`, but it is neither connected to the data section nor drawn. <br>Used to annotate an intentionally discarded output. <br>Do not include spaces or periods.
+
+### Supplementary annotation notation
+
+Enclosing an entire line in half-width parentheses `(...)` or full-width parentheses `（...）` renders it as grey italic supplementary text.
+
+- Applies when the trimmed line content starts with `(` or `（` and ends with `)` or `）`.
+- In the process column, a pass-through vertical line replaces the circle so the flow line remains unbroken.
+- In the data column, write `\data (text)` to display supplementary text alongside the data entries.
+- Indent level is respected the same as for regular lines.
 
 ### Text decoration
 

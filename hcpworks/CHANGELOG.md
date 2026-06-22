@@ -4,6 +4,14 @@ All notable changes to the "hcpworks" extension will be documented in this file.
 
 ## [0.0.14]
 
+- Lines entirely wrapped in parentheses (half-width `(...)` or full-width `（...）`) are now rendered as grey supplementary annotations instead of being silently ignored
+    - Applies to any process line whose trimmed content starts with `(` / `（` and ends with `)` / `）`
+    - Displayed in italic grey text; no shape is drawn — a pass-through vertical line replaces the circle so the flow line remains unbroken
+    - Indent level is respected: if the supplementary line is at a sub-level, its X position follows the same level shift as other elements
+    - An endpoint marker is drawn when the supplementary line is the last element at its level
+- `\data (...)` / `\data （...）` is rendered in the data column as grey supplementary text
+    - Useful for noting referenced data or side-effects that are not formal inputs/outputs
+
 - Add VSCode settings to control visibility of `Name`, `scope`, and `kind` fields in chart preview/export
     - `hcpworks.headerDisplay.showName` (default: true) — toggle the `Name:` header
     - `hcpworks.headerDisplay.showScope` (default: true) — toggle the `scope:` line
