@@ -13,6 +13,7 @@ import { Wire, Process2Data } from '../parse/wire';
 import { DataInfo } from '../parse/data_info';
 import { ModuleMeta } from '../parse/file_parse';
 
+import { HeaderDisplayOptions, DEFAULT_HEADER_DISPLAY_OPTIONS } from '../utils/header_display_options';
 import { DiagramDefine } from './render_define';
 import { DiagramElement } from './diagram_element';
 import { SvgFigureDefine } from './svg_figure_define';
@@ -41,6 +42,8 @@ export class SVGRenderer {
   private _svgBgColor: string;
   private _svgWireColorTable: string[];
 
+  private _headerDisplay: HeaderDisplayOptions;
+
   constructor(name: string, parseInfo4Render: ParseInfo4Render) {
     this._name = name;
     this._moduleMeta = { kind: "", scope: "" };
@@ -57,6 +60,8 @@ export class SVGRenderer {
     this._svgHeight = 0;
     this._svgBgColor = DiagramDefine.DEFAULT_BG_COLOR;
     this._svgWireColorTable = DiagramDefine.WIRE_COLOR_TABLE;
+
+    this._headerDisplay = { ...DEFAULT_HEADER_DISPLAY_OPTIONS };
   }
 
   /**
@@ -70,8 +75,14 @@ export class SVGRenderer {
 
     // タイトル部を描画
     const titleX = startX - SvgFigureDefine.CIRCLE_R;
-    const [titleEndX, titleEndY, titleSvgText] = this.setTitle(titleX, startY);
-    this._svgText.push(titleSvgText);
+    let titleEndX = startX;
+    let titleEndY = startY + DiagramDefine.IMG_MARGIN;
+    if (this._headerDisplay.showName) {
+      const [tx, ty, titleSvgText] = this.setTitle(titleX, startY);
+      this._svgText.push(titleSvgText);
+      titleEndX = tx;
+      titleEndY = ty;
+    }
 
     // メタ情報部を描画(あれば)。表示した行数分だけ処理部の開始位置を下げる
     let contentStartY = titleEndY;
@@ -143,10 +154,10 @@ export class SVGRenderer {
   drawModuleMeta(startX: number, startY: number): [number, number, string] {
     const fontSizePercent = 100;
 
-    // 表示順は scope, kind。値が空の項目は除外する
+    // 表示順は scope, kind。値が空の項目・非表示設定の項目は除外する
     const labeledItems: [string, string][] = [
-      ["scope", this._moduleMeta.scope],
-      ["kind", this._moduleMeta.kind],
+      ["scope", this._headerDisplay.showScope ? this._moduleMeta.scope : ""],
+      ["kind",  this._headerDisplay.showKind  ? this._moduleMeta.kind  : ""],
     ];
 
     const svgTextList: string[] = [];
@@ -175,6 +186,11 @@ export class SVGRenderer {
    */
   setModuleMeta(moduleMeta: ModuleMeta): SVGRenderer {
     this._moduleMeta = moduleMeta;
+    return this;
+  }
+
+  setDisplayOptions(options: HeaderDisplayOptions): SVGRenderer {
+    this._headerDisplay = options;
     return this;
   }
 

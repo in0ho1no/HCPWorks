@@ -2,6 +2,14 @@
 
 All notable changes to the "hcpworks" extension will be documented in this file.
 
+## [0.0.14]
+
+- Add VSCode settings to control visibility of `Name`, `scope`, and `kind` fields in chart preview/export
+    - `hcpworks.headerDisplay.showName` (default: true) — toggle the `Name:` header
+    - `hcpworks.headerDisplay.showScope` (default: true) — toggle the `scope:` line
+    - `hcpworks.headerDisplay.showKind` (default: true) — toggle the `kind:` line
+    - Settings are grouped under `headerDisplay` for extensibility (future fields such as Author or edit date use the same prefix)
+
 ## [0.0.13]
 
 - Preview no longer steals focus when opened from the module list

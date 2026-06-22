@@ -113,6 +113,18 @@ HCPチャートで描画するレベルを指定できます。
 `<del>～</del>` | 見え消し(取り消し線) | `<del>` と `</del>` で囲った範囲に取り消し線を引き、背景をサーモンピンクで塗る。<br>例: `\mod <del>送信する</del>受信解析する`<br>装飾タグ自体は描画しない。
 `<ins>～</ins>` | 追加・変更(ハイライト) | `<ins>` と `</ins>` で囲った範囲の背景をライトグリーンで塗り、新規追加・変更箇所を示す。<br>例: `\mod <ins>受信解析する</ins>`<br>装飾タグ自体は描画しない。
 
+## 設定
+
+VSCodeの設定（`ファイル > ユーザー設定 > 設定` で "HCPWorks" を検索）から以下の項目を変更できます。
+
+設定キー | 型 | デフォルト | 説明
+--- | --- | --- | ---
+`hcpworks.SvgBgColor` | string | `FFFFFF` | プレビュー・エクスポートのSVG背景色（RRGGBB形式）。
+`hcpworks.WireColorTable` | string[] | （8色） | ワイヤーの色テーブル（RRGGBB形式の配列）。
+`hcpworks.headerDisplay.showName` | boolean | `true` | `Name:` フィールドをプレビュー・エクスポートに表示するかどうか。
+`hcpworks.headerDisplay.showScope` | boolean | `true` | `scope:` フィールドをプレビュー・エクスポートに表示するかどうか。
+`hcpworks.headerDisplay.showKind` | boolean | `true` | `kind:` フィールドをプレビュー・エクスポートに表示するかどうか。
+
 ## 既知の問題
 
 既知の問題は、[GitHubのissue](https://github.com/in0ho1no/HCPWorks/issues) をご覧ください。  
