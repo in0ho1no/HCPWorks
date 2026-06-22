@@ -377,3 +377,63 @@ suite('SVGRenderer - Method - setDisplayOptions', () => {
     assert.ok(!svg.includes('kind:'), 'SVG should not include kind');
   });
 });
+
+suite('SVGRenderer - SUPPLEMENT rendering', () => {
+  function countLines(svg: string): number {
+    return (svg.match(/<line /g) ?? []).length;
+  }
+
+  test('should render SUPPLEMENT as last element and include supplement text', () => {
+    const processLines = ProcessLineProcessor.process([
+      makeLineInfo('processA'),
+      makeLineInfo('\\supplement (note)'),
+    ], 10);
+    const dataLines = DataLineProcessor.process([]);
+    const parseInfo = new ParseInfo4Render(processLines, dataLines);
+    const svg = new SVGRenderer('SupplLast', parseInfo).render();
+    assert.ok(svg.includes('<svg'), 'Should produce valid SVG');
+    assert.ok(svg.includes('(note)'), 'SVG should contain supplement text');
+  });
+
+  test('should render SUPPLEMENT as non-last element and include supplement text', () => {
+    const processLines = ProcessLineProcessor.process([
+      makeLineInfo('processA'),
+      makeLineInfo('\\supplement (note)'),
+      makeLineInfo('processB'),
+    ], 10);
+    const dataLines = DataLineProcessor.process([]);
+    const parseInfo = new ParseInfo4Render(processLines, dataLines);
+    const svg = new SVGRenderer('SupplMiddle', parseInfo).render();
+    assert.ok(svg.includes('<svg'), 'Should produce valid SVG');
+    assert.ok(svg.includes('(note)'), 'SVG should contain supplement text');
+  });
+
+  test('should draw more lines when SUPPLEMENT is last (endpoint marker added)', () => {
+    // SUPPLEMENT as last: pass-through + endpoint marker (drawLevelEnd = 2 lines)
+    const processLinesLast = ProcessLineProcessor.process([
+      makeLineInfo('processA'),
+      makeLineInfo('\\supplement (note)'),
+    ], 10);
+    const svgLast = new SVGRenderer('SupplLast',
+      new ParseInfo4Render(processLinesLast, DataLineProcessor.process([]))
+    ).render();
+
+    // SUPPLEMENT as non-last: pass-through only, no endpoint marker on SUPPLEMENT
+    // processB takes over the endpoint marker instead
+    // Remove processB endpoint by making processB a \return (which skips drawLevelEnd)
+    const processLinesMiddle = ProcessLineProcessor.process([
+      makeLineInfo('processA'),
+      makeLineInfo('\\supplement (note)'),
+      makeLineInfo('\\return done'),
+    ], 10);
+    const svgMiddle = new SVGRenderer('SupplMiddle',
+      new ParseInfo4Render(processLinesMiddle, DataLineProcessor.process([]))
+    ).render();
+
+    // svgLast: SUPPLEMENT has endpoint marker (+2 lines vs svgMiddle's SUPPLEMENT)
+    // svgMiddle: \return skips drawLevelEnd, so endpoint marker lines = 0 at the end
+    // Therefore svgLast should have more <line> elements
+    assert.ok(countLines(svgLast) > countLines(svgMiddle),
+      `SUPPLEMENT-as-last should have more lines (${countLines(svgLast)}) than SUPPLEMENT-as-non-last with \\return (${countLines(svgMiddle)})`);
+  });
+});
