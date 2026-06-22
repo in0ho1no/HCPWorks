@@ -23,6 +23,14 @@ suite('LineTypeDefine - Method - get_format_by_type', () => {
     const forkFormat = LineTypeDefine.get_format_by_type(LineTypeEnum.FORK);
     assert.strictEqual(forkFormat.type_value, 1);
     assert.strictEqual(forkFormat.type_format, '\\fork');
+
+    const supplementFormat = LineTypeDefine.get_format_by_type(LineTypeEnum.SUPPLEMENT);
+    assert.strictEqual(supplementFormat.type_value, 10);
+    assert.strictEqual(supplementFormat.type_format, '\\supplement');
+
+    const dataSupplementFormat = LineTypeDefine.get_format_by_type(LineTypeEnum.DATA_SUPPLEMENT);
+    assert.strictEqual(dataSupplementFormat.type_value, 11);
+    assert.strictEqual(dataSupplementFormat.type_format, '\\data_supplement');
   });
 });
 

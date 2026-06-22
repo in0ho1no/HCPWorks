@@ -377,3 +377,59 @@ suite('SVGRenderer - Method - setDisplayOptions', () => {
     assert.ok(!svg.includes('kind:'), 'SVG should not include kind');
   });
 });
+
+suite('SVGRenderer - SUPPLEMENT rendering', () => {
+  function countLines(svg: string): number {
+    return (svg.match(/<line /g) ?? []).length;
+  }
+
+  test('should render SUPPLEMENT as last element and include supplement text', () => {
+    const processLines = ProcessLineProcessor.process([
+      makeLineInfo('processA'),
+      makeLineInfo('\\supplement (note)'),
+    ], 10);
+    const dataLines = DataLineProcessor.process([]);
+    const parseInfo = new ParseInfo4Render(processLines, dataLines);
+    const svg = new SVGRenderer('SupplLast', parseInfo).render();
+    assert.ok(svg.includes('<svg'), 'Should produce valid SVG');
+    assert.ok(svg.includes('(note)'), 'SVG should contain supplement text');
+  });
+
+  test('should render SUPPLEMENT as non-last element and include supplement text', () => {
+    const processLines = ProcessLineProcessor.process([
+      makeLineInfo('processA'),
+      makeLineInfo('\\supplement (note)'),
+      makeLineInfo('processB'),
+    ], 10);
+    const dataLines = DataLineProcessor.process([]);
+    const parseInfo = new ParseInfo4Render(processLines, dataLines);
+    const svg = new SVGRenderer('SupplMiddle', parseInfo).render();
+    assert.ok(svg.includes('<svg'), 'Should produce valid SVG');
+    assert.ok(svg.includes('(note)'), 'SVG should contain supplement text');
+  });
+
+  test('should draw endpoint marker when SUPPLEMENT is last (passthrough + same markers as normal element)', () => {
+    // SUPPLEMENT alone at level 0:
+    //   passthrough(1) + drawLevelStart(2) + drawLevelEnd(2) = 5 lines
+    const processLinesSuppl = ProcessLineProcessor.process([
+      makeLineInfo('\\supplement (note)'),
+    ], 10);
+    const svgSuppl = new SVGRenderer('SupplOnly',
+      new ParseInfo4Render(processLinesSuppl, DataLineProcessor.process([]))
+    ).render();
+
+    // Normal element alone at level 0:
+    //   circle(not a line) + drawLevelStart(2) + drawLevelEnd(2) = 4 lines
+    const processLinesNormal = ProcessLineProcessor.process([
+      makeLineInfo('processA'),
+    ], 10);
+    const svgNormal = new SVGRenderer('NormalOnly',
+      new ParseInfo4Render(processLinesNormal, DataLineProcessor.process([]))
+    ).render();
+
+    // SUPPLEMENT has exactly 1 extra line (passthrough) compared to normal element.
+    // If the endpoint marker were missing, SUPPLEMENT would have only 3 lines.
+    assert.strictEqual(countLines(svgSuppl), countLines(svgNormal) + 1,
+      `SUPPLEMENT-as-last (${countLines(svgSuppl)}) should have exactly 1 more line than normal element (${countLines(svgNormal)})`);
+  });
+});

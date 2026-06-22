@@ -63,4 +63,31 @@ suite('LineType - Method - get_line_type', () => {
     assert.strictEqual(paddedLineFormat.type_format, expectedFormat.type_format);
     assert.strictEqual(paddedLineRemainder, 'test with spaces');
   });
+
+  test('should return SUPPLEMENT for \\supplement line', () => {
+    const [format, remainder] = LineType.get_line_type('\\supplement (note)');
+    const expected = LineTypeDefine.get_format_by_type(LineTypeEnum.SUPPLEMENT);
+    assert.strictEqual(format.type_value, expected.type_value);
+    assert.strictEqual(remainder, '(note)');
+  });
+
+  test('should return DATA_SUPPLEMENT for \\data with parenthesis text', () => {
+    const [format, remainder] = LineType.get_line_type('\\data (reference)');
+    const expected = LineTypeDefine.get_format_by_type(LineTypeEnum.DATA_SUPPLEMENT);
+    assert.strictEqual(format.type_value, expected.type_value);
+    assert.strictEqual(remainder, '(reference)');
+  });
+
+  test('should return DATA_SUPPLEMENT for \\data with full-width parenthesis', () => {
+    const [format, remainder] = LineType.get_line_type('\\data （参照）');
+    const expected = LineTypeDefine.get_format_by_type(LineTypeEnum.DATA_SUPPLEMENT);
+    assert.strictEqual(format.type_value, expected.type_value);
+    assert.strictEqual(remainder, '（参照）');
+  });
+
+  test('should return DATA for \\data with normal text', () => {
+    const [format] = LineType.get_line_type('\\data normalData');
+    const expected = LineTypeDefine.get_format_by_type(LineTypeEnum.DATA);
+    assert.strictEqual(format.type_value, expected.type_value);
+  });
 });

@@ -25,6 +25,8 @@ export enum LineTypeEnum {
   BRANCH,
   DATA,
   MODULE,
+  SUPPLEMENT,
+  DATA_SUPPLEMENT,
 }
 
 /**
@@ -43,6 +45,8 @@ export class LineTypeDefine {
     [LineTypeEnum.BRANCH]: new LineTypeFormat(7, "\\branch"),
     [LineTypeEnum.DATA]: new LineTypeFormat(8, "\\data"),
     [LineTypeEnum.MODULE]: new LineTypeFormat(9, "\\module"),
+    [LineTypeEnum.SUPPLEMENT]: new LineTypeFormat(10, "\\supplement"),
+    [LineTypeEnum.DATA_SUPPLEMENT]: new LineTypeFormat(11, "\\data_supplement"),
   };
 
   // 形式から種別へのマッピングを構築

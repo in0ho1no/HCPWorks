@@ -87,14 +87,15 @@ export function parseModules(fileContent: string): Module[] {
 }
 
 /**
- * テキストデータから不要な情報を除去する
- * 
- * 以下取り除く
- * - コメント("#"に続く文字列)
- * - 丸括弧で囲まれたテキスト行（半角/全角の開始括弧で始まり、半角/全角の終了括弧で終わる行）
- * - 空行
+ * テキストデータから不要な情報を除去し、補足情報行を変換する
+ *
+ * 以下を処理する
+ * - コメント("#"に続く文字列)を除去
+ * - 空行を除去
+ * - 丸括弧で囲まれた行（半角/全角の開始括弧で始まり終了括弧で終わる行）を
+ *   \supplement 行に変換してグレー表示対象とする
  * @param textLines - 変換元のテキストデータ配列
- * @returns 不要な情報を除いたテキストデータ配列
+ * @returns 処理後のテキストデータ配列
  */
 export function cleanTextLines(textLines: string[]): string[] {
   const cleanedLines: string[] = [];
@@ -115,10 +116,12 @@ export function cleanTextLines(textLines: string[]): string[] {
       continue;
     }
 
-    // 開始括弧で始まり、終了括弧で終わる行を無視する
+    // 開始括弧で始まり、終了括弧で終わる行を \supplement 行に変換する
     const startsWithOpenBracket = openBrackets.some(bracket => trimmedLine.startsWith(bracket));
     const endsWithCloseBracket = closeBrackets.some(bracket => trimmedLine.endsWith(bracket));
     if (startsWithOpenBracket && endsWithCloseBracket) {
+      const indent = uncommentedLine.substring(0, uncommentedLine.indexOf(trimmedLine));
+      cleanedLines.push(indent + "\\supplement " + trimmedLine);
       continue;
     }
 

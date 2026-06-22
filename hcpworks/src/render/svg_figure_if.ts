@@ -24,6 +24,8 @@ export class SvgOperator {
       [LineTypeDefine.get_format_by_type(LineTypeEnum.FALSE).type_value, SvgFigureParts.drawFigureFalse],
       [LineTypeDefine.get_format_by_type(LineTypeEnum.BRANCH).type_value, SvgFigureParts.drawFigureBranch],
       [LineTypeDefine.get_format_by_type(LineTypeEnum.DATA).type_value, SvgFigureParts.drawFigureData],
+      [LineTypeDefine.get_format_by_type(LineTypeEnum.SUPPLEMENT).type_value, SvgFigureParts.drawFigureSupplement],
+      [LineTypeDefine.get_format_by_type(LineTypeEnum.DATA_SUPPLEMENT).type_value, SvgFigureParts.drawFigureSupplement],
     ]);
   }
 

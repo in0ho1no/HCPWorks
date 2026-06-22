@@ -412,8 +412,38 @@ export class SvgFigureParts {
   }
 
   /**
+   * 補足情報行を描画する
+   * 図形なし・グレーのイタリックテキストのみ
+   *
+   * @param centerX 中心X座標（垂直線と同じX位置）
+   * @param centerY 中心Y座標
+   * @param text 行の文字列
+   * @returns [行の終端位置, SVG文字列]
+   */
+  static drawFigureSupplement(
+    centerX: number,
+    centerY: number,
+    text: string = "",
+  ): [number, string] {
+    const startX = centerX + SvgFigureDefine.SPACE_FIGURE_TO_TEXT;
+    if (!text) {
+      return [startX, ''];
+    }
+    const fontSizePx = SvgFigureDefine.FONT_SIZE_PX;
+    const textWidth = SvgFigureText.getSvgStringWidth(text, fontSizePx);
+    const svgText = `<text x="${startX}" y="${centerY}" ` +
+      `text-anchor="start" dominant-baseline="middle" ` +
+      `font-family="Consolas, Courier New, monospace" ` +
+      `font-size="${fontSizePx}px" ` +
+      `fill="#888888" font-style="italic">${SvgFigureText.escapeXml(text)}</text>` +
+      `${SvgFigureDefine.LINE_BREAK}`;
+    const endX = startX + textWidth + SvgFigureDefine.TEXT_MARGIN;
+    return [endX, svgText];
+  }
+
+  /**
    * 関数への入力を意味する図形を描画する
-   * 
+   *
    * @param centerX 中心X座標
    * @param centerY 中心Y座標
    * @returns 図形のSVG文字列

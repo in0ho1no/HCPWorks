@@ -328,3 +328,42 @@ suite('SvgFigureParts - Method - drawFigureDataFuncOut', () => {
     assert.ok(result.includes('fill="#00ffff"'));
   });
 });
+
+suite('SvgFigureParts - Method - drawFigureSupplement', () => {
+  test('should return a tuple of [number, string]', () => {
+    const [endX, svgText] = SvgFigureParts.drawFigureSupplement(50, 100, '(note)');
+    assert.strictEqual(typeof endX, 'number');
+    assert.strictEqual(typeof svgText, 'string');
+  });
+
+  test('should contain a <text element', () => {
+    const [, svgText] = SvgFigureParts.drawFigureSupplement(50, 100, '(note)');
+    assert.ok(svgText.includes('<text '));
+  });
+
+  test('should use grey fill color', () => {
+    const [, svgText] = SvgFigureParts.drawFigureSupplement(50, 100, '(note)');
+    assert.ok(svgText.includes('fill="#888888"'));
+  });
+
+  test('should use italic font-style', () => {
+    const [, svgText] = SvgFigureParts.drawFigureSupplement(50, 100, '(note)');
+    assert.ok(svgText.includes('font-style="italic"'));
+  });
+
+  test('should not contain a <circle element', () => {
+    const [, svgText] = SvgFigureParts.drawFigureSupplement(50, 100, '(note)');
+    assert.ok(!svgText.includes('<circle '));
+  });
+
+  test('should end with LINE_BREAK', () => {
+    const [, svgText] = SvgFigureParts.drawFigureSupplement(50, 100, '(note)');
+    assert.ok(svgText.endsWith(SvgFigureDefine.LINE_BREAK));
+  });
+
+  test('should return empty string for empty text', () => {
+    const [endX, svgText] = SvgFigureParts.drawFigureSupplement(50, 100, '');
+    assert.strictEqual(svgText, '');
+    assert.ok(endX >= 50);
+  });
+});
