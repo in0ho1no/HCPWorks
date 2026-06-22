@@ -227,13 +227,22 @@ export class SVGRenderer {
     let processHeight = 0;
     let processWidth = 0;
 
+    const supplementValue = LineTypeDefine.get_format_by_type(LineTypeEnum.SUPPLEMENT).type_value;
+
     for (const nowElement of this._processElements) {
-      // 共通して利用する情報を保持
+      const isSupplement = nowElement.getLineInfo().getType().type_value === supplementValue;
 
       // 種別に応じた図形とテキストを描画
       let [endX, svgText] = this._svgOperator.drawFigureMethod(nowElement);
       nowElement.setEndX(endX);
       this._svgText.push(svgText);
+
+      // サプリメント要素は垂直線・始点・終点・レベルステップを描画しない
+      if (isSupplement) {
+        processWidth = Math.max(processWidth, nowElement.getEndX());
+        processHeight = Math.max(processHeight, nowElement.getY());
+        continue;
+      }
 
       // ステップ間の垂直線の追加
       const nowElementBeforeLineNo = nowElement.getLineInfo().getBeforeLineNo();

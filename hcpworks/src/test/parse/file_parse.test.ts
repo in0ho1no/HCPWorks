@@ -122,6 +122,41 @@ suite('file_parse - Function - cleanTextLines', () => {
 	test('Should return empty array for empty input', () => {
 		assert.deepStrictEqual(cleanTextLines([]), []);
 	});
+
+	test('Should convert half-width parenthesis lines to \\supplement', () => {
+		const input = ['line1', '(note)', 'line2'];
+		const expected = ['line1', '\\supplement (note)', 'line2'];
+
+		assert.deepStrictEqual(cleanTextLines(input), expected);
+	});
+
+	test('Should convert full-width parenthesis lines to \\supplement', () => {
+		const input = ['line1', '（全角注釈）', 'line2'];
+		const expected = ['line1', '\\supplement （全角注釈）', 'line2'];
+
+		assert.deepStrictEqual(cleanTextLines(input), expected);
+	});
+
+	test('Should preserve indent when converting to \\supplement', () => {
+		const input = ['\t(indented note)'];
+		const expected = ['\t\\supplement (indented note)'];
+
+		assert.deepStrictEqual(cleanTextLines(input), expected);
+	});
+
+	test('Should NOT convert mid-line parentheses to \\supplement', () => {
+		const input = ['foo (mid) bar'];
+		const expected = ['foo (mid) bar'];
+
+		assert.deepStrictEqual(cleanTextLines(input), expected);
+	});
+
+	test('Should NOT convert lines that only open with a bracket', () => {
+		const input = ['(no closing bracket'];
+		const expected = ['(no closing bracket'];
+
+		assert.deepStrictEqual(cleanTextLines(input), expected);
+	});
 });
 
 suite('file_parse - Function - extractModuleMeta', () => {

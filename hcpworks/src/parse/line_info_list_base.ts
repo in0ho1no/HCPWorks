@@ -1,5 +1,6 @@
 import { LineInfo } from './line_info';
 import { LineLevel } from './line_level';
+import { LineTypeDefine, LineTypeEnum } from './line_define';
 
 /**
  * LineProcessorの基底クラス
@@ -52,17 +53,38 @@ export abstract class BaseLineProcessor {
 
   /**
    * 各行のレベルに応じた前後関係を決定する
+   * SUPPLEMENT/DATA_SUPPLEMENT 型の行は前後関係から除外する
    * @returns このインスタンスへの参照（メソッドチェーン用）
    */
   public assignLineRelationships(): BaseLineProcessor {
+    const supplementValue = LineTypeDefine.get_format_by_type(LineTypeEnum.SUPPLEMENT).type_value;
+    const dataSupplementValue = LineTypeDefine.get_format_by_type(LineTypeEnum.DATA_SUPPLEMENT).type_value;
+
+    const isSupplementType = (line: LineInfo): boolean => {
+      const v = line.getType().type_value;
+      return v === supplementValue || v === dataSupplementValue;
+    };
+
     // 昇順で前後関係を決める
     for (let currentIndex = 0; currentIndex < this._lineInfoList.length; currentIndex++) {
       const currentLine = this._lineInfoList[currentIndex];
+
+      // サプリメント型は前後関係を持たない
+      if (isSupplementType(currentLine)) {
+        continue;
+      }
+
       const currentLevel = currentLine.getLevel();
 
       // 同じレベルで1つ前の番号を見つけるために降順で探索
       for (let searchIndex = currentIndex - 1; searchIndex >= 0; searchIndex--) {
         const searchLine = this._lineInfoList[searchIndex];
+
+        // サプリメント型は前後関係の接続先として使わない
+        if (isSupplementType(searchLine)) {
+          continue;
+        }
+
         const searchLevel = searchLine.getLevel();
 
         if (searchLevel === currentLevel) {
