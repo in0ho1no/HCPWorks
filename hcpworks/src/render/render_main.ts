@@ -237,13 +237,6 @@ export class SVGRenderer {
       nowElement.setEndX(endX);
       this._svgText.push(svgText);
 
-      // サプリメント要素は垂直線・始点・終点・レベルステップを描画しない
-      if (isSupplement) {
-        processWidth = Math.max(processWidth, nowElement.getEndX());
-        processHeight = Math.max(processHeight, nowElement.getY());
-        continue;
-      }
-
       // ステップ間の垂直線の追加
       const nowElementBeforeLineNo = nowElement.getLineInfo().getBeforeLineNo();
       const isLevelStarting = (nowElementBeforeLineNo === LineInfo.DEFAULT_VALUE);
@@ -259,9 +252,35 @@ export class SVGRenderer {
         this._svgText.push(svgText);
       }
 
-      // 始点の追加
       const normalizeNowLevel = nowElement.getLineInfo().getLevel() - this._processLines.getMinLevel();
       const isLevelMin = normalizeNowLevel === LineLevel.LEVEL_MIN;
+
+      if (isSupplement) {
+        // 円の代わりに通過垂直線を描画して前後の線を繋ぐ
+        svgText = SvgFigureLines.drawLineV(
+          nowElement.getX(),
+          nowElement.getY() - SvgFigureDefine.CIRCLE_R,
+          SvgFigureDefine.FIGURE_HEIGHT
+        );
+        this._svgText.push(svgText);
+
+        // 始点・レベルステップは通常と同様に描画する
+        if (isLevelStarting && isLevelMin) {
+          svgText = SvgFigureLines.drawLevelStart(nowElement.getX(), nowElement.getY());
+          this._svgText.push(svgText);
+        }
+        if (isLevelStarting && !isLevelMin) {
+          svgText = SvgFigureLines.drawLevelStep(nowElement.getX(), nowElement.getY());
+          this._svgText.push(svgText);
+        }
+        // 終点マーカーは描画しない（補足情報は終端として扱わない）
+
+        processWidth = Math.max(processWidth, nowElement.getEndX());
+        processHeight = Math.max(processHeight, nowElement.getY());
+        continue;
+      }
+
+      // 始点の追加
       if (isLevelStarting && isLevelMin) {
         svgText = SvgFigureLines.drawLevelStart(nowElement.getX(), nowElement.getY());
         this._svgText.push(svgText);
@@ -384,7 +403,11 @@ export class SVGRenderer {
     let dataHeight = 0;
     let dataWidth = 0;
 
+    const dataSupplementValue = LineTypeDefine.get_format_by_type(LineTypeEnum.DATA_SUPPLEMENT).type_value;
+
     for (const dataElement of this._dataElements) {
+      const isDataSupplement = dataElement.getLineInfo().getType().type_value === dataSupplementValue;
+
       // 種別に応じた図形とテキストを描画
       let [endX, svgText] = this._svgOperator.drawFigureMethod(dataElement);
       dataElement.setEndX(endX);
@@ -411,6 +434,16 @@ export class SVGRenderer {
           const dataElementPosTop = dataElement.getY() - SvgFigureDefine.CIRCLE_R;
           const lineLength = dataElementPosTop - beforeElementPosBottom;
           svgText = SvgFigureLines.drawLineV(dataElement.getX(), beforeElementPosBottom, lineLength);
+          this._svgText.push(svgText);
+        }
+
+        // DATA_SUPPLEMENT は四角の代わりに通過垂直線を描画して前後の線を繋ぐ
+        if (isDataSupplement) {
+          svgText = SvgFigureLines.drawLineV(
+            dataElement.getX(),
+            dataElement.getY() - SvgFigureDefine.CIRCLE_R,
+            SvgFigureDefine.FIGURE_HEIGHT
+          );
           this._svgText.push(svgText);
         }
       }
