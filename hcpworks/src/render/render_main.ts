@@ -273,7 +273,11 @@ export class SVGRenderer {
           svgText = SvgFigureLines.drawLevelStep(nowElement.getX(), nowElement.getY());
           this._svgText.push(svgText);
         }
-        // 終点マーカーは描画しない（補足情報は終端として扱わない）
+        // 終点マーカーも通常と同様に描画する
+        if (nowElement.getLineInfo().getNextLineNo() === LineInfo.DEFAULT_VALUE) {
+          svgText = SvgFigureLines.drawLevelEnd(nowElement.getX(), nowElement.getY());
+          this._svgText.push(svgText);
+        }
 
         processWidth = Math.max(processWidth, nowElement.getEndX());
         processHeight = Math.max(processHeight, nowElement.getY());
