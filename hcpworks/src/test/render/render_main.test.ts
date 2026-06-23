@@ -335,3 +335,101 @@ suite('SVGRenderer - Method - drawModuleMeta', () => {
     assert.ok(!svg.includes('scope:'), 'SVG should not include an empty scope line');
   });
 });
+
+suite('SVGRenderer - Method - setDisplayOptions', () => {
+  test('setDisplayOptions should return the renderer for chaining', () => {
+    const renderer = makeRenderer('Chain');
+    assert.strictEqual(renderer.setDisplayOptions({ showName: true, showScope: true, showKind: true }), renderer);
+  });
+
+  test('should omit Name when showName is false', () => {
+    const renderer = makeRenderer('HideName').setDisplayOptions({ showName: false, showScope: true, showKind: true });
+    const svg = renderer.render();
+    assert.ok(!svg.includes('Name:'), 'SVG should not include Name when showName is false');
+  });
+
+  test('should omit scope when showScope is false', () => {
+    const renderer = makeRenderer('HideScope')
+      .setModuleMeta({ kind: 'new', scope: 'extern' })
+      .setDisplayOptions({ showName: true, showScope: false, showKind: true });
+    const svg = renderer.render();
+    assert.ok(!svg.includes('scope:'), 'SVG should not include scope when showScope is false');
+    assert.ok(svg.includes('kind: new'), 'SVG should still include kind');
+  });
+
+  test('should omit kind when showKind is false', () => {
+    const renderer = makeRenderer('HideKind')
+      .setModuleMeta({ kind: 'new', scope: 'extern' })
+      .setDisplayOptions({ showName: true, showScope: true, showKind: false });
+    const svg = renderer.render();
+    assert.ok(!svg.includes('kind:'), 'SVG should not include kind when showKind is false');
+    assert.ok(svg.includes('scope: extern'), 'SVG should still include scope');
+  });
+
+  test('should produce valid SVG when all display options are false', () => {
+    const renderer = makeRenderer('HideAll')
+      .setModuleMeta({ kind: 'new', scope: 'extern' })
+      .setDisplayOptions({ showName: false, showScope: false, showKind: false });
+    const svg = renderer.render();
+    assert.ok(svg.includes('<svg'), 'Should still produce valid SVG');
+    assert.ok(!svg.includes('Name:'), 'SVG should not include Name');
+    assert.ok(!svg.includes('scope:'), 'SVG should not include scope');
+    assert.ok(!svg.includes('kind:'), 'SVG should not include kind');
+  });
+});
+
+suite('SVGRenderer - SUPPLEMENT rendering', () => {
+  function countLines(svg: string): number {
+    return (svg.match(/<line /g) ?? []).length;
+  }
+
+  test('should render SUPPLEMENT as last element and include supplement text', () => {
+    const processLines = ProcessLineProcessor.process([
+      makeLineInfo('processA'),
+      makeLineInfo('\\supplement (note)'),
+    ], 10);
+    const dataLines = DataLineProcessor.process([]);
+    const parseInfo = new ParseInfo4Render(processLines, dataLines);
+    const svg = new SVGRenderer('SupplLast', parseInfo).render();
+    assert.ok(svg.includes('<svg'), 'Should produce valid SVG');
+    assert.ok(svg.includes('(note)'), 'SVG should contain supplement text');
+  });
+
+  test('should render SUPPLEMENT as non-last element and include supplement text', () => {
+    const processLines = ProcessLineProcessor.process([
+      makeLineInfo('processA'),
+      makeLineInfo('\\supplement (note)'),
+      makeLineInfo('processB'),
+    ], 10);
+    const dataLines = DataLineProcessor.process([]);
+    const parseInfo = new ParseInfo4Render(processLines, dataLines);
+    const svg = new SVGRenderer('SupplMiddle', parseInfo).render();
+    assert.ok(svg.includes('<svg'), 'Should produce valid SVG');
+    assert.ok(svg.includes('(note)'), 'SVG should contain supplement text');
+  });
+
+  test('should draw endpoint marker when SUPPLEMENT is last (passthrough + same markers as normal element)', () => {
+    // SUPPLEMENT alone at level 0:
+    //   passthrough(1) + drawLevelStart(2) + drawLevelEnd(2) = 5 lines
+    const processLinesSuppl = ProcessLineProcessor.process([
+      makeLineInfo('\\supplement (note)'),
+    ], 10);
+    const svgSuppl = new SVGRenderer('SupplOnly',
+      new ParseInfo4Render(processLinesSuppl, DataLineProcessor.process([]))
+    ).render();
+
+    // Normal element alone at level 0:
+    //   circle(not a line) + drawLevelStart(2) + drawLevelEnd(2) = 4 lines
+    const processLinesNormal = ProcessLineProcessor.process([
+      makeLineInfo('processA'),
+    ], 10);
+    const svgNormal = new SVGRenderer('NormalOnly',
+      new ParseInfo4Render(processLinesNormal, DataLineProcessor.process([]))
+    ).render();
+
+    // SUPPLEMENT has exactly 1 extra line (passthrough) compared to normal element.
+    // If the endpoint marker were missing, SUPPLEMENT would have only 3 lines.
+    assert.strictEqual(countLines(svgSuppl), countLines(svgNormal) + 1,
+      `SUPPLEMENT-as-last (${countLines(svgSuppl)}) should have exactly 1 more line than normal element (${countLines(svgNormal)})`);
+  });
+});

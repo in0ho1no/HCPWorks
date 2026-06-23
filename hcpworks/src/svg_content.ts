@@ -1,4 +1,6 @@
 import { TableData } from './parse/file_parse';
+import { SvgFigureDefine } from './render/svg_figure_define';
+import { SvgFigureText } from './render/svg_figure_text';
 
 /**
  * SVGコンテンツを管理する
@@ -96,9 +98,38 @@ export class SvgContent {
   }
 
   /**
+   * セル内の文字列断片を装飾タグを反映したHTMLへ変換する
+   *
+   * @param part - `<br>`で分割済みのセル文字列
+   * @returns 装飾とエスケープを反映したHTML文字列
+   */
+  private renderDecoratedCellPart(part: string): string {
+    if (!SvgFigureText.hasDecorationTag(part)) {
+      return this.escapeHtml(part);
+    }
+
+    const { segments, error } = SvgFigureText.parseDecorationSegments(part);
+    if (error) {
+      return `<span class="hcp-deco-error">${this.escapeHtml(part)}</span>`;
+    }
+
+    return segments.map((segment) => {
+      const escapedText = this.escapeHtml(segment.text);
+      if (segment.deco === 'del') {
+        return `<del class="hcp-deco-del">${escapedText}</del>`;
+      }
+      if (segment.deco === 'ins') {
+        return `<ins class="hcp-deco-ins">${escapedText}</ins>`;
+      }
+      return escapedText;
+    }).join("");
+  }
+
+  /**
    * セルの文字列をHTMLへ変換する
    *
-   * `<br>`(`<br/>` `<br />` 等)のみ改行として通し、それ以外はエスケープする。
+    * `<br>`(`<br/>` `<br />` 等)と装飾タグ(`<del>`/`<ins>`)を反映し、
+    * それ以外はエスケープする。
    * セル内の改行はExcelへ「書式あり貼り付け」した際にセル内改行として扱われる。
    *
    * @param cell - セルの文字列
@@ -107,7 +138,7 @@ export class SvgContent {
   private renderCellContent(cell: string): string {
     return cell
       .split(/<br\s*\/?>/i)
-      .map(part => this.escapeHtml(part))
+      .map(part => this.renderDecoratedCellPart(part))
       .join("<br>");
   }
 
@@ -151,6 +182,9 @@ export class SvgContent {
    * @returns HTMLコンテンツ
    */
   getHtmlWrappedSvg(): string {
+    const hasTables = this._tables.length > 0;
+    const hiddenStyle = 'display:none';
+
     return `
       <!DOCTYPE html>
       <html lang="en">
@@ -162,20 +196,51 @@ export class SvgContent {
           body {
             margin: 0;
             padding: 0;
-            overflow-x: auto;
-            overflow-y: auto;
+            overflow: hidden;
+            height: 100vh;
+          }
+
+          .split-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            width: 100vw;
+          }
+
+          .table-pane {
+            flex: 0 0 40%;
+            min-height: 60px;
+            max-height: 85%;
+            overflow: auto;
+          }
+
+          .splitter {
+            flex: none;
+            height: 5px;
+            cursor: row-resize;
+            background-color: var(--vscode-sash-hoverBorder, #888);
+            opacity: 0.4;
+            transition: opacity 0.15s;
+          }
+
+          .splitter:hover {
+            opacity: 1;
+          }
+
+          .svg-pane {
+            flex: 1;
+            min-height: 60px;
+            overflow: auto;
           }
 
           .svg-container {
-            // コンテナの幅を明示的に設定せず、SVGが自然なサイズを持てるようにする
             display: inline-block;
             min-width: min-content;
-
             transform-origin: 0 0;
           }
 
           svg {
-            display: block; // SVGをブロック要素として表示
+            display: block;
           }
 
           .hcp-tables {
@@ -204,14 +269,39 @@ export class SvgContent {
           .hcp-table th {
             font-weight: bold;
           }
+
+          .hcp-table .hcp-deco-del {
+            background-color: ${SvgFigureDefine.STRIKE_BG_COLOR};
+            color: #1f1f1f;
+            text-decoration: line-through;
+            text-decoration-color: #1f1f1f;
+          }
+
+          .hcp-table .hcp-deco-ins {
+            background-color: ${SvgFigureDefine.INSERT_BG_COLOR};
+            color: #1f1f1f;
+            text-decoration: none;
+          }
+
+          .hcp-table .hcp-deco-error {
+            background-color: ${SvgFigureDefine.DECORATION_ERROR_BG_COLOR};
+            color: #1f1f1f;
+          }
         </style>
       </head>
       <body>
-      <div class="hcp-tables">
-        ${this.getTablesHtml()}
-      </div>
-      <div class="svg-container" id="svgContainer">
-        ${this._svgContent}
+      <div class="split-container">
+        <div class="table-pane" id="tablePane" style="${hasTables ? '' : hiddenStyle}">
+          <div class="hcp-tables">
+            ${this.getTablesHtml()}
+          </div>
+        </div>
+        <div class="splitter" id="splitter" style="${hasTables ? '' : hiddenStyle}"></div>
+        <div class="svg-pane" id="svgPane">
+          <div class="svg-container" id="svgContainer">
+            ${this._svgContent}
+          </div>
+        </div>
       </div>
 
       <script>
@@ -278,30 +368,56 @@ export class SvgContent {
         const maxScale = 10;
         // スケーリング速度
         const scaleSpeed = 0.1;
-        
+
         const container = document.getElementById('svgContainer');
-        
-        // マウスホイールイベントのリスナー
-        document.addEventListener('wheel', (event) => {
-          // Ctrlキーが押されているかチェック
+        const svgPane = document.getElementById('svgPane');
+
+        // SVGペインのみCtrl+Wheelでズーム（テーブルペインのスクロールと干渉しない）
+        svgPane.addEventListener('wheel', (event) => {
           if (event.ctrlKey) {
-            // デフォルトの動作を防止（ブラウザのズーム）
             event.preventDefault();
-            
-            // ホイールの方向に応じてスケールを調整
             const delta = event.deltaY > 0 ? -scaleSpeed : scaleSpeed;
             scale = Math.max(minScale, Math.min(maxScale, scale + delta));
-            
-            // コンテナに変換を適用（トランジションなし）
             container.style.transform = \`scale(\${scale})\`;
           }
         }, { passive: false });
-        
+
         // ダブルクリックでズームをリセット
         container.addEventListener('dblclick', () => {
           scale = 1;
           container.style.transform = 'scale(1)';
         });
+
+        // スプリッターのドラッグでテーブルペインの幅を変更する
+        const splitter = document.getElementById('splitter');
+        const tablePane = document.getElementById('tablePane');
+        if (splitter && tablePane) {
+          let isResizing = false;
+          let startY = 0;
+          let startHeight = 0;
+
+          splitter.addEventListener('mousedown', (e) => {
+            isResizing = true;
+            startY = e.clientY;
+            startHeight = tablePane.getBoundingClientRect().height;
+            document.body.style.userSelect = 'none';
+            document.body.style.cursor = 'row-resize';
+          });
+
+          document.addEventListener('mousemove', (e) => {
+            if (!isResizing) { return; }
+            const newHeight = Math.max(60, startHeight + e.clientY - startY);
+            tablePane.style.flex = \`0 0 \${newHeight}px\`;
+          });
+
+          document.addEventListener('mouseup', () => {
+            if (isResizing) {
+              isResizing = false;
+              document.body.style.userSelect = '';
+              document.body.style.cursor = '';
+            }
+          });
+        }
       </script>
       </body>
       </html>

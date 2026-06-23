@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { DiagramDefine } from '../render/render_define';
+import { HeaderDisplayOptions, DEFAULT_HEADER_DISPLAY_OPTIONS } from './header_display_options';
 
 /**
  * 設定を管理する
@@ -18,5 +19,14 @@ export class ConfigManager {
    */
   public getConfigWireColorTable(): string[] {
     return vscode.workspace.getConfiguration('hcpworks').get('WireColorTable', DiagramDefine.WIRE_COLOR_TABLE);
+  }
+
+  public getConfigHeaderDisplayOptions(): HeaderDisplayOptions {
+    const config = vscode.workspace.getConfiguration('hcpworks.headerDisplay');
+    return {
+      showName:  config.get('showName',  DEFAULT_HEADER_DISPLAY_OPTIONS.showName),
+      showScope: config.get('showScope', DEFAULT_HEADER_DISPLAY_OPTIONS.showScope),
+      showKind:  config.get('showKind',  DEFAULT_HEADER_DISPLAY_OPTIONS.showKind),
+    };
   }
 }

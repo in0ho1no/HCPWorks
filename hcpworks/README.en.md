@@ -81,13 +81,13 @@ Notation | Content | Notes
 \module | Start of module | Be sure to write it together with the module name.
 \kind | Change type of the module | Write it between `\module` and `\table`. Free-form value (e.g. new / modified / reused). Shown below `Name:` as `kind: <value>` and included in image output.
 \scope | Visibility type of the module | Write it between `\module` and `\table`. Free-form value (e.g. public / private, extern / static). Shown below `Name:` as `scope: <value>` and included in image output.
-\table | Description of a table | Write it between `\module` and `\data`. CSV format; consecutive commas are merged into one separator.<br>A caption can be added with `\table <name>`.<br>Leading indentation (tab / 4 spaces = one level) expresses parent-child hierarchy like struct members.<br>Use `<br>` for a line break within a cell (it becomes an in-cell line break when pasted into Excel with formatting).<br>Not included in image output.
+\table | Description of a table | Write it between `\module` and `\data`. CSV format; consecutive commas are merged into one separator.<br>A caption can be added with `\table <name>`.<br>Leading indentation (tab / 4 spaces = one level) expresses parent-child hierarchy like struct members.<br>Use `<br>` for a line break within a cell (it becomes an in-cell line break when pasted into Excel with formatting).<br>`<del>` / `<ins>` text decoration can also be used within cells.<br>Not included in image output.
 
 ### Notation that can be written at level 0 or higher
 
 Notation | Content | Notes
 ---| --- | ---
-\data | Definition of data used in the module | Do not define duplicate data names. If duplicates exist, only the first definition will be used for rendering.
+\data | Definition of data used in the module | Do not define duplicate data names. If duplicates exist, only the first definition will be used for rendering.<br>Writing `\data (text)` with parenthesized text displays it as grey supplementary text in the data column.
 \fork | Conditional branch | -
 \true | If the condition of the conditional branch is true | There are no restrictions, but avoid writing two consecutive `\true` notations by mistake.
 \false | If the condition of the conditional branch is false |There are no restrictions, but avoid writing two consecutive `\false` notations by mistake.
@@ -95,6 +95,7 @@ Notation | Content | Notes
 \repeat | Repeat | -
 \mod | Function call | -
 \return | End of processing | -
+
 ### Notation that can be added to levels 0 and above
 
 Notation | Content | Notes
@@ -103,14 +104,35 @@ Notation | Content | Notes
 \out | Output from processing/function | If written at the lowest indentation level, it is treated as output from the function. <br>If written at any level other than the lowest indentation level, it is treated as simple processing output. <br>If there is no definition in `\data`, it will be treated as new data. <br>Do not include spaces or periods.
 \drop | Discard of output data | Written like `\out`, but it is neither connected to the data section nor drawn. <br>Used to annotate an intentionally discarded output. <br>Do not include spaces or periods.
 
+### Supplementary annotation notation
+
+Enclosing an entire line in half-width parentheses `(...)` or full-width parentheses `（...）` renders it as grey italic supplementary text.
+
+- Applies when the trimmed line content starts with `(` or `（` and ends with `)` or `）`.
+- In the process column, a pass-through vertical line replaces the circle so the flow line remains unbroken.
+- In the data column, write `\data (text)` to display supplementary text alongside the data entries.
+- Indent level is respected the same as for regular lines.
+
 ### Text decoration
 
-Part of the text in a line can be decorated. It can be combined with line notations such as `\mod`.<br>Each tag is used as a pair (`<del></del>` / `<ins></ins>`). Nested tags, a different tag mixed in, or unmatched open/close are shown as a notation error with a red background.
+Part of the text in a line can be decorated. It can be used with line notations such as `\mod` and within `\table` cells.<br>Each tag is used as a pair (`<del></del>` / `<ins></ins>`). Nested tags, a different tag mixed in, or unmatched open/close are shown as a notation error with a red background.
 
 Notation | Content | Notes
 ---| --- | ---
-`<del>...</del>` | Strikethrough | Draws a strikethrough over the range enclosed by `<del>` and `</del>`, and highlights it with a salmon-pink background.<br>Example: `\mod <del>送信する</del>受信解析する`<br>The decoration tags themselves are not drawn.
-`<ins>...</ins>` | Insertion (highlight) | Highlights the range enclosed by `<ins>` and `</ins>` with a light-green background to indicate newly added or changed text.<br>Example: `\mod <ins>受信解析する</ins>`<br>The decoration tags themselves are not drawn.
+`<del>...</del>` | Strikethrough | Draws a strikethrough over the range enclosed by `<del>` and `</del>`, and highlights it with a salmon-pink background.<br>Example: `\mod <del>send data</del>receive and parse`<br>The decoration tags themselves are not drawn.
+`<ins>...</ins>` | Insertion (highlight) | Highlights the range enclosed by `<ins>` and `</ins>` with a light-green background to indicate newly added or changed text.<br>Example: `\mod <ins>receive and parse</ins>`<br>The decoration tags themselves are not drawn.
+
+## Configuration
+
+You can change the following settings from VSCode Settings (`File > Preferences > Settings`, search for "HCPWorks").
+
+Setting key | Type | Default | Description
+--- | --- | --- | ---
+`hcpworks.SvgBgColor` | string | `FFFFFF` | SVG background color for preview/export (RRGGBB format).
+`hcpworks.WireColorTable` | string[] | (8 colors) | Wire color table (array of RRGGBB strings).
+`hcpworks.headerDisplay.showName` | boolean | `true` | Whether to show the `Name:` field in preview/export.
+`hcpworks.headerDisplay.showScope` | boolean | `true` | Whether to show the `scope:` field in preview/export.
+`hcpworks.headerDisplay.showKind` | boolean | `true` | Whether to show the `kind:` field in preview/export.
 
 ## Known Issues
 

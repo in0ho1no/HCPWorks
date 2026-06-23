@@ -2,6 +2,35 @@
 
 All notable changes to the "hcpworks" extension will be documented in this file.
 
+## [0.0.14]
+
+- Supports `<ins>` / `<del>` text decoration inside `\table` cells
+    - Cell text remains HTML-escaped except for supported decoration tags and `<br>` line breaks
+    - Decorated ranges use a high-contrast text color for readability on highlighted backgrounds
+    - Invalid nested or unmatched decoration tags are shown with the same error highlight as chart text
+
+- Lines entirely wrapped in parentheses (half-width `(...)` or full-width `（...）`) are now rendered as grey supplementary annotations instead of being silently ignored
+    - Applies to any process line whose trimmed content starts with `(` / `（` and ends with `)` / `）`
+    - Displayed in italic grey text; no shape is drawn — a pass-through vertical line replaces the circle so the flow line remains unbroken
+    - Indent level is respected: if the supplementary line is at a sub-level, its X position follows the same level shift as other elements
+    - An endpoint marker is drawn when the supplementary line is the last element at its level
+- `\data (...)` / `\data （...）` is rendered in the data column as grey supplementary text
+    - Useful for noting referenced data or side-effects that are not formal inputs/outputs
+
+- Add VSCode settings to control visibility of `Name`, `scope`, and `kind` fields in chart preview/export
+    - `hcpworks.headerDisplay.showName` (default: true) — toggle the `Name:` header
+    - `hcpworks.headerDisplay.showScope` (default: true) — toggle the `scope:` line
+    - `hcpworks.headerDisplay.showKind` (default: true) — toggle the `kind:` line
+    - Settings are grouped under `headerDisplay` for extensibility (future fields such as Author or edit date use the same prefix)
+
+## [0.0.13]
+
+- Preview no longer steals focus when opened from the module list
+- Display `\table` and the diagram in vertically split panes that can be scrolled independently.
+    - Allow the splitter between the table pane and the SVG pane to be dragged to resize their heights.
+    - If there is no table, display only the diagram at full size as before.
+    - Enable zooming with Ctrl+Wheel only in the SVG pane, without interfering with scrolling in the table pane.
+
 ## [0.0.12]
 
 - Supports multiple image formats on save (PNG / SVG / WebP / JPEG)

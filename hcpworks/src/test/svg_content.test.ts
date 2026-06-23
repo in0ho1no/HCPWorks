@@ -281,12 +281,173 @@ suite('SvgContent - Method - getHtmlWrappedSvg', () => {
     assert.ok(!html.includes('<b>'), 'Should not contain a raw <b> tag');
   });
 
+  test('should render <ins> and <del> decorations in table cells', () => {
+    const content = new SvgContent();
+    content.setTables([
+      {
+        caption: '',
+        rows: [
+          { cells: ['名前', '変更'], depth: 0 },
+          { cells: ['項目', '前<ins>追加</ins>中<del>削除</del>後'], depth: 0 },
+        ],
+      },
+    ]);
+    const html = content.getHtmlWrappedSvg();
+
+    assert.ok(
+      html.includes('前<ins class="hcp-deco-ins">追加</ins>中<del class="hcp-deco-del">削除</del>後'),
+      'Should render ins and del decorations in cell content'
+    );
+    assert.ok(html.includes('background-color: #c9ffc4'), 'Should include insertion highlight style');
+    assert.ok(html.includes('background-color: #ffc9c4'), 'Should include deletion highlight style');
+    assert.ok(html.includes('color: #1f1f1f'), 'Should include high-contrast decoration text color');
+    assert.ok(html.includes('text-decoration: line-through'), 'Should include deletion strikethrough style');
+    assert.ok(html.includes('text-decoration-color: #1f1f1f'), 'Should include high-contrast strikethrough color');
+  });
+
+  test('should render sequential decorations in a table cell', () => {
+    const content = new SvgContent();
+    content.setTables([{ caption: '', rows: [{ cells: ['<del>旧</del><ins>新</ins>'], depth: 0 }] }]);
+    const html = content.getHtmlWrappedSvg();
+
+    assert.ok(
+      html.includes('<th><del class="hcp-deco-del">旧</del><ins class="hcp-deco-ins">新</ins></th>'),
+      'Should render sequential non-nested decorations'
+    );
+  });
+
+  test('should keep escaping HTML special characters inside table cell decorations', () => {
+    const content = new SvgContent();
+    content.setTables([{ caption: '', rows: [{ cells: ['<ins><b> & "x"</ins>'], depth: 0 }] }]);
+    const html = content.getHtmlWrappedSvg();
+
+    assert.ok(
+      html.includes('<ins class="hcp-deco-ins">&lt;b&gt; &amp; &quot;x&quot;</ins>'),
+      'Should escape special characters inside decoration content'
+    );
+    assert.ok(!html.includes('<b> & "x"'), 'Should not contain raw HTML inside decorations');
+  });
+
+  test('should combine table cell decorations with <br> line breaks', () => {
+    const content = new SvgContent();
+    content.setTables([{ caption: '', rows: [{ cells: ['a<ins>b</ins><br><del>c</del>d'], depth: 0 }] }]);
+    const html = content.getHtmlWrappedSvg();
+
+    assert.ok(
+      html.includes('a<ins class="hcp-deco-ins">b</ins><br><del class="hcp-deco-del">c</del>d'),
+      'Should render decorations on both sides of a line break'
+    );
+  });
+
+  test('should show escaped raw table cell text with error style for invalid decorations', () => {
+    const content = new SvgContent();
+    content.setTables([{ caption: '', rows: [{ cells: ['<ins>a<del>b</del>c</ins>'], depth: 0 }] }]);
+    const html = content.getHtmlWrappedSvg();
+
+    assert.ok(html.includes('class="hcp-deco-error"'), 'Should mark invalid notation as an error');
+    assert.ok(
+      html.includes('&lt;ins&gt;a&lt;del&gt;b&lt;/del&gt;c&lt;/ins&gt;'),
+      'Should show escaped raw text for invalid notation'
+    );
+    assert.ok(!html.includes('<ins>a<del>b</del>c</ins>'), 'Should not contain raw invalid HTML');
+  });
+
+  test('should not carry table cell decorations across cells', () => {
+    const content = new SvgContent();
+    content.setTables([
+      {
+        caption: '',
+        rows: [
+          { cells: ['<ins>ループカウンタ', 'コマンド種別だけ繰り返す', '0</ins>'], depth: 0 },
+        ],
+      },
+    ]);
+    const html = content.getHtmlWrappedSvg();
+
+    assert.ok(
+      html.includes('<span class="hcp-deco-error">&lt;ins&gt;ループカウンタ</span>'),
+      'Opening tag without a closing tag in the same cell should be an error'
+    );
+    assert.ok(
+      html.includes('<th>コマンド種別だけ繰り返す</th>'),
+      'Decoration should not carry over to the next cell'
+    );
+    assert.ok(
+      html.includes('<span class="hcp-deco-error">0&lt;/ins&gt;</span>'),
+      'Closing tag without an opening tag in the same cell should be an error'
+    );
+    assert.ok(!html.includes('<ins class="hcp-deco-ins">ループカウンタ'));
+  });
+
+  test('should show escaped raw table cell text for an unclosed decoration tag', () => {
+    const content = new SvgContent();
+    content.setTables([{ caption: '', rows: [{ cells: ['before<del>after'], depth: 0 }] }]);
+    const html = content.getHtmlWrappedSvg();
+
+    assert.ok(html.includes('class="hcp-deco-error"'), 'Should mark unclosed notation as an error');
+    assert.ok(html.includes('before&lt;del&gt;after'), 'Should show escaped raw text');
+    assert.ok(!html.includes('before<del>after'), 'Should not contain raw invalid HTML');
+  });
+
   test('should not render a table element when no tables set', () => {
     const content = new SvgContent();
     content.setSvgContent('<svg></svg>');
     const html = content.getHtmlWrappedSvg();
 
     assert.ok(!html.includes('<table'), 'Should not include any table element');
+  });
+
+  test('should include split-container, svgPane and svgContainer in the layout', () => {
+    const content = new SvgContent();
+    content.setSvgContent('<svg></svg>');
+    const html = content.getHtmlWrappedSvg();
+
+    assert.ok(html.includes('split-container'), 'Should include split-container');
+    assert.ok(html.includes('id="svgPane"'), 'Should include svgPane');
+    assert.ok(html.includes('id="svgContainer"'), 'Should include svgContainer');
+  });
+
+  test('should hide table-pane and splitter when no tables are set', () => {
+    const content = new SvgContent();
+    content.setSvgContent('<svg></svg>');
+    const html = content.getHtmlWrappedSvg();
+
+    assert.ok(html.includes('id="tablePane"'), 'Should include tablePane element');
+    assert.ok(html.includes('id="splitter"'), 'Should include splitter element');
+    // テーブルが無い場合、table-pane と splitter は display:none で非表示になる
+    const tablePaneMatch = html.match(/id="tablePane"[^>]*style="([^"]*)"/);
+    const splitterMatch = html.match(/id="splitter"[^>]*style="([^"]*)"/);
+    assert.ok(tablePaneMatch && tablePaneMatch[1].includes('display:none'), 'tablePane should be hidden');
+    assert.ok(splitterMatch && splitterMatch[1].includes('display:none'), 'splitter should be hidden');
+  });
+
+  test('should show table-pane and splitter when tables are set', () => {
+    const content = new SvgContent();
+    content.setTables([{ caption: '', rows: [{ cells: ['A'], depth: 0 }] }]);
+    const html = content.getHtmlWrappedSvg();
+
+    const tablePaneMatch = html.match(/id="tablePane"[^>]*style="([^"]*)"/);
+    const splitterMatch = html.match(/id="splitter"[^>]*style="([^"]*)"/);
+    // テーブルがある場合は display:none が付かない(空スタイル)
+    assert.ok(!tablePaneMatch || !tablePaneMatch[1].includes('display:none'), 'tablePane should be visible');
+    assert.ok(!splitterMatch || !splitterMatch[1].includes('display:none'), 'splitter should be visible');
+  });
+
+  test('should attach zoom wheel listener to svgPane, not document', () => {
+    const content = new SvgContent();
+    content.setSvgContent('');
+    const html = content.getHtmlWrappedSvg();
+
+    assert.ok(html.includes("svgPane.addEventListener('wheel'"), 'Zoom should be bound to svgPane');
+    assert.ok(!html.includes("document.addEventListener('wheel'"), 'Zoom should not be bound to document');
+  });
+
+  test('should include row-resize cursor for the splitter drag handler', () => {
+    const content = new SvgContent();
+    content.setSvgContent('');
+    const html = content.getHtmlWrappedSvg();
+
+    assert.ok(html.includes('row-resize'), 'Splitter drag should use row-resize cursor');
   });
 });
 

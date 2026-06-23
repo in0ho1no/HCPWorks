@@ -12,9 +12,12 @@ export class ProcessLineProcessor extends BaseLineProcessor {
    * @returns このインスタンスへの参照（メソッドチェーン用）
    */
   public override createInfoList(lineInfoList: LineInfo[]): ProcessLineProcessor {
-    const processInfoList = lineInfoList.filter(lineInfo =>
-      lineInfo.getType().type_value !== LineTypeDefine.get_format_by_type(LineTypeEnum.DATA).type_value
-    );
+    const dataValue = LineTypeDefine.get_format_by_type(LineTypeEnum.DATA).type_value;
+    const dataSupplementValue = LineTypeDefine.get_format_by_type(LineTypeEnum.DATA_SUPPLEMENT).type_value;
+    const processInfoList = lineInfoList.filter(lineInfo => {
+      const v = lineInfo.getType().type_value;
+      return v !== dataValue && v !== dataSupplementValue;
+    });
 
     super.setLineInfoList(processInfoList);
     return this;
