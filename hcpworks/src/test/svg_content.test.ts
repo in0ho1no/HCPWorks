@@ -300,7 +300,9 @@ suite('SvgContent - Method - getHtmlWrappedSvg', () => {
     );
     assert.ok(html.includes('background-color: #c9ffc4'), 'Should include insertion highlight style');
     assert.ok(html.includes('background-color: #ffc9c4'), 'Should include deletion highlight style');
+    assert.ok(html.includes('color: #1f1f1f'), 'Should include high-contrast decoration text color');
     assert.ok(html.includes('text-decoration: line-through'), 'Should include deletion strikethrough style');
+    assert.ok(html.includes('text-decoration-color: #1f1f1f'), 'Should include high-contrast strikethrough color');
   });
 
   test('should render sequential decorations in a table cell', () => {

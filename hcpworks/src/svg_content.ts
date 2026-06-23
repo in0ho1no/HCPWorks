@@ -272,16 +272,20 @@ export class SvgContent {
 
           .hcp-table .hcp-deco-del {
             background-color: ${SvgFigureDefine.STRIKE_BG_COLOR};
+            color: #1f1f1f;
             text-decoration: line-through;
+            text-decoration-color: #1f1f1f;
           }
 
           .hcp-table .hcp-deco-ins {
             background-color: ${SvgFigureDefine.INSERT_BG_COLOR};
+            color: #1f1f1f;
             text-decoration: none;
           }
 
           .hcp-table .hcp-deco-error {
             background-color: ${SvgFigureDefine.DECORATION_ERROR_BG_COLOR};
+            color: #1f1f1f;
           }
         </style>
       </head>
