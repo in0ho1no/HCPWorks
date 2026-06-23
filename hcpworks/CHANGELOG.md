@@ -7,7 +7,6 @@ All notable changes to the "hcpworks" extension will be documented in this file.
 - Supports `<ins>` / `<del>` text decoration inside `\table` cells
     - Cell text remains HTML-escaped except for supported decoration tags and `<br>` line breaks
     - Decorated ranges use a high-contrast text color for readability on highlighted backgrounds
-    - Decoration colors and strikethrough are also emitted as inline styles for formatted paste targets such as Excel
     - Invalid nested or unmatched decoration tags are shown with the same error highlight as chart text
 
 - Lines entirely wrapped in parentheses (half-width `(...)` or full-width `（...）`) are now rendered as grey supplementary annotations instead of being silently ignored
