@@ -1,4 +1,6 @@
 import { TableData } from './parse/file_parse';
+import { SvgFigureDefine } from './render/svg_figure_define';
+import { SvgFigureText } from './render/svg_figure_text';
 
 /**
  * SVGコンテンツを管理する
@@ -96,9 +98,38 @@ export class SvgContent {
   }
 
   /**
+   * セル内の文字列断片を装飾タグを反映したHTMLへ変換する
+   *
+   * @param part - `<br>`で分割済みのセル文字列
+   * @returns 装飾とエスケープを反映したHTML文字列
+   */
+  private renderDecoratedCellPart(part: string): string {
+    if (!SvgFigureText.hasDecorationTag(part)) {
+      return this.escapeHtml(part);
+    }
+
+    const { segments, error } = SvgFigureText.parseDecorationSegments(part);
+    if (error) {
+      return `<span class="hcp-deco-error">${this.escapeHtml(part)}</span>`;
+    }
+
+    return segments.map((segment) => {
+      const escapedText = this.escapeHtml(segment.text);
+      if (segment.deco === 'del') {
+        return `<del class="hcp-deco-del">${escapedText}</del>`;
+      }
+      if (segment.deco === 'ins') {
+        return `<ins class="hcp-deco-ins">${escapedText}</ins>`;
+      }
+      return escapedText;
+    }).join("");
+  }
+
+  /**
    * セルの文字列をHTMLへ変換する
    *
-   * `<br>`(`<br/>` `<br />` 等)のみ改行として通し、それ以外はエスケープする。
+    * `<br>`(`<br/>` `<br />` 等)と装飾タグ(`<del>`/`<ins>`)を反映し、
+    * それ以外はエスケープする。
    * セル内の改行はExcelへ「書式あり貼り付け」した際にセル内改行として扱われる。
    *
    * @param cell - セルの文字列
@@ -107,7 +138,7 @@ export class SvgContent {
   private renderCellContent(cell: string): string {
     return cell
       .split(/<br\s*\/?>/i)
-      .map(part => this.escapeHtml(part))
+      .map(part => this.renderDecoratedCellPart(part))
       .join("<br>");
   }
 
@@ -237,6 +268,24 @@ export class SvgContent {
 
           .hcp-table th {
             font-weight: bold;
+          }
+
+          .hcp-table .hcp-deco-del {
+            background-color: ${SvgFigureDefine.STRIKE_BG_COLOR};
+            color: #1f1f1f;
+            text-decoration: line-through;
+            text-decoration-color: #1f1f1f;
+          }
+
+          .hcp-table .hcp-deco-ins {
+            background-color: ${SvgFigureDefine.INSERT_BG_COLOR};
+            color: #1f1f1f;
+            text-decoration: none;
+          }
+
+          .hcp-table .hcp-deco-error {
+            background-color: ${SvgFigureDefine.DECORATION_ERROR_BG_COLOR};
+            color: #1f1f1f;
           }
         </style>
       </head>

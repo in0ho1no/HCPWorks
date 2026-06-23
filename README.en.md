@@ -81,7 +81,7 @@ Notation | Content | Notes
 \module | Start of module | Be sure to write it together with the module name.
 \kind | Change type of the module | Write it between `\module` and `\table`. Free-form value (e.g. new / modified / reused). Shown below `Name:` as `kind: <value>` and included in image output.
 \scope | Visibility type of the module | Write it between `\module` and `\table`. Free-form value (e.g. public / private, extern / static). Shown below `Name:` as `scope: <value>` and included in image output.
-\table | Description of a table | Write it between `\module` and `\data`. CSV format; consecutive commas are merged into one separator.<br>A caption can be added with `\table <name>`.<br>Leading indentation (tab / 4 spaces = one level) expresses parent-child hierarchy like struct members.<br>Use `<br>` for a line break within a cell (it becomes an in-cell line break when pasted into Excel with formatting).<br>Not included in image output.
+\table | Description of a table | Write it between `\module` and `\data`. CSV format; consecutive commas are merged into one separator.<br>A caption can be added with `\table <name>`.<br>Leading indentation (tab / 4 spaces = one level) expresses parent-child hierarchy like struct members.<br>Use `<br>` for a line break within a cell (it becomes an in-cell line break when pasted into Excel with formatting).<br>`<del>` / `<ins>` text decoration can also be used within cells.<br>Not included in image output.
 
 ### Notation that can be written at level 0 or higher
 
@@ -115,7 +115,7 @@ Enclosing an entire line in half-width parentheses `(...)` or full-width parenth
 
 ### Text decoration
 
-Part of the text in a line can be decorated. It can be combined with line notations such as `\mod`.<br>Each tag is used as a pair (`<del></del>` / `<ins></ins>`). Nested tags, a different tag mixed in, or unmatched open/close are shown as a notation error with a red background.
+Part of the text in a line can be decorated. It can be used with line notations such as `\mod` and within `\table` cells.<br>Each tag is used as a pair (`<del></del>` / `<ins></ins>`). Nested tags, a different tag mixed in, or unmatched open/close are shown as a notation error with a red background.
 
 Notation | Content | Notes
 ---| --- | ---
