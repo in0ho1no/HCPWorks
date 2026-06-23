@@ -281,6 +281,85 @@ suite('SvgContent - Method - getHtmlWrappedSvg', () => {
     assert.ok(!html.includes('<b>'), 'Should not contain a raw <b> tag');
   });
 
+  test('should render <ins> and <del> decorations in table cells', () => {
+    const content = new SvgContent();
+    content.setTables([
+      {
+        caption: '',
+        rows: [
+          { cells: ['名前', '変更'], depth: 0 },
+          { cells: ['項目', '前<ins>追加</ins>中<del>削除</del>後'], depth: 0 },
+        ],
+      },
+    ]);
+    const html = content.getHtmlWrappedSvg();
+
+    assert.ok(
+      html.includes('前<ins class="hcp-deco-ins">追加</ins>中<del class="hcp-deco-del">削除</del>後'),
+      'Should render ins and del decorations in cell content'
+    );
+    assert.ok(html.includes('background-color: #c9ffc4'), 'Should include insertion highlight style');
+    assert.ok(html.includes('background-color: #ffc9c4'), 'Should include deletion highlight style');
+    assert.ok(html.includes('text-decoration: line-through'), 'Should include deletion strikethrough style');
+  });
+
+  test('should render sequential decorations in a table cell', () => {
+    const content = new SvgContent();
+    content.setTables([{ caption: '', rows: [{ cells: ['<del>旧</del><ins>新</ins>'], depth: 0 }] }]);
+    const html = content.getHtmlWrappedSvg();
+
+    assert.ok(
+      html.includes('<th><del class="hcp-deco-del">旧</del><ins class="hcp-deco-ins">新</ins></th>'),
+      'Should render sequential non-nested decorations'
+    );
+  });
+
+  test('should keep escaping HTML special characters inside table cell decorations', () => {
+    const content = new SvgContent();
+    content.setTables([{ caption: '', rows: [{ cells: ['<ins><b> & "x"</ins>'], depth: 0 }] }]);
+    const html = content.getHtmlWrappedSvg();
+
+    assert.ok(
+      html.includes('<ins class="hcp-deco-ins">&lt;b&gt; &amp; &quot;x&quot;</ins>'),
+      'Should escape special characters inside decoration content'
+    );
+    assert.ok(!html.includes('<b> & "x"'), 'Should not contain raw HTML inside decorations');
+  });
+
+  test('should combine table cell decorations with <br> line breaks', () => {
+    const content = new SvgContent();
+    content.setTables([{ caption: '', rows: [{ cells: ['a<ins>b</ins><br><del>c</del>d'], depth: 0 }] }]);
+    const html = content.getHtmlWrappedSvg();
+
+    assert.ok(
+      html.includes('a<ins class="hcp-deco-ins">b</ins><br><del class="hcp-deco-del">c</del>d'),
+      'Should render decorations on both sides of a line break'
+    );
+  });
+
+  test('should show escaped raw table cell text with error style for invalid decorations', () => {
+    const content = new SvgContent();
+    content.setTables([{ caption: '', rows: [{ cells: ['<ins>a<del>b</del>c</ins>'], depth: 0 }] }]);
+    const html = content.getHtmlWrappedSvg();
+
+    assert.ok(html.includes('class="hcp-deco-error"'), 'Should mark invalid notation as an error');
+    assert.ok(
+      html.includes('&lt;ins&gt;a&lt;del&gt;b&lt;/del&gt;c&lt;/ins&gt;'),
+      'Should show escaped raw text for invalid notation'
+    );
+    assert.ok(!html.includes('<ins>a<del>b</del>c</ins>'), 'Should not contain raw invalid HTML');
+  });
+
+  test('should show escaped raw table cell text for an unclosed decoration tag', () => {
+    const content = new SvgContent();
+    content.setTables([{ caption: '', rows: [{ cells: ['before<del>after'], depth: 0 }] }]);
+    const html = content.getHtmlWrappedSvg();
+
+    assert.ok(html.includes('class="hcp-deco-error"'), 'Should mark unclosed notation as an error');
+    assert.ok(html.includes('before&lt;del&gt;after'), 'Should show escaped raw text');
+    assert.ok(!html.includes('before<del>after'), 'Should not contain raw invalid HTML');
+  });
+
   test('should not render a table element when no tables set', () => {
     const content = new SvgContent();
     content.setSvgContent('<svg></svg>');
