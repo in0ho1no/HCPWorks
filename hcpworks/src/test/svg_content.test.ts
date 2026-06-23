@@ -352,6 +352,33 @@ suite('SvgContent - Method - getHtmlWrappedSvg', () => {
     assert.ok(!html.includes('<ins>a<del>b</del>c</ins>'), 'Should not contain raw invalid HTML');
   });
 
+  test('should not carry table cell decorations across cells', () => {
+    const content = new SvgContent();
+    content.setTables([
+      {
+        caption: '',
+        rows: [
+          { cells: ['<ins>ループカウンタ', 'コマンド種別だけ繰り返す', '0</ins>'], depth: 0 },
+        ],
+      },
+    ]);
+    const html = content.getHtmlWrappedSvg();
+
+    assert.ok(
+      html.includes('<span class="hcp-deco-error">&lt;ins&gt;ループカウンタ</span>'),
+      'Opening tag without a closing tag in the same cell should be an error'
+    );
+    assert.ok(
+      html.includes('<th>コマンド種別だけ繰り返す</th>'),
+      'Decoration should not carry over to the next cell'
+    );
+    assert.ok(
+      html.includes('<span class="hcp-deco-error">0&lt;/ins&gt;</span>'),
+      'Closing tag without an opening tag in the same cell should be an error'
+    );
+    assert.ok(!html.includes('<ins class="hcp-deco-ins">ループカウンタ'));
+  });
+
   test('should show escaped raw table cell text for an unclosed decoration tag', () => {
     const content = new SvgContent();
     content.setTables([{ caption: '', rows: [{ cells: ['before<del>after'], depth: 0 }] }]);
