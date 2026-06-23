@@ -295,7 +295,10 @@ suite('SvgContent - Method - getHtmlWrappedSvg', () => {
     const html = content.getHtmlWrappedSvg();
 
     assert.ok(
-      html.includes('前<ins class="hcp-deco-ins">追加</ins>中<del class="hcp-deco-del">削除</del>後'),
+      html.includes('前<ins class="hcp-deco-ins" style="background-color: #c9ffc4; ' +
+        'color: #1f1f1f; text-decoration: none;">追加</ins>中' +
+        '<del class="hcp-deco-del" style="background-color: #ffc9c4; color: #1f1f1f; ' +
+        'text-decoration: line-through; text-decoration-color: #1f1f1f;">削除</del>後'),
       'Should render ins and del decorations in cell content'
     );
     assert.ok(html.includes('background-color: #c9ffc4'), 'Should include insertion highlight style');
@@ -311,7 +314,10 @@ suite('SvgContent - Method - getHtmlWrappedSvg', () => {
     const html = content.getHtmlWrappedSvg();
 
     assert.ok(
-      html.includes('<th><del class="hcp-deco-del">旧</del><ins class="hcp-deco-ins">新</ins></th>'),
+      html.includes('<th><del class="hcp-deco-del" style="background-color: #ffc9c4; ' +
+        'color: #1f1f1f; text-decoration: line-through; text-decoration-color: #1f1f1f;">旧</del>' +
+        '<ins class="hcp-deco-ins" style="background-color: #c9ffc4; color: #1f1f1f; ' +
+        'text-decoration: none;">新</ins></th>'),
       'Should render sequential non-nested decorations'
     );
   });
@@ -322,7 +328,8 @@ suite('SvgContent - Method - getHtmlWrappedSvg', () => {
     const html = content.getHtmlWrappedSvg();
 
     assert.ok(
-      html.includes('<ins class="hcp-deco-ins">&lt;b&gt; &amp; &quot;x&quot;</ins>'),
+      html.includes('<ins class="hcp-deco-ins" style="background-color: #c9ffc4; color: #1f1f1f; ' +
+        'text-decoration: none;">&lt;b&gt; &amp; &quot;x&quot;</ins>'),
       'Should escape special characters inside decoration content'
     );
     assert.ok(!html.includes('<b> & "x"'), 'Should not contain raw HTML inside decorations');
@@ -334,7 +341,10 @@ suite('SvgContent - Method - getHtmlWrappedSvg', () => {
     const html = content.getHtmlWrappedSvg();
 
     assert.ok(
-      html.includes('a<ins class="hcp-deco-ins">b</ins><br><del class="hcp-deco-del">c</del>d'),
+      html.includes('a<ins class="hcp-deco-ins" style="background-color: #c9ffc4; color: #1f1f1f; ' +
+        'text-decoration: none;">b</ins><br><del class="hcp-deco-del" ' +
+        'style="background-color: #ffc9c4; color: #1f1f1f; text-decoration: line-through; ' +
+        'text-decoration-color: #1f1f1f;">c</del>d'),
       'Should render decorations on both sides of a line break'
     );
   });
@@ -344,7 +354,10 @@ suite('SvgContent - Method - getHtmlWrappedSvg', () => {
     content.setTables([{ caption: '', rows: [{ cells: ['<ins>a<del>b</del>c</ins>'], depth: 0 }] }]);
     const html = content.getHtmlWrappedSvg();
 
-    assert.ok(html.includes('class="hcp-deco-error"'), 'Should mark invalid notation as an error');
+    assert.ok(
+      html.includes('class="hcp-deco-error" style="background-color: #ff5d5d; color: #1f1f1f;"'),
+      'Should mark invalid notation as an error'
+    );
     assert.ok(
       html.includes('&lt;ins&gt;a&lt;del&gt;b&lt;/del&gt;c&lt;/ins&gt;'),
       'Should show escaped raw text for invalid notation'
@@ -365,7 +378,8 @@ suite('SvgContent - Method - getHtmlWrappedSvg', () => {
     const html = content.getHtmlWrappedSvg();
 
     assert.ok(
-      html.includes('<span class="hcp-deco-error">&lt;ins&gt;ループカウンタ</span>'),
+      html.includes('<span class="hcp-deco-error" style="background-color: #ff5d5d; color: #1f1f1f;">' +
+        '&lt;ins&gt;ループカウンタ</span>'),
       'Opening tag without a closing tag in the same cell should be an error'
     );
     assert.ok(
@@ -373,7 +387,8 @@ suite('SvgContent - Method - getHtmlWrappedSvg', () => {
       'Decoration should not carry over to the next cell'
     );
     assert.ok(
-      html.includes('<span class="hcp-deco-error">0&lt;/ins&gt;</span>'),
+      html.includes('<span class="hcp-deco-error" style="background-color: #ff5d5d; color: #1f1f1f;">' +
+        '0&lt;/ins&gt;</span>'),
       'Closing tag without an opening tag in the same cell should be an error'
     );
     assert.ok(!html.includes('<ins class="hcp-deco-ins">ループカウンタ'));

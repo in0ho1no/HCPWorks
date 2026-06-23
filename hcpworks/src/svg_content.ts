@@ -8,6 +8,14 @@ import { SvgFigureText } from './render/svg_figure_text';
  * このクラスはSVG要素の名前、変換元のテキスト、変換後のSVGを管理します。
  */
 export class SvgContent {
+  private static readonly TABLE_DECO_DEL_STYLE =
+    `background-color: ${SvgFigureDefine.STRIKE_BG_COLOR}; ` +
+    'color: #1f1f1f; text-decoration: line-through; text-decoration-color: #1f1f1f;';
+  private static readonly TABLE_DECO_INS_STYLE =
+    `background-color: ${SvgFigureDefine.INSERT_BG_COLOR}; color: #1f1f1f; text-decoration: none;`;
+  private static readonly TABLE_DECO_ERROR_STYLE =
+    `background-color: ${SvgFigureDefine.DECORATION_ERROR_BG_COLOR}; color: #1f1f1f;`;
+
   private _name: string;
   private _textContent: string[];
   private _svgContent: string;
@@ -110,16 +118,19 @@ export class SvgContent {
 
     const { segments, error } = SvgFigureText.parseDecorationSegments(part);
     if (error) {
-      return `<span class="hcp-deco-error">${this.escapeHtml(part)}</span>`;
+      return `<span class="hcp-deco-error" style="${SvgContent.TABLE_DECO_ERROR_STYLE}">` +
+        `${this.escapeHtml(part)}</span>`;
     }
 
     return segments.map((segment) => {
       const escapedText = this.escapeHtml(segment.text);
       if (segment.deco === 'del') {
-        return `<del class="hcp-deco-del">${escapedText}</del>`;
+        return `<del class="hcp-deco-del" style="${SvgContent.TABLE_DECO_DEL_STYLE}">` +
+          `${escapedText}</del>`;
       }
       if (segment.deco === 'ins') {
-        return `<ins class="hcp-deco-ins">${escapedText}</ins>`;
+        return `<ins class="hcp-deco-ins" style="${SvgContent.TABLE_DECO_INS_STYLE}">` +
+          `${escapedText}</ins>`;
       }
       return escapedText;
     }).join("");
