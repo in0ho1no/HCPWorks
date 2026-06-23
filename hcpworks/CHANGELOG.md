@@ -2,7 +2,14 @@
 
 All notable changes to the "hcpworks" extension will be documented in this file.
 
-## [0.0.14]
+## [0.0.13]
+
+- Preview no longer steals focus when opened from the module list
+
+- Display `\table` and the diagram in vertically split panes that can be scrolled independently.
+    - Allow the splitter between the table pane and the SVG pane to be dragged to resize their heights.
+    - If there is no table, display only the diagram at full size as before.
+    - Enable zooming with Ctrl+Wheel only in the SVG pane, without interfering with scrolling in the table pane.
 
 - Supports `<ins>` / `<del>` text decoration inside `\table` cells
     - Cell text remains HTML-escaped except for supported decoration tags and `<br>` line breaks
@@ -22,14 +29,6 @@ All notable changes to the "hcpworks" extension will be documented in this file.
     - `hcpworks.headerDisplay.showScope` (default: true) — toggle the `scope:` line
     - `hcpworks.headerDisplay.showKind` (default: true) — toggle the `kind:` line
     - Settings are grouped under `headerDisplay` for extensibility (future fields such as Author or edit date use the same prefix)
-
-## [0.0.13]
-
-- Preview no longer steals focus when opened from the module list
-- Display `\table` and the diagram in vertically split panes that can be scrolled independently.
-    - Allow the splitter between the table pane and the SVG pane to be dragged to resize their heights.
-    - If there is no table, display only the diagram at full size as before.
-    - Enable zooming with Ctrl+Wheel only in the SVG pane, without interfering with scrolling in the table pane.
 
 ## [0.0.12]
 
