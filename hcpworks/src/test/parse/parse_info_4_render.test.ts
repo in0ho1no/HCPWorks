@@ -190,6 +190,21 @@ suite('ParseInfo4Render - Method - mergeIoData', () => {
     assert.strictEqual(count, 1, 'sharedData should appear exactly once even if referenced multiple times');
   });
 
+  test('should treat decorated data definition and plain io name as the same data', () => {
+    const processLines = buildProcessLines([
+      makeLineInfo('processA \\out カウンタ'),
+    ]);
+    const dataLines = buildDataLines([
+      makeLineInfo('\\data <ins>カウンタ</ins>'),
+    ]);
+    const render = new ParseInfo4Render(processLines, dataLines);
+    render.mergeIoData();
+
+    const dataNames = render.getDataLines().getLineInfoList().map(li => li.getTextLessTypeIO());
+    assert.strictEqual(dataNames.length, 1, 'decorated and plain names should be deduplicated');
+    assert.strictEqual(dataNames[0], '<ins>カウンタ</ins>', 'first occurrence should be kept');
+  });
+
   test('should handle empty processLines and empty dataLines', () => {
     const processLines = buildProcessLines([]);
     const dataLines = buildDataLines([]);

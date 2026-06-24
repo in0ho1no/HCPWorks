@@ -104,6 +104,8 @@ Notation | Content | Notes
 \out | Output from processing/function | If written at the lowest indentation level, it is treated as output from the function. <br>If written at any level other than the lowest indentation level, it is treated as simple processing output. <br>If there is no definition in `\data`, it will be treated as new data. <br>Do not include spaces or periods.
 \drop | Discard of output data | Written like `\out`, but it is neither connected to the data section nor drawn. <br>Used to annotate an intentionally discarded output. <br>Do not include spaces or periods.
 
+For data-name matching between `\data` and `\in` / `\out`, `<ins>` / `<del>` decoration tags are ignored. For example, `\data <ins>counter</ins>` and `\out counter` are treated as the same data and connected.
+
 ### Supplementary annotation notation
 
 Enclosing an entire line in half-width parentheses `(...)` or full-width parentheses `（...）` renders it as grey italic supplementary text.
