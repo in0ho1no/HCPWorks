@@ -308,21 +308,29 @@ suite('SVGRenderer - Method - render', () => {
   });
 
   test('should connect decorated data name with plain io name', () => {
-    const processLines = ProcessLineProcessor.process([
-      makeLineInfo('    processA \\out カウンタ'),
-    ], 10);
+    // processModule (level 0) を追加して minLevel=0 にする。
+    // これにより processA (level 1) が LEVEL_MIN 扱いにならず、
+    // データへの接続線(<line>)が描画される。
+    // DataInfo.connectLine はレンダリング時に変更されるため、
+    // matchRenderer / mismatchRenderer には別インスタンスを渡す。
+    function makeProcessLines() {
+      return ProcessLineProcessor.process([
+        makeLineInfo('processModule'),
+        makeLineInfo('    processA \\out カウンタ'),
+      ], 10);
+    }
 
     const matchRenderer = new SVGRenderer(
       'DecoratedDataConnectionMatch',
       new ParseInfo4Render(
-        processLines,
+        makeProcessLines(),
         DataLineProcessor.process([makeLineInfo('\\data <ins>カウンタ</ins>')])
       )
     );
     const mismatchRenderer = new SVGRenderer(
       'DecoratedDataConnectionMismatch',
       new ParseInfo4Render(
-        processLines,
+        makeProcessLines(),
         DataLineProcessor.process([makeLineInfo('\\data 別データ')])
       )
     );
