@@ -306,6 +306,43 @@ suite('SVGRenderer - Method - render', () => {
     const svg = renderer.render();
     assert.ok(svg.includes('<svg'), 'Should produce valid SVG with data lines');
   });
+
+  test('should connect decorated data name with plain io name', () => {
+    // processModule (level 0) を追加して minLevel=0 にする。
+    // これにより processA (level 1) が LEVEL_MIN 扱いにならず、
+    // データへの接続線(<line>)が描画される。
+    // DataInfo.connectLine はレンダリング時に変更されるため、
+    // matchRenderer / mismatchRenderer には別インスタンスを渡す。
+    function makeProcessLines() {
+      return ProcessLineProcessor.process([
+        makeLineInfo('processModule'),
+        makeLineInfo('    processA \\out カウンタ'),
+      ], 10);
+    }
+
+    const matchRenderer = new SVGRenderer(
+      'DecoratedDataConnectionMatch',
+      new ParseInfo4Render(
+        makeProcessLines(),
+        DataLineProcessor.process([makeLineInfo('\\data <ins>カウンタ</ins>')])
+      )
+    );
+    const mismatchRenderer = new SVGRenderer(
+      'DecoratedDataConnectionMismatch',
+      new ParseInfo4Render(
+        makeProcessLines(),
+        DataLineProcessor.process([makeLineInfo('\\data 別データ')])
+      )
+    );
+
+    const matchSvg = matchRenderer.render();
+    const mismatchSvg = mismatchRenderer.render();
+    const matchLineCount = (matchSvg.match(/<line /g) ?? []).length;
+    const mismatchLineCount = (mismatchSvg.match(/<line /g) ?? []).length;
+
+    assert.ok(matchLineCount > mismatchLineCount,
+      'decorated/plain matching should produce additional connection lines');
+  });
 });
 
 suite('SVGRenderer - Method - drawModuleMeta', () => {

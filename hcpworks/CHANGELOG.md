@@ -2,6 +2,12 @@
 
 All notable changes to the "hcpworks" extension will be documented in this file.
 
+## [0.0.14]
+
+- Data name matching now ignores `<ins>` / `<del>` decoration tags
+    - `\data <ins>counter</ins>` and `\out counter` are treated as the same data name
+    - Applied consistently to duplicate removal in data definitions, merge of process I/O data, and process-data wire connection matching
+
 ## [0.0.13]
 
 - Preview no longer steals focus when opened from the module list

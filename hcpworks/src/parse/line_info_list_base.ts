@@ -1,5 +1,6 @@
 import { LineInfo } from './line_info';
 import { LineLevel } from './line_level';
+import { normalizeDataName } from './data_name';
 
 /**
  * LineProcessorの基底クラス
@@ -92,7 +93,7 @@ export abstract class BaseLineProcessor {
 
     for (const lineInfo of this._lineInfoList) {
       // 未登録の名前だけを新規リストへ登録する
-      const checkText = lineInfo.getTextLessTypeIO();
+      const checkText = normalizeDataName(lineInfo.getTextLessTypeIO());
       if (!checkedTextList.includes(checkText)) {
         removedDuplicateList.push(lineInfo);
         checkedTextList.push(checkText);

@@ -11,6 +11,7 @@ import { LineLevel } from '../parse/line_level';
 import { Wire, Process2Data } from '../parse/wire';
 
 import { DataInfo } from '../parse/data_info';
+import { normalizeDataName } from '../parse/data_name';
 import { ModuleMeta } from '../parse/file_parse';
 
 import { HeaderDisplayOptions, DEFAULT_HEADER_DISPLAY_OPTIONS } from '../utils/header_display_options';
@@ -157,7 +158,7 @@ export class SVGRenderer {
     // 表示順は scope, kind。値が空の項目・非表示設定の項目は除外する
     const labeledItems: [string, string][] = [
       ["scope", this._headerDisplay.showScope ? this._moduleMeta.scope : ""],
-      ["kind",  this._headerDisplay.showKind  ? this._moduleMeta.kind  : ""],
+      ["kind", this._headerDisplay.showKind ? this._moduleMeta.kind : ""],
     ];
 
     const svgTextList: string[] = [];
@@ -483,7 +484,9 @@ export class SVGRenderer {
       // 種別(入力・出力)に応じた線の描画
       for (const dataInfo of dataInfoList) {
         // 同じデータ名のみ対象とする
-        if (dataElement.getLineInfo().getTextLessTypeIO() !== dataInfo.name) {
+        const dataElementName = normalizeDataName(dataElement.getLineInfo().getTextLessTypeIO());
+        const processDataName = normalizeDataName(dataInfo.name);
+        if (dataElementName !== processDataName) {
           continue;
         }
 
