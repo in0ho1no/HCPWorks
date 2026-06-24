@@ -230,6 +230,18 @@ suite('BaseLineProcessor - Method - removeDuplicate', () => {
     const result = processor.removeDuplicate();
     assert.strictEqual(result, processor);
   });
+
+  test('should treat decorated and plain names as duplicates', () => {
+    const processor = new ConcreteLineProcessor();
+    const li0 = makeLineInfoWithText('step0', 0, '<ins>counter</ins>');
+    const li1 = makeLineInfoWithText('step1', 0, 'counter');
+    processor.setLineInfoList([li0, li1]);
+    processor.removeDuplicate();
+
+    const result = processor.getLineInfoList();
+    assert.strictEqual(result.length, 1);
+    assert.strictEqual(result[0], li0);
+  });
 });
 
 suite('BaseLineProcessor - Method - setMinLevel / getMinLevel', () => {

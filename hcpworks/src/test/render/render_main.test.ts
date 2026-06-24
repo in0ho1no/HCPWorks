@@ -306,6 +306,35 @@ suite('SVGRenderer - Method - render', () => {
     const svg = renderer.render();
     assert.ok(svg.includes('<svg'), 'Should produce valid SVG with data lines');
   });
+
+  test('should connect decorated data name with plain io name', () => {
+    const processLines = ProcessLineProcessor.process([
+      makeLineInfo('    processA \\out カウンタ'),
+    ], 10);
+
+    const matchRenderer = new SVGRenderer(
+      'DecoratedDataConnectionMatch',
+      new ParseInfo4Render(
+        processLines,
+        DataLineProcessor.process([makeLineInfo('\\data <ins>カウンタ</ins>')])
+      )
+    );
+    const mismatchRenderer = new SVGRenderer(
+      'DecoratedDataConnectionMismatch',
+      new ParseInfo4Render(
+        processLines,
+        DataLineProcessor.process([makeLineInfo('\\data 別データ')])
+      )
+    );
+
+    const matchSvg = matchRenderer.render();
+    const mismatchSvg = mismatchRenderer.render();
+    const matchLineCount = (matchSvg.match(/<line /g) ?? []).length;
+    const mismatchLineCount = (mismatchSvg.match(/<line /g) ?? []).length;
+
+    assert.ok(matchLineCount > mismatchLineCount,
+      'decorated/plain matching should produce additional connection lines');
+  });
 });
 
 suite('SVGRenderer - Method - drawModuleMeta', () => {

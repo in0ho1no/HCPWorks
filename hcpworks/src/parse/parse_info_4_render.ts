@@ -1,6 +1,7 @@
 import { ProcessLineProcessor } from './line_info_list_process';
 import { DataLineProcessor } from './line_info_list_data';
 import { LineInfo, createCommonDataInfo } from './line_info';
+import { normalizeDataName } from './data_name';
 
 /**
  * レンダー向けのパース情報
@@ -49,10 +50,13 @@ export class ParseInfo4Render {
   private __appendIoData(ioDataList: LineInfo[]): void {
     for (const ioData of ioDataList) {
       // 保持済みのリストから名前だけのリストを用意する
-      const infoNameList = this._dataLines.getLineInfoList().map(lineInfo => lineInfo.getTextLessTypeIO());
+      const infoNameList = this._dataLines
+        .getLineInfoList()
+        .map(lineInfo => normalizeDataName(lineInfo.getTextLessTypeIO()));
+      const ioDataName = normalizeDataName(ioData.getTextLessTypeIO());
 
       // 未保持ならリストへ追加する
-      if (!infoNameList.includes(ioData.getTextLessTypeIO())) {
+      if (!infoNameList.includes(ioDataName)) {
         this._dataLines.getLineInfoList().push(ioData);
       }
     }
