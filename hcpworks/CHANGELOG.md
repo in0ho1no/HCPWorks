@@ -2,6 +2,10 @@
 
 All notable changes to the "hcpworks" extension will be documented in this file.
 
+## [0.0.15]
+
+- Apply HCPWorks file icon to `.hcp` files while the extension is enabled
+
 ## [0.0.14]
 
 - Data name matching now ignores `<ins>` / `<del>` decoration tags

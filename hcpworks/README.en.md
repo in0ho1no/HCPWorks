@@ -67,6 +67,10 @@ This extension supports syntax highlighting as shown in the image below.
 
 ![syntaxHighlight](hcpworks/resources/images/syntaxHighlight.png)
 
+### File Icon
+
+When this extension is enabled, it applies the HCPWorks file icon to `.hcp` files.
+
 ## HCP chart notation
 
 - Indentation (4 spaces ∪ tab) based on HCP notation to express levels.
