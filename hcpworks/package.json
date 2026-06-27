@@ -52,8 +52,8 @@
           "HCP"
         ],
         "icon": {
-          "light": "resources/icon/icon_16px_light.svg",
-          "dark": "resources/icon/icon_16px_light.svg"
+          "light": "resources/icon/file_icon.svg",
+          "dark": "resources/icon/file_icon.svg"
         }
       }
     ],
