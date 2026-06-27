@@ -50,7 +50,11 @@
         ],
         "aliases": [
           "HCP"
-        ]
+        ],
+        "icon": {
+          "light": "resources/icon/icon_16px_light.svg",
+          "dark": "resources/icon/icon_16px_light.svg"
+        }
       }
     ],
     "commands": [

@@ -67,6 +67,10 @@ HCPチャートで描画するレベルを指定できます。
 
 ![syntaxHighlight](hcpworks/resources/images/syntaxHighlight.png)
 
+### ファイルアイコン
+
+この拡張機能が有効な場合、`.hcp` ファイルに HCPWorks のファイルアイコンを適用します。
+
 ## HCPチャートの記法
 
 - HCPの記法に基づいてインデント(空白4つ∪タブ)でレベルを表現
