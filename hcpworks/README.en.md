@@ -84,6 +84,16 @@ Supported pairs:
 | Full-width | `（）` `［］` `｛｝` |
 | Japanese | `「」` `『』` `【】` `《》` `〈〉` `〔〕` `〖〗` `〘〙` |
 
+### Code Folding
+
+`.hcp` files support folding for `\module` and `\table` blocks.  
+Click the `▼` icon in the gutter (next to the line number) to fold a range.
+
+| Keyword | Folded range |
+| --- | --- |
+| `\module` | From the current `\module` to just before the next `\module` (trailing blank lines excluded) |
+| `\table` | From the `\table` line to just before a blank line, `\data`, the next `\table`, or `\module` |
+
 ## HCP chart notation
 
 - Indentation (4 spaces ∪ tab) based on HCP notation to express levels.
