@@ -71,6 +71,19 @@ This extension supports syntax highlighting as shown in the image below.
 
 When this extension is enabled, it applies the HCPWorks file icon to `.hcp` files.
 
+### Auto-closing and Auto-surrounding Brackets
+
+While editing `.hcp` files, typing an opening bracket automatically inserts the matching closing bracket.  
+If text is selected when you type a bracket, the selection is wrapped with the matching pair.  
+
+Supported pairs:
+
+| Type | Pairs |
+| --- | --- |
+| Half-width | `()` `[]` `{}` `""` `''` `` ` `` `` ` `` |
+| Full-width | `（）` `［］` `｛｝` |
+| Japanese | `「」` `『』` `【】` `《》` `〈〉` `〔〕` `〖〗` `〘〙` |
+
 ## HCP chart notation
 
 - Indentation (4 spaces ∪ tab) based on HCP notation to express levels.

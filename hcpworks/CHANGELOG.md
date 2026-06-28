@@ -5,6 +5,10 @@ All notable changes to the "hcpworks" extension will be documented in this file.
 ## [0.0.15]
 
 - Apply HCPWorks file icon to `.hcp` files while the extension is enabled
+- Auto-closing and auto-surrounding bracket pairs are now supported in `.hcp` files without any user configuration
+    - Half-width: `()` `[]` `{}` `""` `''` ` `` `
+    - Full-width: `（）` `［］` `｛｝`
+    - Japanese: `「」` `『』` `【】` `《》` `〈〉` `〔〕` `〖〗` `〘〙`
 
 ## [0.0.14]
 
