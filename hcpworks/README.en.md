@@ -102,8 +102,8 @@ You can decorate inline text, including in \mod lines and \table cells.
 
 | Notation | Meaning | Notes |
 | --- | --- | --- |
-| <del>...</del> | Deletion | Rendered with strikethrough and pink-ish background |
-| <ins>...</ins> | Addition/Change | Rendered with green-ish background |
+| \<del>...\</del> | Deletion | Rendered with strikethrough and pink-ish background |
+| \<ins>...\</ins> | Addition/Change | Rendered with green-ish background |
 
 Tags must be properly paired. Nested/mixed/unmatched tags are treated as notation errors.
 
