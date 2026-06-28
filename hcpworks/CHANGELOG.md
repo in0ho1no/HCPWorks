@@ -2,6 +2,17 @@
 
 All notable changes to the "hcpworks" extension will be documented in this file.
 
+## [0.0.15]
+
+- Apply HCPWorks file icon to `.hcp` files while the extension is enabled
+- Auto-closing and auto-surrounding bracket pairs are now supported in `.hcp` files without any user configuration
+    - Half-width: `()` `[]` `{}` `""` `''` ` `` `
+    - Full-width: `（）` `［］` `｛｝`
+    - Japanese: `「」` `『』` `【】` `《》` `〈〉` `〔〕` `〖〗` `〘〙`
+- `.hcp` ファイルで `\module` および `\table` による折り畳み（コードフォールディング）をサポート
+    - `\module`: 次の `\module` が来るまでの範囲を折り畳む
+    - `\table`: 空行・`\data`・次の `\table`・`\module` のいずれかが来るまでの範囲を折り畳む
+
 ## [0.0.14]
 
 - Data name matching now ignores `<ins>` / `<del>` decoration tags

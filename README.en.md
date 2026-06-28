@@ -7,140 +7,129 @@
 
 # About HCPWorks
 
-HCPWorks is a VSCode extension that allows you to preview text files written in the HCP chart format.
-It aims to streamline the HCP chart creation process by enabling you to complete it entirely within VSCode.
+HCPWorks is a VS Code extension that makes .hcp files easier to work with.
+You can list modules, preview HCP charts side by side, and export them as images.
 
-## Features
+## What You Can Do
 
-### Preview HCP Charts
-
-#### Preview
-
-Preview HCP charts.
-
-1. Select a ".hcp" file.
-1. Charts beginning with "\module" are listed.
-1. Select any module.
-1. The HCP chart is previewed.
+- List \module entries in a .hcp file
+- Preview the selected module beside the editor
+- Refresh the preview automatically on save
+- Export charts as PNG, SVG, WebP, or JPEG
+- Change the preview level
+- Use syntax highlighting, folding, file icons, and bracket completion
 
 ![previewHCPCharts](hcpworks/resources/videos/previewHCPCharts.gif)
 
-#### Update Preview
+## Quick Start
 
-Automatically update preview when file is saved.
+1. Open a .hcp file.
+1. Select the \module you want to preview from HCP Module List in the Explorer.
+1. The preview opens beside the editor and updates automatically when you save the file.
+1. To export an image, use the save button in the preview panel.
+1. To change the rendered level, use HCP Preview Level.
 
-1. Edit the previewed ".hcp" file.
-1. Save the file.
-1. The preview will update automatically.
+### Export Formats
 
-![reloadHCPCharts](hcpworks/resources/videos/reloadHCPCharts.gif)
+- PNG: good default output
+- SVG: good for zooming and re-editing
+- WebP: good for smaller files
+- JPEG: better for photo-like content; thin text and lines may blur
 
-#### Save
+PNG, WebP, and JPEG are rasterized at 2x resolution. Saved files use the name <fileName>_<moduleName>.<extension>.
 
-Save HCP charts as an image.
+## HCP Notation
 
-1. Push the "Save" button displayed on the tab bar.  
-The "Save" button will be displayed in the preview panel.
-1. Choose an output format. The following four formats are available:
-    - PNG: Standard. Good for rendering text and lines cleanly.
-    - SVG: For zooming and re-editing. Lines and shapes stay lossless.
-    - WebP: For smaller files. May not display in some environments.
-    - JPEG: Lossy compression. Text and thin lines tend to blur.
-1. The image is saved in the selected format. PNG / WebP / JPEG are rasterized at 2x resolution.
-1. The naming convention for the created image file is: \<fileName>_\<moduleName>.\<extension>
+- Indentation level is represented by tabs or 4 spaces
+- Leading keywords (such as \module) determine line semantics
+- Lines starting with # are treated as comments
 
-![saveHCPCharts](hcpworks/resources/videos/saveHCPCharts.gif)
+```text
+\module sampleModule
+\kind modified
+\scope public
+\data inputValue
+\data result
+\in inputValue
+\mod Validate the input
+\out result
+\return Exit normally
+```
 
-#### Specifying the drawing level
+### Notation Allowed at Level 0
 
-You can specify the drawing level for the HCP chart.
+| Notation | Meaning | Notes |
+| --- | --- | --- |
+| \module | Start module | Must be written with a module name |
+| \kind | Module change type | Place between \module and \table. Rendered under Name as kind: value and included in exports |
+| \scope | Module visibility | Place between \module and \table. Rendered under Name as scope: value and included in exports |
+| \table | Supplementary table | Place between \module and \data. CSV-like format; \table title adds a caption. Table content is not included in image exports |
 
-1. Enter the level you want to draw. / Use the spin button to specify the level you want to draw.
-1. Click "Apply drawing level". / Press the Enter key in the input field.
-1. The preview will update automatically.
+### Notation Allowed at Level 0 or Deeper
 
-![levelLimit](hcpworks/resources/videos/levelLimit.gif)
+| Notation | Meaning | Notes |
+| --- | --- | --- |
+| \data | Data definition | If duplicated, the first definition is used. \data (note) can render supplementary text |
+| \fork | Conditional branch | - |
+| \true | True branch | Used under \fork |
+| \false | False branch | Used under \fork |
+| \branch | Non-boolean branch | - |
+| \repeat | Loop | - |
+| \mod | Process step | Main processing description |
+| \return | End processing | - |
 
-### Support Syntax Highlight
+### Additional Notation Allowed at Level 0 or Deeper
 
-This extension supports syntax highlighting as shown in the image below.
+| Notation | Meaning | Notes |
+| --- | --- | --- |
+| \in | Input data | At minimum level it is module input; otherwise process input |
+| \out | Output data | At minimum level it is module output; otherwise process output |
+| \drop | Discarded output | Written like \out, but intentionally not connected to the data area and not rendered |
 
-![syntaxHighlight](hcpworks/resources/images/syntaxHighlight.png)
+For data-name matching between \data and \in / \out, <ins> / <del> tags are ignored.
 
-## HCP chart notation
+### Supplementary Note Notation
 
-- Indentation (4 spaces ∪ tab) based on HCP notation to express levels.
-- Each notation described below starts with \\ (backslash) and continues up to the first space character.
-- If it does not correspond to the list, it is treated as a simple string.
-- A string starting with "#" is considered a comment to the end of the line.
+A whole line enclosed by (...) or （...） is rendered as grey italic supplementary text.
 
-### Notation that can be written at level 0
+- Applied when trimmed content starts with ( or （ and ends with ) or ）
+- In the process area, a pass-through vertical line is used so flow lines remain continuous
+- In the data area, \data (note) shows supplementary text
 
-Notation | Content | Notes
----| --- | ---
-\module | Start of module | Be sure to write it together with the module name.
-\kind | Change type of the module | Write it between `\module` and `\table`. Free-form value (e.g. new / modified / reused). Shown below `Name:` as `kind: <value>` and included in image output.
-\scope | Visibility type of the module | Write it between `\module` and `\table`. Free-form value (e.g. public / private, extern / static). Shown below `Name:` as `scope: <value>` and included in image output.
-\table | Description of a table | Write it between `\module` and `\data`. CSV format; consecutive commas are merged into one separator.<br>A caption can be added with `\table <name>`.<br>Leading indentation (tab / 4 spaces = one level) expresses parent-child hierarchy like struct members.<br>Use `<br>` for a line break within a cell (it becomes an in-cell line break when pasted into Excel with formatting).<br>`<del>` / `<ins>` text decoration can also be used within cells.<br>Not included in image output.
+### Text Decoration
 
-### Notation that can be written at level 0 or higher
+You can decorate inline text, including in \mod lines and \table cells.
 
-Notation | Content | Notes
----| --- | ---
-\data | Definition of data used in the module | Do not define duplicate data names. If duplicates exist, only the first definition will be used for rendering.<br>Writing `\data (text)` with parenthesized text displays it as grey supplementary text in the data column.
-\fork | Conditional branch | -
-\true | If the condition of the conditional branch is true | There are no restrictions, but avoid writing two consecutive `\true` notations by mistake.
-\false | If the condition of the conditional branch is false |There are no restrictions, but avoid writing two consecutive `\false` notations by mistake.
-\branch | If the condition of the conditional branch is not true or false | -
-\repeat | Repeat | -
-\mod | Function call | -
-\return | End of processing | -
+| Notation | Meaning | Notes |
+| --- | --- | --- |
+| \<del>...\</del> | Deletion | Rendered with strikethrough and pink-ish background |
+| \<ins>...\</ins> | Addition/Change | Rendered with green-ish background |
 
-### Notation that can be added to levels 0 and above
-
-Notation | Content | Notes
----| --- | ---
-\in | Input to processing/function | If written at the lowest indentation level, it is treated as input to the function. <br>If written at any level other than the lowest indentation level, it is treated as simple processing input. <br>If there is no definition in `\data`, it is treated as new data. <br>Do not include spaces or periods.
-\out | Output from processing/function | If written at the lowest indentation level, it is treated as output from the function. <br>If written at any level other than the lowest indentation level, it is treated as simple processing output. <br>If there is no definition in `\data`, it will be treated as new data. <br>Do not include spaces or periods.
-\drop | Discard of output data | Written like `\out`, but it is neither connected to the data section nor drawn. <br>Used to annotate an intentionally discarded output. <br>Do not include spaces or periods.
-
-For data-name matching between `\data` and `\in` / `\out`, `<ins>` / `<del>` decoration tags are ignored. For example, `\data <ins>counter</ins>` and `\out counter` are treated as the same data and connected.
-
-### Supplementary annotation notation
-
-Enclosing an entire line in half-width parentheses `(...)` or full-width parentheses `（...）` renders it as grey italic supplementary text.
-
-- Applies when the trimmed line content starts with `(` or `（` and ends with `)` or `）`.
-- In the process column, a pass-through vertical line replaces the circle so the flow line remains unbroken.
-- In the data column, write `\data (text)` to display supplementary text alongside the data entries.
-- Indent level is respected the same as for regular lines.
-
-### Text decoration
-
-Part of the text in a line can be decorated. It can be used with line notations such as `\mod` and within `\table` cells.<br>Each tag is used as a pair (`<del></del>` / `<ins></ins>`). Nested tags, a different tag mixed in, or unmatched open/close are shown as a notation error with a red background.
-
-Notation | Content | Notes
----| --- | ---
-`<del>...</del>` | Strikethrough | Draws a strikethrough over the range enclosed by `<del>` and `</del>`, and highlights it with a salmon-pink background.<br>Example: `\mod <del>send data</del>receive and parse`<br>The decoration tags themselves are not drawn.
-`<ins>...</ins>` | Insertion (highlight) | Highlights the range enclosed by `<ins>` and `</ins>` with a light-green background to indicate newly added or changed text.<br>Example: `\mod <ins>receive and parse</ins>`<br>The decoration tags themselves are not drawn.
+Tags must be properly paired. Nested/mixed/unmatched tags are treated as notation errors.
 
 ## Configuration
 
-You can change the following settings from VSCode Settings (`File > Preferences > Settings`, search for "HCPWorks").
+Search for HCPWorks in VS Code Settings to change these options.
 
-Setting key | Type | Default | Description
---- | --- | --- | ---
-`hcpworks.SvgBgColor` | string | `FFFFFF` | SVG background color for preview/export (RRGGBB format).
-`hcpworks.WireColorTable` | string[] | (8 colors) | Wire color table (array of RRGGBB strings).
-`hcpworks.headerDisplay.showName` | boolean | `true` | Whether to show the `Name:` field in preview/export.
-`hcpworks.headerDisplay.showScope` | boolean | `true` | Whether to show the `scope:` field in preview/export.
-`hcpworks.headerDisplay.showKind` | boolean | `true` | Whether to show the `kind:` field in preview/export.
+| Setting Key | Description |
+| --- | --- |
+| hcpworks.SvgBgColor | Background color for preview and export |
+| hcpworks.WireColorTable | Wire color list |
+| hcpworks.headerDisplay.showName | Show or hide Name |
+| hcpworks.headerDisplay.showScope | Show or hide scope |
+| hcpworks.headerDisplay.showKind | Show or hide kind |
+
+## Editor Support
+
+- Syntax highlighting for .hcp files
+- Folding for \module and \table blocks
+- Dedicated file icon for .hcp files
+- Auto-closing and auto-surrounding brackets and quotes
 
 ## Known Issues
 
-For a list of known issues, please refer to our [GitHub issue tracker](https://github.com/in0ho1no/HCPWorks/issues).  
-If you encounter any new problems, please report them as a new issue on GitHub.
+See [GitHub issues](https://github.com/in0ho1no/HCPWorks/issues) for known problems.
 
 ## Release Notes
 
-Check the [CHANGELOG](hcpworks/CHANGELOG.md).
+See [CHANGELOG](hcpworks/CHANGELOG.md).

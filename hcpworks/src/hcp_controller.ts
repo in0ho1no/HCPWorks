@@ -17,6 +17,8 @@ import { LineInfo } from './parse/line_info';
 import { cleanTextLines, extractTables, extractModuleMeta } from './parse/file_parse';
 import { SVGRenderer } from './render/render_main';
 
+import { HCPFoldingRangeProvider } from './provider/folding_provider';
+
 import { HCP_ID, HCP_SUFFIX, TIMEOUT } from './extension';
 
 /**
@@ -63,6 +65,9 @@ export class HCPController {
     // コマンド登録
     this.registerCommands();
 
+    // プロバイダー登録
+    this.registerProviders();
+
     // viewを登録
     this.registerWebview();
 
@@ -71,6 +76,18 @@ export class HCPController {
 
     // 起動時のチェック処理
     this.checkOnStartup();
+  }
+
+  /**
+   * プロバイダーを登録する
+   */
+  private registerProviders(): void {
+    this.context.subscriptions.push(
+      vscode.languages.registerFoldingRangeProvider(
+        { language: HCP_ID },
+        new HCPFoldingRangeProvider()
+      )
+    );
   }
 
   /**
