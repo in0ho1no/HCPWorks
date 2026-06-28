@@ -27,3 +27,18 @@ exports.workspace = {
 exports.commands = {
   executeCommand: () => Promise.resolve(undefined),
 };
+exports.FoldingRange = class FoldingRange {
+  constructor(start, end, kind) {
+    this.start = start;
+    this.end = end;
+    this.kind = kind;
+  }
+};
+exports.FoldingRangeKind = {
+  Comment: 1,
+  Imports: 2,
+  Region: 3,
+};
+exports.languages = {
+  registerFoldingRangeProvider: () => ({ dispose: () => undefined }),
+};

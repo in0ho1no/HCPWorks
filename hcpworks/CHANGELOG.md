@@ -9,6 +9,9 @@ All notable changes to the "hcpworks" extension will be documented in this file.
     - Half-width: `()` `[]` `{}` `""` `''` ` `` `
     - Full-width: `（）` `［］` `｛｝`
     - Japanese: `「」` `『』` `【】` `《》` `〈〉` `〔〕` `〖〗` `〘〙`
+- `.hcp` ファイルで `\module` および `\table` による折り畳み（コードフォールディング）をサポート
+    - `\module`: 次の `\module` が来るまでの範囲を折り畳む
+    - `\table`: 空行・`\data`・次の `\table`・`\module` のいずれかが来るまでの範囲を折り畳む
 
 ## [0.0.14]
 
