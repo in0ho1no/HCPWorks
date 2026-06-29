@@ -7,6 +7,9 @@ All notable changes to the "hcpworks" extension will be documented in this file.
 Patch
 
 - Preserve the preview scroll position as much as possible when the preview refreshes after saving a file
+- Added new types for automatic bracket pair completion (automatic insertion of closing brackets) and automatic wrapping:
+    - Half-width: `<>`
+    - Full-width: `＜＞`
 
 ## [0.1.0]
 
