@@ -2,7 +2,13 @@
 
 All notable changes to the "hcpworks" extension will be documented in this file.
 
-## [0.0.15]
+## [0.1.1]
+
+Patch
+
+- Preserve the preview scroll position as much as possible when the preview refreshes after saving a file
+
+## [0.1.0]
 
 - Apply HCPWorks file icon to `.hcp` files while the extension is enabled
 - Auto-closing and auto-surrounding bracket pairs are now supported in `.hcp` files without any user configuration

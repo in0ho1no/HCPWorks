@@ -371,6 +371,39 @@ export class SvgContent {
 
         const container = document.getElementById('svgContainer');
         const svgPane = document.getElementById('svgPane');
+        const tablePane = document.getElementById('tablePane');
+
+        const restoreScrollPosition = (element, position) => {
+          if (!element || !position) { return; }
+          element.scrollLeft = position.left || 0;
+          element.scrollTop = position.top || 0;
+        };
+
+        const getScrollPosition = (element) => ({
+          left: element ? element.scrollLeft : 0,
+          top: element ? element.scrollTop : 0,
+        });
+
+        const savePreviewState = () => {
+          vscode.setState({
+            scroll: {
+              svgPane: getScrollPosition(svgPane),
+              tablePane: getScrollPosition(tablePane),
+            },
+          });
+        };
+
+        const previousState = vscode.getState() || {};
+        requestAnimationFrame(() => {
+          restoreScrollPosition(svgPane, previousState.scroll && previousState.scroll.svgPane);
+          restoreScrollPosition(tablePane, previousState.scroll && previousState.scroll.tablePane);
+        });
+
+        svgPane.addEventListener('scroll', savePreviewState);
+        if (tablePane) {
+          tablePane.addEventListener('scroll', savePreviewState);
+        }
+        window.addEventListener('beforeunload', savePreviewState);
 
         // SVGペインのみCtrl+Wheelでズーム（テーブルペインのスクロールと干渉しない）
         svgPane.addEventListener('wheel', (event) => {
@@ -390,7 +423,6 @@ export class SvgContent {
 
         // スプリッターのドラッグでテーブルペインの幅を変更する
         const splitter = document.getElementById('splitter');
-        const tablePane = document.getElementById('tablePane');
         if (splitter && tablePane) {
           let isResizing = false;
           let startY = 0;
