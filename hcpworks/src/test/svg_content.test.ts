@@ -442,6 +442,20 @@ suite('SvgContent - Method - getHtmlWrappedSvg', () => {
     assert.ok(!html.includes("document.addEventListener('wheel'"), 'Zoom should not be bound to document');
   });
 
+  test('should persist and restore preview scroll positions through webview state', () => {
+    const content = new SvgContent();
+    content.setSvgContent('');
+    const html = content.getHtmlWrappedSvg();
+
+    assert.ok(html.includes('vscode.getState()'), 'Should read previous webview state');
+    assert.ok(html.includes('vscode.setState({'), 'Should save webview state');
+    assert.ok(html.includes('scroll: {'), 'Should save scroll positions');
+    assert.ok(html.includes('restoreScrollPosition(svgPane'), 'Should restore SVG pane scroll');
+    assert.ok(html.includes('restoreScrollPosition(tablePane'), 'Should restore table pane scroll');
+    assert.ok(html.includes("svgPane.addEventListener('scroll'"), 'Should track SVG pane scroll');
+    assert.ok(html.includes("tablePane.addEventListener('scroll'"), 'Should track table pane scroll');
+  });
+
   test('should include row-resize cursor for the splitter drag handler', () => {
     const content = new SvgContent();
     content.setSvgContent('');
