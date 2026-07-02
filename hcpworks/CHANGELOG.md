@@ -9,6 +9,7 @@ Minor
 - Improved readability of wire lines between the process and data sections
     - Vertical wire lines share the same X coordinate when their Y ranges do not overlap, compressing the chart width
     - Horizontal wire lines jump over crossing vertical lines with small arcs (Visio-style line jumps)
+    - A wire entering the data section is routed to the right of any wire leaving a process at the same height, so an incoming line never overlaps an outgoing line
 
 ## [0.1.1]
 
