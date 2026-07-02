@@ -88,6 +88,13 @@ PNG, WebP, and JPEG are rasterized at 2x resolution. Saved files use the name <f
 
 For data-name matching between \data and \in / \out, <ins> / <del> tags are ignored.
 
+### Wire Line Rendering
+
+Wire lines connecting the process and data sections are rendered with the following rules for readability:
+
+- Wires whose vertical-line Y ranges do not overlap share the same X coordinate, compressing the overall chart width
+- Where a horizontal line crosses another wire's vertical line, it jumps over it with a small arc. Crossings without an arc indicate a connection
+
 ### Supplementary Note Notation
 
 A whole line enclosed by (...) or （...） is rendered as grey italic supplementary text.
