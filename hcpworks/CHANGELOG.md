@@ -9,6 +9,10 @@ Minor
 - Improved readability of wire lines between the process and data sections
     - Vertical wire lines share the same X coordinate when their Y ranges do not overlap, compressing the chart width
     - Horizontal wire lines jump over crossing vertical lines with small arcs (Visio-style line jumps)
+    - A wire entering the data section is routed to the right of any wire leaving a process at the same height, so an incoming line never overlaps an outgoing line
+    - Vertical wire lines are drawn before horizontal ones, so jump arcs are always painted above the vertical lines they cross
+- Changed the default wire color table to an Okabe-Ito based palette
+    - Avoids pure black (indistinguishable from structural lines) and low-contrast colors on white backgrounds (pure yellow/green/turquoise), and is friendly to color vision deficiency
 
 ## [0.1.1]
 

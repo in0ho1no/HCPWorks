@@ -30,40 +30,19 @@ suite('DiagramDefine - Constants - WIRE_COLOR_TABLE', () => {
     assert.strictEqual(DiagramDefine.WIRE_COLOR_TABLE.length, 8);
   });
 
-  test('first color should be black "000000"', () => {
-    assert.strictEqual(DiagramDefine.WIRE_COLOR_TABLE[0], '000000');
-  });
-
-  test('second color should be red "FF0000"', () => {
-    assert.strictEqual(DiagramDefine.WIRE_COLOR_TABLE[1], 'FF0000');
-  });
-
-  test('third color should be green "00FF00"', () => {
-    assert.strictEqual(DiagramDefine.WIRE_COLOR_TABLE[2], '00FF00');
-  });
-
-  test('fourth color should be blue "0000FF"', () => {
-    assert.strictEqual(DiagramDefine.WIRE_COLOR_TABLE[3], '0000FF');
-  });
-
-  test('fifth color should be yellow "FFFF00"', () => {
-    assert.strictEqual(DiagramDefine.WIRE_COLOR_TABLE[4], 'FFFF00');
-  });
-
-  test('sixth color should be purple "800080"', () => {
-    assert.strictEqual(DiagramDefine.WIRE_COLOR_TABLE[5], '800080');
-  });
-
-  test('seventh color should be orange "FFA500"', () => {
-    assert.strictEqual(DiagramDefine.WIRE_COLOR_TABLE[6], 'FFA500');
-  });
-
-  test('eighth color should be turquoise "40E0D0"', () => {
-    assert.strictEqual(DiagramDefine.WIRE_COLOR_TABLE[7], '40E0D0');
-  });
-
-  test('should contain all expected colors', () => {
-    const expected = ['000000', 'FF0000', '00FF00', '0000FF', 'FFFF00', '800080', 'FFA500', '40E0D0'];
+  test('should contain all expected colors in declaration order', () => {
+    // Okabe-Ito配色ベース(青, 朱, 緑, 赤紫, 山吹, 紫, 空色, 濃青緑)
+    const expected = ['0072B2', 'D55E00', '009E73', 'CC79A7', 'E69F00', '800080', '56B4E9', '008B8B'];
     assert.deepStrictEqual(DiagramDefine.WIRE_COLOR_TABLE, expected);
+  });
+
+  test('should not contain pure black to keep wires distinct from structural lines', () => {
+    assert.ok(!DiagramDefine.WIRE_COLOR_TABLE.includes('000000'));
+  });
+
+  test('should contain only valid uppercase RRGGBB values', () => {
+    for (const color of DiagramDefine.WIRE_COLOR_TABLE) {
+      assert.match(color, /^[0-9A-F]{6}$/, `invalid color format: ${color}`);
+    }
   });
 });

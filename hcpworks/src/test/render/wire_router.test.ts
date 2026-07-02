@@ -1,7 +1,9 @@
 import * as assert from 'assert';
 import {
   WireSpec,
+  RoutedWire,
   wireInterval,
+  computeRightOfConstraints,
   assignLanes,
   laneX,
   routeWires,
@@ -108,6 +110,76 @@ suite('WireRouter - assignLanes', () => {
   });
 });
 
+suite('WireRouter - computeRightOfConstraints', () => {
+  test('should constrain enter-side wire to be right of exit-side wire at the same Y', () => {
+    const specs = [
+      makeSpec(0, 125, [115]),        // exit水平線が y=125
+      makeSpec(1, 385, [125], true),  // enter水平線が y=125 → 0より右
+    ];
+    const constraints = computeRightOfConstraints(specs);
+
+    assert.deepStrictEqual(constraints.get(1), [0]);
+    assert.strictEqual(constraints.has(0), false);
+  });
+
+  test('should ignore a wire whose own exit and enter share the same Y', () => {
+    // 自ワイヤーのexitとenterが同一Y = レーンで直結する正常な形
+    const constraints = computeRightOfConstraints([makeSpec(0, 50, [50])]);
+
+    assert.strictEqual(constraints.size, 0);
+  });
+
+  test('should return empty when no exit matches any enter Y', () => {
+    const specs = [
+      makeSpec(0, 10, [100]),
+      makeSpec(1, 50, [150]),
+    ];
+    assert.strictEqual(computeRightOfConstraints(specs).size, 0);
+  });
+});
+
+suite('WireRouter - assignLanes with right-of constraints', () => {
+  // module3で顕在化した形の縮約:
+  //   0: \in  exit y=115, enter y=95  (区間 [95,115])
+  //   1: \out exit y=125, enter y=115 (区間 [115,125])
+  //   2: \in  exit y=385, enter y=125 (区間 [125,385])
+  // 制約なしの詰め込みではワイヤー2が区間の空いたレーン0に落ち、
+  // ワイヤー1のexit水平線(y=125)と一直線に重なっていた
+  const alignedSpecs = [
+    makeSpec(0, 115, [95], true),
+    makeSpec(1, 125, [115]),
+    makeSpec(2, 385, [125], true),
+  ];
+
+  test('should place the enter-side wire on an outer lane than the exit-side wire', () => {
+    const { laneOf } = assignLanes(alignedSpecs, 10);
+
+    assert.ok(laneOf.get(2)! > laneOf.get(1)!,
+      `enter側(lane ${laneOf.get(2)})はexit側(lane ${laneOf.get(1)})より右であるべき`);
+  });
+
+  test('should keep results deterministic with constraints', () => {
+    const first = assignLanes(alignedSpecs, 10);
+    const second = assignLanes(alignedSpecs, 10);
+
+    assert.deepStrictEqual([...first.laneOf.entries()].sort(), [...second.laneOf.entries()].sort());
+    assert.strictEqual(first.laneCount, second.laneCount);
+  });
+
+  test('should terminate deterministically on cyclic constraints', () => {
+    // 相互に「相手のexitと同一Yのenter」を持つ病的なペア
+    const cyclic = [
+      makeSpec(0, 10, [20]),
+      makeSpec(1, 20, [10]),
+    ];
+    const first = assignLanes(cyclic, 10);
+    const second = assignLanes(cyclic, 10);
+
+    assert.strictEqual(first.laneOf.size, 2);
+    assert.deepStrictEqual([...first.laneOf.entries()].sort(), [...second.laneOf.entries()].sort());
+  });
+});
+
 suite('WireRouter - laneX', () => {
   test('should offset lanes from process end', () => {
     assert.strictEqual(laneX(100, 0), 100 + DiagramDefine.IMG_MARGIN);
@@ -172,6 +244,47 @@ suite('WireRouter - routeWires', () => {
 
     assert.strictEqual(wires.length, 0);
     assert.strictEqual(exitEndX, 0);
+  });
+
+  /**
+   * 別ワイヤーのexit水平線とenter水平線が同一Yで重なる箇所を列挙する
+   *
+   * enter水平線はレーンからデータ部(右方向)へ伸びるため、
+   * enterの始点XがexitのレーンX以上であれば重ならない。
+   */
+  function findExitEnterOverlaps(wires: RoutedWire[]): string[] {
+    const overlaps: string[] = [];
+    for (const exitWire of wires) {
+      for (const enterWire of wires) {
+        if (exitWire.spec.ordinal === enterWire.spec.ordinal) {
+          continue;
+        }
+        for (const enter of enterWire.enters) {
+          if (enter.start.y === exitWire.exit.start.y && enter.start.x < exitWire.exit.end.x) {
+            overlaps.push(
+              `exit(ordinal=${exitWire.spec.ordinal}) と enter(ordinal=${enterWire.spec.ordinal}) が y=${enter.start.y} で重なる`
+            );
+          }
+        }
+      }
+    }
+    return overlaps;
+  }
+
+  test('should never overlap an exit segment with another wire\'s enter segment', () => {
+    // module3(処理行とデータ行が同じ高さ)相当の7本構成
+    const specs = [
+      makeSpec(0, 115, [95], true),   // \in  チェック対象 (処理y=120)
+      makeSpec(1, 125, [115]),        // \out 判定結果   (処理y=120)
+      makeSpec(2, 175, [155], true),  // \in  ループカウンタ (repeat)
+      makeSpec(3, 205, [155], true),  // \in  ループカウンタ (fork)
+      makeSpec(4, 205, [95], true),   // \in  チェック対象 (fork)
+      makeSpec(5, 275, [115]),        // \out 判定結果   (High有りとする)
+      makeSpec(6, 385, [125], true),  // \in  判定結果   (結果を送信する)
+    ];
+    const { wires } = routeWires(specs, 220, colorTable);
+
+    assert.deepStrictEqual(findExitEnterOverlaps(wires), []);
   });
 });
 

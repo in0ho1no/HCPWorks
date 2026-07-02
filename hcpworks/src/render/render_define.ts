@@ -13,14 +13,16 @@ export class DiagramDefine {
   static readonly JUMP_MIN_FLAT = 3;    // ジャンプアーク間の平坦部がこの長さ未満なら1つの橋に結合する
   static readonly LANE_CLEARANCE = 10;  // 同一レーンを共有する垂直線同士に必要なY方向の間隔
 
+  // Okabe-Ito配色ベース。構造線の黒と衝突する色・白背景で視認しにくい色を避け、
+  // 隣り合う宣言順(=隣接レーン)の色相が離れるよう並べている
   static readonly WIRE_COLOR_TABLE = [
-    "000000", // black
-    "FF0000", // red
-    "00FF00", // green
-    "0000FF", // blue
-    "FFFF00", // yellow
+    "0072B2", // blue
+    "D55E00", // vermillion
+    "009E73", // bluish green
+    "CC79A7", // reddish purple
+    "E69F00", // amber
     "800080", // purple
-    "FFA500", // orange
-    "40E0D0", // turquoise
+    "56B4E9", // sky blue
+    "008B8B", // teal
   ];
 }

@@ -54,9 +54,46 @@ export function wireInterval(spec: WireSpec): [number, number] {
 }
 
 /**
+ * 「より右のレーンに置く」制約を求める
+ *
+ * ワイヤーAのexit水平線(処理→レーン)とワイヤーBのenter水平線(レーン→データ)が
+ * 同一Yになると、BのレーンがAのレーン以下の場合に両線が一直線に重なり、
+ * 別ワイヤーが1本の線に見えてしまう。これを防ぐため、
+ * exitY(A) が enterYList(B) に含まれるペアに「Bのレーン > Aのレーン」を課す。
+ *
+ * 自ワイヤーのexitとenterが同一Yになる場合はレーンで直結する正常な形なので対象外。
+ *
+ * @param specs ワイヤー仕様のリスト
+ * @returns ordinal(B) → Bより左に置くべきordinal(A)のリスト
+ */
+export function computeRightOfConstraints(specs: WireSpec[]): Map<number, number[]> {
+  const constraints = new Map<number, number[]>();
+
+  for (const enterSide of specs) {
+    const lefts: number[] = [];
+    for (const exitSide of specs) {
+      if (exitSide.ordinal === enterSide.ordinal) {
+        continue;
+      }
+      if (enterSide.enterYList.includes(exitSide.exitY)) {
+        lefts.push(exitSide.ordinal);
+      }
+    }
+    if (lefts.length > 0) {
+      constraints.set(enterSide.ordinal, lefts);
+    }
+  }
+
+  return constraints;
+}
+
+/**
  * 左端法(greedy interval coloring)で垂直線のレーンを割り当てる
  *
  * Y区間が clearance 以上離れたワイヤー同士は同一レーンを共有できる。
+ * さらに computeRightOfConstraints の制約を満たすよう、exit水平線と
+ * 同一Yのenter水平線を持つワイヤーは exit側より右のレーンに割り当てる。
+ * 制約が循環する場合も ordinal ベースのフォールバックで決定的に終了する。
  * 安定ソート(minY昇順, maxY昇順, ordinal昇順)とfirst-fitにより決定的な結果を返す。
  *
  * @param specs ワイヤー仕様のリスト
@@ -67,31 +104,55 @@ export function assignLanes(
   specs: WireSpec[],
   clearance: number
 ): { laneOf: Map<number, number>; laneCount: number } {
-  const sorted = [...specs].sort((a, b) => {
+  const compareSpecs = (a: WireSpec, b: WireSpec): number => {
     const [aMin, aMax] = wireInterval(a);
     const [bMin, bMax] = wireInterval(b);
     if (aMin !== bMin) { return aMin - bMin; }
     if (aMax !== bMax) { return aMax - bMax; }
     return a.ordinal - b.ordinal;
-  });
+  };
 
-  const laneLastMaxY: number[] = [];
+  const constraints = computeRightOfConstraints(specs);
+
+  // レーンごとの占有Y区間。first-fit判定は区間全走査で行い、割り当て順に依存しない
+  const laneIntervals: [number, number][][] = [];
   const laneOf = new Map<number, number>();
 
-  for (const spec of sorted) {
-    const [minY, maxY] = wireInterval(spec);
+  const fitsLane = (lane: [number, number][], minY: number, maxY: number): boolean => {
+    return lane.every(([m, M]) => maxY + clearance <= m || M + clearance <= minY);
+  };
 
-    let lane = laneLastMaxY.findIndex(lastMaxY => lastMaxY + clearance <= minY);
-    if (lane === -1) {
-      lane = laneLastMaxY.length;
-      laneLastMaxY.push(maxY);
-    } else {
-      laneLastMaxY[lane] = maxY;
+  const remaining = new Map(specs.map(spec => [spec.ordinal, spec]));
+  while (remaining.size > 0) {
+    // 左側制約の相手が未割り当てのワイヤーは後回しにする(トポロジカル順)
+    const candidates = [...remaining.values()];
+    const ready = candidates.filter(spec =>
+      (constraints.get(spec.ordinal) ?? []).every(left => !remaining.has(left))
+    );
+    // 制約が循環している場合は全体から選び、未割り当て相手との制約は無視する
+    const pool = ready.length > 0 ? ready : candidates;
+    const spec = pool.sort(compareSpecs)[0];
+
+    const [minY, maxY] = wireInterval(spec);
+    const assignedLefts = (constraints.get(spec.ordinal) ?? [])
+      .filter(left => laneOf.has(left));
+    const minLane = assignedLefts.reduce(
+      (lane, left) => Math.max(lane, laneOf.get(left)! + 1), 0
+    );
+
+    let lane = minLane;
+    while (lane < laneIntervals.length && !fitsLane(laneIntervals[lane], minY, maxY)) {
+      lane += 1;
     }
+    if (lane === laneIntervals.length) {
+      laneIntervals.push([]);
+    }
+    laneIntervals[lane].push([minY, maxY]);
     laneOf.set(spec.ordinal, lane);
+    remaining.delete(spec.ordinal);
   }
 
-  return { laneOf, laneCount: laneLastMaxY.length };
+  return { laneOf, laneCount: laneIntervals.length };
 }
 
 /**

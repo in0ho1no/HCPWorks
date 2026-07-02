@@ -493,6 +493,32 @@ suite('SVGRenderer - Wire routing (lanes and jumps)', () => {
     assert.ok(svg.includes('fill="none"'), 'jump path should not be filled');
   });
 
+  test('should draw jump arcs above vertical wires (verticals first, horizontals last)', () => {
+    // ジャンプアーク付き水平線が跨ぎ先の垂直線より後(=上)に描画されること。
+    // 逆順だと垂直線がアークの頂点を上塗りし、上下関係が逆転して見える
+    const processLines = ProcessLineProcessor.process([
+      makeLineInfo('processModule'),
+      makeLineInfo('    procA \\out dataLow'),
+      makeLineInfo('    procB \\out dataHigh'),
+    ], 10);
+    const dataLines = DataLineProcessor.process([
+      makeLineInfo('\\data dataHigh'),
+      makeLineInfo('\\data dataLow'),
+    ]);
+    const svg = new SVGRenderer('CrossingChart',
+      new ParseInfo4Render(processLines, dataLines)).render();
+
+    const arcIndex = svg.search(jumpArcPattern);
+    assert.ok(arcIndex >= 0, 'crossing chart should contain a jump arc path');
+
+    // 跨がれる側の垂直線(procBのワイヤー色 = テーブル2色目)がアークより先に出現すること
+    const secondColor = DiagramDefine.WIRE_COLOR_TABLE[1];
+    const crossedVertical = svg.search(new RegExp(`<line x1="(\\d+)" y1="\\d+" x2="\\1" y2="\\d+" stroke="#${secondColor}"\\/>`));
+    assert.ok(crossedVertical >= 0, 'crossed vertical wire should exist');
+    assert.ok(crossedVertical < arcIndex,
+      `vertical (index ${crossedVertical}) should be drawn before the jump arc (index ${arcIndex})`);
+  });
+
   test('should not emit jump arcs when wires do not cross', () => {
     const processLines = ProcessLineProcessor.process([
       makeLineInfo('processModule'),
