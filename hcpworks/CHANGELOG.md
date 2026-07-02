@@ -2,6 +2,14 @@
 
 All notable changes to the "hcpworks" extension will be documented in this file.
 
+## [0.1.2]
+
+Minor
+
+- Improved readability of wire lines between the process and data sections
+    - Vertical wire lines share the same X coordinate when their Y ranges do not overlap, compressing the chart width
+    - Horizontal wire lines jump over crossing vertical lines with small arcs (Visio-style line jumps)
+
 ## [0.1.1]
 
 Patch

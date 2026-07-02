@@ -470,3 +470,99 @@ suite('SVGRenderer - SUPPLEMENT rendering', () => {
       `SUPPLEMENT-as-last (${countLines(svgSuppl)}) should have exactly 1 more line than normal element (${countLines(svgNormal)})`);
   });
 });
+
+suite('SVGRenderer - Wire routing (lanes and jumps)', () => {
+  const jumpArcPattern = new RegExp(`A [\\d.]+ ${DiagramDefine.JUMP_RADIUS} 0 0 1`);
+
+  test('should draw a jump arc when a horizontal wire crosses another vertical wire', () => {
+    // procA→dataLow と procB→dataHigh のY区間が交差する配置:
+    // procB の垂直線(レーン0)を procA の水平線が跨ぐ
+    const processLines = ProcessLineProcessor.process([
+      makeLineInfo('processModule'),
+      makeLineInfo('    procA \\out dataLow'),
+      makeLineInfo('    procB \\out dataHigh'),
+    ], 10);
+    const dataLines = DataLineProcessor.process([
+      makeLineInfo('\\data dataHigh'),
+      makeLineInfo('\\data dataLow'),
+    ]);
+    const svg = new SVGRenderer('CrossingChart',
+      new ParseInfo4Render(processLines, dataLines)).render();
+
+    assert.ok(jumpArcPattern.test(svg), 'crossing chart should contain a jump arc path');
+    assert.ok(svg.includes('fill="none"'), 'jump path should not be filled');
+  });
+
+  test('should not emit jump arcs when wires do not cross', () => {
+    const processLines = ProcessLineProcessor.process([
+      makeLineInfo('processModule'),
+      makeLineInfo('    procA \\out dataA'),
+    ], 10);
+    const dataLines = DataLineProcessor.process([
+      makeLineInfo('\\data dataA'),
+    ]);
+    const svg = new SVGRenderer('NoCrossingChart',
+      new ParseInfo4Render(processLines, dataLines)).render();
+
+    assert.ok(!jumpArcPattern.test(svg), 'non-crossing chart should not contain jump arcs');
+  });
+
+  test('should compress width by sharing lanes for disjoint wire intervals', () => {
+    // 同一テキスト長で、ワイヤーY区間が離れている(レーン共有)配置と
+    // 交差する(レーン2本)配置の幅を比較する
+    function makeProcessLines() {
+      return ProcessLineProcessor.process([
+        makeLineInfo('processModule'),
+        makeLineInfo('    procA \\out dataA'),
+        makeLineInfo('    fill1'),
+        makeLineInfo('    fill2'),
+        makeLineInfo('    procB \\out dataB'),
+      ], 10);
+    }
+
+    const sharedRenderer = new SVGRenderer('SharedLanes',
+      new ParseInfo4Render(makeProcessLines(), DataLineProcessor.process([
+        makeLineInfo('\\data fill0'),
+        makeLineInfo('\\data dataA'),
+        makeLineInfo('\\data fill3'),
+        makeLineInfo('\\data fill4'),
+        makeLineInfo('\\data dataB'),
+      ])));
+    const separateRenderer = new SVGRenderer('SeparateLanes',
+      new ParseInfo4Render(makeProcessLines(), DataLineProcessor.process([
+        makeLineInfo('\\data fill0'),
+        makeLineInfo('\\data dataB'),
+        makeLineInfo('\\data fill3'),
+        makeLineInfo('\\data fill4'),
+        makeLineInfo('\\data dataA'),
+      ])));
+
+    sharedRenderer.render();
+    separateRenderer.render();
+
+    assert.ok(sharedRenderer.getSvgWidth() < separateRenderer.getSvgWidth(),
+      `shared-lane width (${sharedRenderer.getSvgWidth()}) should be smaller than ` +
+      `separate-lane width (${separateRenderer.getSvgWidth()})`);
+  });
+
+  test('should write back connectLine to DataInfo after render', () => {
+    const processLines = ProcessLineProcessor.process([
+      makeLineInfo('processModule'),
+      makeLineInfo('    procA \\out dataX'),
+    ], 10);
+    const dataLines = DataLineProcessor.process([
+      makeLineInfo('\\data dataX'),
+    ]);
+    new SVGRenderer('ConnectLineWriteBack',
+      new ParseInfo4Render(processLines, dataLines)).render();
+
+    const outData = processLines.getLineInfoList()[1].getInOutData().getOutDataList()[0];
+    const connectLine = outData.connectLine;
+    assert.ok(connectLine, 'connectLine should be set after render');
+    assert.ok(connectLine!.exitFromProcess, 'exitFromProcess should be set');
+    assert.ok(connectLine!.betweenProcessData, 'betweenProcessData should be set');
+    assert.ok(connectLine!.enterToData, 'enterToData should be set');
+    assert.ok(typeof connectLine!.color === 'string' && connectLine!.color.length > 0,
+      'color should be set');
+  });
+});
