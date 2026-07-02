@@ -1,3 +1,4 @@
+import * as path from 'path';
 import * as vscode from 'vscode';
 import { SvgContent } from './svg_content';
 
@@ -6,6 +7,21 @@ import { SvgContent } from './svg_content';
  */
 export class PreviewManager {
   private previewPanel: vscode.WebviewPanel | undefined;
+
+  /** パネルのタブアイコン解決に使う拡張機能ルートURI */
+  private readonly extensionUri: vscode.Uri;
+
+  /** プレビュー対象が未確定の間に表示する既定タイトル */
+  private static readonly DEFAULT_TITLE = 'HCP Preview';
+
+  /**
+   * PreviewManagerクラスの新しいインスタンスを作成する
+   *
+   * @param extensionUri - 拡張機能ルートのURI(アイコンパスの解決に使用)
+   */
+  constructor(extensionUri: vscode.Uri) {
+    this.extensionUri = extensionUri;
+  }
 
   /** エクスポート要求に対する応答を待つPromiseの解決関数を保持する */
   private pendingExports = new Map<string, {
@@ -74,8 +90,31 @@ export class PreviewManager {
       this.previewPanel = this.createWebviewPanel();
     }
 
+    // タブタイトルをプレビュー対象に合わせて更新
+    this.previewPanel.title = PreviewManager.buildTitle(svgContent);
+
     // HTMLコンテンツを更新
     this.previewPanel.webview.html = svgContent.getHtmlWrappedSvg();
+  }
+
+  /**
+   * プレビュー対象からタブタイトルを組み立てる
+   *
+   * ファイルそのものではないため拡張子は付けず、
+   * 「ファイル名(拡張子抜き) - モジュール名」とする。
+   * 元ファイル不明時は既定タイトルへフォールバックする。
+   *
+   * @param svgContent - プレビュー対象のコンテンツ
+   * @returns タブに表示するタイトル
+   */
+  private static buildTitle(svgContent: SvgContent): string {
+    const fileName = path.parse(svgContent.getSourcePath()).name;
+    const moduleName = svgContent.getName();
+
+    if (fileName === '') {
+      return moduleName !== '' ? moduleName : PreviewManager.DEFAULT_TITLE;
+    }
+    return moduleName !== '' ? `${fileName} - ${moduleName}` : fileName;
   }
 
   /**
@@ -85,13 +124,16 @@ export class PreviewManager {
     // Webviewパネルを作成
     const panel = vscode.window.createWebviewPanel(
       'hcpPreview',  // 識別子
-      'HCP Preview', // タイトル
+      PreviewManager.DEFAULT_TITLE, // タイトル(updatePreviewで対象に応じて更新される)
       { viewColumn: vscode.ViewColumn.Beside, preserveFocus: true },  // 表示位置とフォーカス制御
       {
         enableScripts: true,  // スクリプトを有効化
         retainContextWhenHidden: true,  // 非表示時にコンテキストを保持
       }
     );
+
+    // タブアイコンを.hcpファイルと同じアイコンにする
+    panel.iconPath = vscode.Uri.joinPath(this.extensionUri, 'resources', 'icon', 'file_icon.svg');
 
     // Webviewからのエクスポート応答を受け取る
     panel.webview.onDidReceiveMessage((message) => {
