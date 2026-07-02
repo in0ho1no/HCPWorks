@@ -511,8 +511,9 @@ suite('SVGRenderer - Wire routing (lanes and jumps)', () => {
     const arcIndex = svg.search(jumpArcPattern);
     assert.ok(arcIndex >= 0, 'crossing chart should contain a jump arc path');
 
-    // 跨がれる側の垂直線(procBのワイヤー色 = テーブル2色目の赤)がアークより先に出現すること
-    const crossedVertical = svg.search(/<line x1="(\d+)" y1="\d+" x2="\1" y2="\d+" stroke="#FF0000"\/>/);
+    // 跨がれる側の垂直線(procBのワイヤー色 = テーブル2色目)がアークより先に出現すること
+    const secondColor = DiagramDefine.WIRE_COLOR_TABLE[1];
+    const crossedVertical = svg.search(new RegExp(`<line x1="(\\d+)" y1="\\d+" x2="\\1" y2="\\d+" stroke="#${secondColor}"\\/>`));
     assert.ok(crossedVertical >= 0, 'crossed vertical wire should exist');
     assert.ok(crossedVertical < arcIndex,
       `vertical (index ${crossedVertical}) should be drawn before the jump arc (index ${arcIndex})`);
