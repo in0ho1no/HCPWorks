@@ -10,6 +10,7 @@ Minor
     - Vertical wire lines share the same X coordinate when their Y ranges do not overlap, compressing the chart width
     - Horizontal wire lines jump over crossing vertical lines with small arcs (Visio-style line jumps)
     - A wire entering the data section is routed to the right of any wire leaving a process at the same height, so an incoming line never overlaps an outgoing line
+    - Vertical wire lines are drawn before horizontal ones, so jump arcs are always painted above the vertical lines they cross
 
 ## [0.1.1]
 

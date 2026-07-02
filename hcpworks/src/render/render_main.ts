@@ -537,6 +537,8 @@ export class SVGRenderer {
    *
    * 水平線が他ワイヤーの垂直線を跨ぐ箇所にはジャンプアークを挿入する。
    * 垂直線は常に直線で描画する。
+   * ジャンプアークが垂直線の上を跨いで見えるよう、全ワイヤーの垂直線を
+   * 先に、水平線(アーク・矢頭含む)を後に描画する(SVGは後描画が上に重なる)。
    */
   private emitWires(wires: RoutedWire[]): void {
     // 交差判定の対象となる垂直線を集める
@@ -549,6 +551,16 @@ export class SVGRenderer {
         y2: Math.max(wire.vertical!.start.y, wire.vertical!.end.y),
       }));
 
+    // 1パス目: 処理部とデータ部を結ぶ垂直線
+    for (const wire of wires) {
+      if (wire.vertical !== null) {
+        this._svgText.push(SvgFigureLines.drawLineV(
+          wire.vertical.start.x, wire.vertical.start.y, wire.vertical.wireHeight(), wire.color
+        ));
+      }
+    }
+
+    // 2パス目: 水平線
     for (const wire of wires) {
       // 自ワイヤーの垂直線は跨がない
       const otherVerticals = verticals.filter(vertical => vertical.ordinal !== wire.spec.ordinal);
@@ -581,13 +593,6 @@ export class SVGRenderer {
       for (const enter of wire.enters) {
         this._svgText.push(drawEnterMethod(
           enter.start.x, enter.start.y, enter.wireWidth(), horizontalJumps(enter), wire.color
-        ));
-      }
-
-      // 処理部とデータ部を結ぶ垂直線
-      if (wire.vertical !== null) {
-        this._svgText.push(SvgFigureLines.drawLineV(
-          wire.vertical.start.x, wire.vertical.start.y, wire.vertical.wireHeight(), wire.color
         ));
       }
     }
