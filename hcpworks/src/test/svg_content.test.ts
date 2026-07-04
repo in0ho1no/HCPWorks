@@ -47,6 +47,25 @@ suite('SvgContent - Method - setName / getName', () => {
   });
 });
 
+suite('SvgContent - Method - setSourcePath / getSourcePath', () => {
+  test('should default to empty string', () => {
+    const content = new SvgContent();
+    assert.strictEqual(content.getSourcePath(), '');
+  });
+
+  test('should set and get source path', () => {
+    const content = new SvgContent();
+    content.setSourcePath('/work/sample/header.hcp');
+    assert.strictEqual(content.getSourcePath(), '/work/sample/header.hcp');
+  });
+
+  test('should return this for method chaining', () => {
+    const content = new SvgContent();
+    const result = content.setSourcePath('/work/a.hcp');
+    assert.strictEqual(result, content);
+  });
+});
+
 suite('SvgContent - Method - setTextContent / getTextContent', () => {
   test('should set and get text content array', () => {
     const content = new SvgContent();
