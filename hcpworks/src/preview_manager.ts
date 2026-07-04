@@ -132,8 +132,8 @@ export class PreviewManager {
       }
     );
 
-    // タブアイコンを.hcpファイルと同じアイコンにする
-    panel.iconPath = vscode.Uri.joinPath(this.extensionUri, 'resources', 'icon', 'file_icon.svg');
+    // タブアイコンを設定する
+    panel.iconPath = vscode.Uri.joinPath(this.extensionUri, 'resources', 'icon', 'preview_icon.svg');
 
     // Webviewからのエクスポート応答を受け取る
     panel.webview.onDidReceiveMessage((message) => {

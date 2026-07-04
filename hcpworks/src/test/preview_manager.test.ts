@@ -123,8 +123,8 @@ suite('PreviewManager - tab title and icon', () => {
 
     assert.ok(panel.iconPath, 'iconPath should be set');
     assert.ok(
-      String(panel.iconPath.path).endsWith('resources/icon/file_icon.svg'),
-      `iconPath should point to file_icon.svg: ${panel.iconPath.path}`
+      String(panel.iconPath.path).endsWith('resources/icon/preview_icon.svg'),
+      `iconPath should point to preview_icon.svg: ${panel.iconPath.path}`
     );
   });
 });
