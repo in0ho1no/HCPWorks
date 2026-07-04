@@ -1,4 +1,6 @@
 import { SvgFigureDefine } from './svg_figure_define';
+import { DiagramDefine } from './render_define';
+import { JumpSpan } from './wire_router';
 
 export class SvgFigureLines {
 
@@ -70,8 +72,46 @@ export class SvgFigureLines {
   }
 
   /**
+   * 右向き矢印の矢頭を描画する
+   *
+   * @param endX 矢頭の先端X座標
+   * @param y 矢頭のY座標
+   * @param color 矢頭の色
+   * @returns 矢頭のSVG文字列
+   */
+  private static arrowHeadR(endX: number, y: number, color: string): string {
+    const arrowHead = SvgFigureDefine.ARROW_HEAD;
+    const halfArrowHead = Math.ceil(arrowHead / 2);
+    return `<path d="M ${endX} ${y} ` +
+      `L ${endX - arrowHead} ${y - halfArrowHead} ` +
+      `M ${endX} ${y} ` +
+      `L ${endX - arrowHead} ${y + halfArrowHead}" ` +
+      `stroke="#${color}" fill="#${color}" />` +
+      `${SvgFigureDefine.LINE_BREAK}`;
+  }
+
+  /**
+   * 左向き矢印の矢頭を描画する
+   *
+   * @param startX 矢頭の先端X座標
+   * @param y 矢頭のY座標
+   * @param color 矢頭の色
+   * @returns 矢頭のSVG文字列
+   */
+  private static arrowHeadL(startX: number, y: number, color: string): string {
+    const arrowHead = SvgFigureDefine.ARROW_HEAD;
+    const halfArrowHead = Math.ceil(arrowHead / 2);
+    return `<path d="M ${startX} ${y} ` +
+      `L ${startX + arrowHead} ${y - halfArrowHead} ` +
+      `M ${startX} ${y} ` +
+      `L ${startX + arrowHead} ${y + halfArrowHead}" ` +
+      `stroke="#${color}" fill="#${color}" />` +
+      `${SvgFigureDefine.LINE_BREAK}`;
+  }
+
+  /**
    * 右向き矢印を描画する
-   * 
+   *
    * @param startX 開始X座標
    * @param startY 開始Y座標
    * @param length 矢印の長さ
@@ -86,20 +126,12 @@ export class SvgFigureLines {
   ): string {
     const endX = startX + length;
     const svgLineText = SvgFigureLines.svgLine(startX, startY, endX, startY, color);
-    const arrowHead = SvgFigureDefine.ARROW_HEAD;
-    const halfArrowHead = Math.ceil(arrowHead / 2);
-    return `${svgLineText}` +
-      `<path d="M ${endX} ${startY} ` +
-      `L ${endX - arrowHead} ${startY - halfArrowHead} ` +
-      `M ${endX} ${startY} ` +
-      `L ${endX - arrowHead} ${startY + halfArrowHead}" ` +
-      `stroke="#${color}" fill="#${color}" />` +
-      `${SvgFigureDefine.LINE_BREAK}`;
+    return `${svgLineText}` + SvgFigureLines.arrowHeadR(endX, startY, color);
   }
 
   /**
    * 左向き矢印を描画する
-   * 
+   *
    * @param startX 開始X座標
    * @param startY 開始Y座標
    * @param length 矢印の長さ
@@ -114,15 +146,123 @@ export class SvgFigureLines {
   ): string {
     const endX = startX + length;
     const svgLineText = SvgFigureLines.svgLine(startX, startY, endX, startY, color);
-    const arrowHead = SvgFigureDefine.ARROW_HEAD;
-    const halfArrowHead = Math.ceil(arrowHead / 2);
-    return `${svgLineText}` +
-      `<path d="M ${startX} ${startY} ` +
-      `L ${startX + arrowHead} ${startY - halfArrowHead} ` +
-      `M ${startX} ${startY} ` +
-      `L ${startX + arrowHead} ${startY + halfArrowHead}" ` +
-      `stroke="#${color}" fill="#${color}" />` +
+    return `${svgLineText}` + SvgFigureLines.arrowHeadL(startX, startY, color);
+  }
+
+  /**
+   * ジャンプアーク付き水平線のパス(d属性)を組み立てる
+   *
+   * 各ジャンプ区間は上向きに凸のアークで跨ぐ。結合された橋は楕円弧になる。
+   *
+   * @param startX 開始X座標
+   * @param y Y座標
+   * @param endX 終了X座標
+   * @param jumps ジャンプ区間(昇順・非重複)
+   * @param ry アークの高さ(Y半径)
+   * @returns path要素のd属性文字列
+   */
+  static buildHPathD(
+    startX: number,
+    y: number,
+    endX: number,
+    jumps: JumpSpan[],
+    ry: number
+  ): string {
+    const parts: string[] = [`M ${startX} ${y}`];
+    let cursorX = startX;
+
+    for (const jump of jumps) {
+      if (jump.startX > cursorX) {
+        parts.push(`L ${jump.startX} ${y}`);
+      }
+      const rx = (jump.endX - jump.startX) / 2;
+      parts.push(`A ${rx} ${ry} 0 0 1 ${jump.endX} ${y}`);
+      cursorX = jump.endX;
+    }
+
+    if (cursorX < endX) {
+      parts.push(`L ${endX} ${y}`);
+    }
+    return parts.join(' ');
+  }
+
+  /**
+   * ジャンプアーク付きの水平線を描画する
+   *
+   * ジャンプがない場合はdrawLineHと同一の出力になる。
+   *
+   * @param startX 開始X座標
+   * @param startY 開始Y座標
+   * @param length 線の長さ
+   * @param jumps ジャンプ区間(昇順・非重複)
+   * @param color 線の色
+   * @returns 水平線のSVG文字列
+   */
+  static drawLineHWithJumps(
+    startX: number,
+    startY: number,
+    length: number,
+    jumps: JumpSpan[],
+    color: string = '000000'  // black
+  ): string {
+    if (jumps.length === 0) {
+      return SvgFigureLines.drawLineH(startX, startY, length, color);
+    }
+    const d = SvgFigureLines.buildHPathD(startX, startY, startX + length, jumps, DiagramDefine.JUMP_RADIUS);
+    return `<path d="${d}" stroke="#${color}" fill="none"/>` +
       `${SvgFigureDefine.LINE_BREAK}`;
+  }
+
+  /**
+   * ジャンプアーク付きの右向き矢印を描画する
+   *
+   * ジャンプがない場合はdrawArrowRと同一の出力になる。
+   *
+   * @param startX 開始X座標
+   * @param startY 開始Y座標
+   * @param length 矢印の長さ
+   * @param jumps ジャンプ区間(昇順・非重複)
+   * @param color 矢印の色
+   * @returns 右向き矢印のSVG文字列
+   */
+  static drawArrowRWithJumps(
+    startX: number,
+    startY: number,
+    length: number,
+    jumps: JumpSpan[],
+    color: string = '000000'  // black
+  ): string {
+    if (jumps.length === 0) {
+      return SvgFigureLines.drawArrowR(startX, startY, length, color);
+    }
+    return SvgFigureLines.drawLineHWithJumps(startX, startY, length, jumps, color) +
+      SvgFigureLines.arrowHeadR(startX + length, startY, color);
+  }
+
+  /**
+   * ジャンプアーク付きの左向き矢印を描画する
+   *
+   * ジャンプがない場合はdrawArrowLと同一の出力になる。
+   *
+   * @param startX 開始X座標
+   * @param startY 開始Y座標
+   * @param length 矢印の長さ
+   * @param jumps ジャンプ区間(昇順・非重複)
+   * @param color 矢印の色
+   * @returns 左向き矢印のSVG文字列
+   */
+  static drawArrowLWithJumps(
+    startX: number,
+    startY: number,
+    length: number,
+    jumps: JumpSpan[],
+    color: string = '000000'  // black
+  ): string {
+    if (jumps.length === 0) {
+      return SvgFigureLines.drawArrowL(startX, startY, length, color);
+    }
+    return SvgFigureLines.drawLineHWithJumps(startX, startY, length, jumps, color) +
+      SvgFigureLines.arrowHeadL(startX, startY, color);
   }
 
   /**

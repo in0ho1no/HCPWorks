@@ -22,6 +22,7 @@ import { SvgOperator } from './svg_figure_if';
 import { SvgFigureText } from './svg_figure_text';
 import { SvgFigureLines } from './svg_figure_line';
 import { SvgFigureParts } from './svg_figure_parts';
+import { WireSpec, RoutedWire, JumpSpan, routeWires, computeJumpXs, mergeJumpXs } from './wire_router';
 
 
 
@@ -103,19 +104,19 @@ export class SVGRenderer {
     this._processElements = this.setElements(startX, contentStartY, this._processLines);
     const [processEndX, processEndY] = this.renderProcess();
 
-    // 処理部からの水平線を描画
-    const exitFromProcessEndX = this.renderLineExitFromProcess(processEndX);
+    // ワイヤーのレーン割り当てと座標決定(パス1)
+    const [wireSpecs, wireDataInfos] = this.collectWireSpecs(contentStartY);
+    const { wires, exitEndX } = routeWires(wireSpecs, processEndX, this._svgWireColorTable);
 
     // データ部を描画
-    const dataStartX = Math.max(processEndX, exitFromProcessEndX) + DiagramDefine.LEVEL_SHIFT;
+    const dataStartX = Math.max(processEndX, exitEndX) + DiagramDefine.LEVEL_SHIFT;
     this._dataElements = this.setElements(dataStartX, contentStartY, this._dataLines);
     const [dataEndX, dataEndY] = this.renderData();
 
-    // データ部への水平線を描画
-    this.renderLineEnterToData();
-
-    // 処理部とデータ部を結ぶ
-    this.connect_process2data();
+    // ワイヤーの終端を確定して交差ジャンプ付きで描画(パス2)
+    this.finalizeWireGeometry(wires, wireDataInfos);
+    this.renderDataInOutMarkers();
+    this.emitWires(wires);
 
     // 描画終了
     this._svgWidth = Math.max(titleEndX, metaEndX, processEndX, dataEndX);
@@ -317,61 +318,53 @@ export class SVGRenderer {
   }
 
   /**
-   * 処理部からの入出力線を描画する
-   * 
-   * @param processEndX 処理部描画終了位置 X座標
-   * @returns 入出力線の終了位置 X座標
+   * 処理部の入出力からワイヤー仕様を収集する(描画なし)
+   *
+   * データ行のY座標はX座標に依存しないため、データ部の配置前に確定できる。
+   *
+   * @param contentStartY 本体描画開始位置 Y座標
+   * @returns [ワイヤー仕様のリスト, ordinalに対応するDataInfoのリスト]
    */
-  private renderLineExitFromProcess(processEndX: number): number {
-    let offsetX = 0;
-    let exitEndX = 0;
-    let colorIndex = 0;
+  private collectWireSpecs(contentStartY: number): [WireSpec[], DataInfo[]] {
+    const specs: WireSpec[] = [];
+    const wireDataInfos: DataInfo[] = [];
+
+    // データ行の正規化名とY座標を事前に算出する
+    const dataRows = this._dataLines.getLineInfoList().map((lineInfo, index) => ({
+      name: normalizeDataName(lineInfo.getTextLessTypeIO()),
+      y: contentStartY + index * DiagramDefine.LEVEL_SHIFT,
+    }));
 
     /**
-     * 処理部からの入出力線を描画する
-     * 
+     * 入出力情報のリストからワイヤー仕様を追加する
+     *
      * @param element 処理部の要素
      * @param dataInfoList 入出力情報のリスト
      * @param isInData 入力値であるか否か
      */
-    const processInOutLine = (element: DiagramElement, dataInfoList: DataInfo[], isInData: boolean): void => {
-      // 種別(入力・出力)に応じた線の描画
+    const addWireSpecs = (element: DiagramElement, dataInfoList: DataInfo[], isInData: boolean): void => {
       for (const dataInfo of dataInfoList) {
-        // 種別に応じた情報の更新
-        let offsetY: number;
-        let drawMethod: (x: number, y: number, length: number, color: string) => string;
+        // 同じデータ名の行を接続先として収集する
+        const processDataName = normalizeDataName(dataInfo.name);
+        const enterYList: number[] = [];
+        const enterRowIndexes: number[] = [];
+        dataRows.forEach((dataRow, rowIndex) => {
+          if (dataRow.name !== processDataName) {
+            return;
+          }
+          enterYList.push(dataRow.y + (isInData ? 5 : -5));
+          enterRowIndexes.push(rowIndex);
+        });
 
-        if (isInData === true) {
-          offsetY = -5;
-          drawMethod = SvgFigureLines.drawArrowL;
-        } else {
-          offsetY = 5;
-          drawMethod = SvgFigureLines.drawLineH;
-        }
-
-        // 水平線の始点と終点を決定
-        const wireYPos = element.getY() + offsetY;
-        const wireH = new Wire(
-          { x: element.getEndX(), y: wireYPos },
-          { x: processEndX + DiagramDefine.IMG_MARGIN + offsetX, y: wireYPos }
-        );
-
-        // 水平線を保持
-        const connectWireP2D = new Process2Data();
-        connectWireP2D.exitFromProcess = wireH;
-        dataInfo.connectLine = connectWireP2D;
-
-        // 線の色を保持
-        dataInfo.connectLine.color = this._svgWireColorTable[colorIndex];
-        colorIndex = (colorIndex + 1) % this._svgWireColorTable.length;
-
-        // 線を描画
-        const svgText = drawMethod(wireH.start.x, wireH.start.y, wireH.wireWidth(), dataInfo.connectLine.color);
-        this._svgText.push(svgText);
-
-        // 描画情報を更新
-        offsetX += DiagramDefine.LINE_OFFSET;
-        exitEndX = Math.max(exitEndX, wireH.end.x);
+        specs.push({
+          ordinal: specs.length,
+          isInData: isInData,
+          exitStartX: element.getEndX(),
+          exitY: element.getY() + (isInData ? -5 : 5),
+          enterYList: enterYList,
+          enterRowIndexes: enterRowIndexes,
+        });
+        wireDataInfos.push(dataInfo);
       }
     };
 
@@ -390,12 +383,11 @@ export class SVGRenderer {
         continue;
       }
 
-      // 入出力線を描画
-      processInOutLine(processElement, processInOutData.getInDataList(), true);
-      processInOutLine(processElement, processInOutData.getOutDataList(), false);
+      addWireSpecs(processElement, processInOutData.getInDataList(), true);
+      addWireSpecs(processElement, processInOutData.getOutDataList(), false);
     }
 
-    return exitEndX;
+    return [specs, wireDataInfos];
   }
 
   /**
@@ -468,20 +460,21 @@ export class SVGRenderer {
   }
 
   /**
-   * データ部への入出力線を描画する
+   * 最小レベル処理の入出力マーカーをデータ部に描画する
+   *
+   * 関数への入出力は接続線ではなくデータ要素上の三角マーカーで表現する。
    */
-  private renderLineEnterToData(): void {
+  private renderDataInOutMarkers(): void {
 
     /**
-     * データ部への入出力線を描画する
-     * 
+     * データ部への入出力マーカーを描画する
+     *
      * @param dataElement データ部の要素
      * @param processInfo 処理部の情報
      * @param dataInfoList 入出力情報のリスト
      * @param isInData 入力値であるか否か
      */
-    const dataInOutLine = (dataElement: DiagramElement, processInfo: LineInfo, dataInfoList: DataInfo[], isInData: boolean): void => {
-      // 種別(入力・出力)に応じた線の描画
+    const drawMarkers = (dataElement: DiagramElement, processInfo: LineInfo, dataInfoList: DataInfo[], isInData: boolean): void => {
       for (const dataInfo of dataInfoList) {
         // 同じデータ名のみ対象とする
         const dataElementName = normalizeDataName(dataElement.getLineInfo().getTextLessTypeIO());
@@ -490,44 +483,16 @@ export class SVGRenderer {
           continue;
         }
 
-        // 種別に応じた情報の更新
-        let offsetY: number;
-        let drawLineMethod: (x: number, y: number, length: number, color: string) => string;
-        let drawDataInOutMethod: (x: number, y: number) => string;
-        if (isInData === true) {
-          offsetY = +5;
-          drawLineMethod = SvgFigureLines.drawLineH;
-          drawDataInOutMethod = SvgFigureParts.drawFigureDataFuncIn;
-        } else {
-          offsetY = -5;
-          drawLineMethod = SvgFigureLines.drawArrowR;
-          drawDataInOutMethod = SvgFigureParts.drawFigureDataFuncOut;
-        }
-
+        // 最小レベルの処理のみ対象とする
         const normalizeLevel = processInfo.getLevel() - this._processLines.getMinLevel();
-        if (normalizeLevel === LineLevel.LEVEL_MIN) {
-          // 関数への入出力は接続線で表現しない
-          const svgText = drawDataInOutMethod(dataElement.getX(), dataElement.getY());
-          this._svgText.push(svgText);
-        } else {
-          // 処理部からの入出力線が存在しなければ何もしない
-          const connextLine = dataInfo.connectLine;
-          if (!connextLine) { continue; }
-          const exitFromProcess = connextLine.exitFromProcess;
-          if (!exitFromProcess) { continue; }
-
-          // 水平線の始点と終点を決定
-          const wireYPos = dataElement.getY() + offsetY;
-          const wireH = new Wire(
-            { x: exitFromProcess.end.x, y: wireYPos },
-            { x: dataElement.getX() - SvgFigureDefine.CIRCLE_R, y: wireYPos }
-          );
-          connextLine.enterToData = wireH;
-
-          // 線を描画
-          const svgText = drawLineMethod(wireH.start.x, wireH.start.y, wireH.wireWidth(), connextLine.color);
-          this._svgText.push(svgText);
+        if (normalizeLevel !== LineLevel.LEVEL_MIN) {
+          continue;
         }
+
+        const drawDataInOutMethod = isInData
+          ? SvgFigureParts.drawFigureDataFuncIn
+          : SvgFigureParts.drawFigureDataFuncOut;
+        this._svgText.push(drawDataInOutMethod(dataElement.getX(), dataElement.getY()));
       }
     };
 
@@ -537,56 +502,99 @@ export class SVGRenderer {
       for (const processElement of this._processElements) {
         const processLineInfo = processElement.getLineInfo();
         const processInOutData = processLineInfo.getInOutData();
-        dataInOutLine(dataElement, processLineInfo, processInOutData.getInDataList(), true);
-        dataInOutLine(dataElement, processLineInfo, processInOutData.getOutDataList(), false);
+        drawMarkers(dataElement, processLineInfo, processInOutData.getInDataList(), true);
+        drawMarkers(dataElement, processLineInfo, processInOutData.getOutDataList(), false);
       }
     }
   }
 
   /**
-   * 処理部とデータ部の入出力線を結ぶ
-   * 
-   * @param dataInfoList データ情報のリスト
+   * データ部の配置確定後にワイヤーの終端座標を確定し、DataInfoへ書き戻す
+   *
+   * @param wires ルーティング済みワイヤーのリスト
+   * @param wireDataInfos ordinalに対応するDataInfoのリスト
    */
-  private connect_process2data(): void {
-    // 処理部とデータ部の入出力線を結ぶ
-    const process2data = (dataInfoList: DataInfo[]): void => {
-      for (const dataInfo of dataInfoList) {
-        const connextLine = dataInfo.connectLine;
-        if (!connextLine) { continue; }
-        const exitFromProcess = connextLine.exitFromProcess;
-        if (!exitFromProcess) { continue; }
-        const enterToData = connextLine.enterToData;
-        if (!enterToData) { continue; }
+  private finalizeWireGeometry(wires: RoutedWire[], wireDataInfos: DataInfo[]): void {
+    for (const wire of wires) {
+      // データ側水平線の終端Xを接続先データ要素の左端に確定する
+      wire.spec.enterRowIndexes.forEach((rowIndex, index) => {
+        const dataElement = this._dataElements[rowIndex];
+        wire.enters[index].end.x = dataElement.getX() - SvgFigureDefine.CIRCLE_R;
+      });
 
-        // 画像の上部から下部に向かって描画するように更新
-        const start_y = Math.min(enterToData.start.y, exitFromProcess.end.y);
-        const end_y = Math.max(enterToData.start.y, exitFromProcess.end.y);
+      // 接続情報をDataInfoへ書き戻す
+      const connectLine = new Process2Data();
+      connectLine.exitFromProcess = wire.exit;
+      connectLine.betweenProcessData = wire.vertical;
+      connectLine.enterToData = wire.enters.length > 0 ? wire.enters[wire.enters.length - 1] : null;
+      connectLine.color = wire.color;
+      wireDataInfos[wire.spec.ordinal].connectLine = connectLine;
+    }
+  }
 
-        // 垂直線の始点と終点を決定
-        const wireV = new Wire(
-          { x: enterToData.start.x, y: start_y },
-          { x: enterToData.start.x, y: end_y }
-        );
-        connextLine.betweenProcessData = wireV;
+  /**
+   * ルーティング済みワイヤーを描画する
+   *
+   * 水平線が他ワイヤーの垂直線を跨ぐ箇所にはジャンプアークを挿入する。
+   * 垂直線は常に直線で描画する。
+   * ジャンプアークが垂直線の上を跨いで見えるよう、全ワイヤーの垂直線を
+   * 先に、水平線(アーク・矢頭含む)を後に描画する(SVGは後描画が上に重なる)。
+   */
+  private emitWires(wires: RoutedWire[]): void {
+    // 交差判定の対象となる垂直線を集める
+    const verticals = wires
+      .filter(wire => wire.vertical !== null)
+      .map(wire => ({
+        ordinal: wire.spec.ordinal,
+        x: wire.vertical!.start.x,
+        y1: Math.min(wire.vertical!.start.y, wire.vertical!.end.y),
+        y2: Math.max(wire.vertical!.start.y, wire.vertical!.end.y),
+      }));
 
-        // 線を描画
-        const svgText = SvgFigureLines.drawLineV(wireV.start.x, wireV.start.y, wireV.wireHeight(), connextLine.color);
-        this._svgText.push(svgText);
+    // 1パス目: 処理部とデータ部を結ぶ垂直線
+    for (const wire of wires) {
+      if (wire.vertical !== null) {
+        this._svgText.push(SvgFigureLines.drawLineV(
+          wire.vertical.start.x, wire.vertical.start.y, wire.vertical.wireHeight(), wire.color
+        ));
       }
-    };
+    }
 
-    for (const processElement of this._processElements) {
-      // 関数への入出力は接続線で表現しない
-      const processLineInfo = processElement.getLineInfo();
-      const normalizeLevel = processLineInfo.getLevel() - this._processLines.getMinLevel();
-      if (normalizeLevel === LineLevel.LEVEL_MIN) {
-        continue;
+    // 2パス目: 水平線
+    for (const wire of wires) {
+      // 自ワイヤーの垂直線は跨がない
+      const otherVerticals = verticals.filter(vertical => vertical.ordinal !== wire.spec.ordinal);
+
+      /**
+       * 水平セグメントが跨ぐジャンプ区間を求める
+       *
+       * @param segment 水平セグメント(左→右)
+       * @returns ジャンプ区間のリスト
+       */
+      const horizontalJumps = (segment: Wire): JumpSpan[] => {
+        const x1 = Math.min(segment.start.x, segment.end.x);
+        const x2 = Math.max(segment.start.x, segment.end.x);
+        const jumpXs = computeJumpXs({ y: segment.start.y, x1: x1, x2: x2 }, otherVerticals);
+        return mergeJumpXs(jumpXs, DiagramDefine.JUMP_RADIUS, DiagramDefine.JUMP_MIN_FLAT, x1, x2);
+      };
+
+      // 処理部からの水平線(入力は処理側に矢頭)
+      const drawExitMethod = wire.spec.isInData
+        ? SvgFigureLines.drawArrowLWithJumps
+        : SvgFigureLines.drawLineHWithJumps;
+      this._svgText.push(drawExitMethod(
+        wire.exit.start.x, wire.exit.start.y, wire.exit.wireWidth(), horizontalJumps(wire.exit), wire.color
+      ));
+
+      // データ部への水平線(出力はデータ側に矢頭)
+      const drawEnterMethod = wire.spec.isInData
+        ? SvgFigureLines.drawLineHWithJumps
+        : SvgFigureLines.drawArrowRWithJumps;
+      for (const enter of wire.enters) {
+        this._svgText.push(drawEnterMethod(
+          enter.start.x, enter.start.y, enter.wireWidth(), horizontalJumps(enter), wire.color
+        ));
       }
-
-      const processInOutData = processLineInfo.getInOutData();
-      process2data(processInOutData.getInDataList());
-      process2data(processInOutData.getOutDataList());
     }
   }
 

@@ -2,6 +2,19 @@
 
 All notable changes to the "hcpworks" extension will be documented in this file.
 
+## [0.1.2]
+
+Minor
+
+- Improved readability of wire lines between the process and data sections
+    - Vertical wire lines share the same X coordinate when their Y ranges do not overlap, compressing the chart width
+    - Horizontal wire lines jump over crossing vertical lines with small arcs (Visio-style line jumps)
+    - A wire entering the data section is routed to the right of any wire leaving a process at the same height, so an incoming line never overlaps an outgoing line
+    - Vertical wire lines are drawn before horizontal ones, so jump arcs are always painted above the vertical lines they cross
+- Changed the default wire color table to an Okabe-Ito based palette
+    - Avoids pure black (indistinguishable from structural lines) and low-contrast colors on white backgrounds (pure yellow/green/turquoise), and is friendly to color vision deficiency
+- The preview tab now shows the source file and module (`fileName - moduleName`, extension omitted) instead of the fixed "HCP Preview" title, and uses a dedicated preview icon
+
 ## [0.1.1]
 
 Patch

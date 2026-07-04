@@ -9,6 +9,7 @@ import { SvgFigureText } from './render/svg_figure_text';
  */
 export class SvgContent {
   private _name: string;
+  private _sourcePath: string;
   private _textContent: string[];
   private _svgContent: string;
   private _tables: TableData[];
@@ -18,6 +19,7 @@ export class SvgContent {
    */
   constructor() {
     this._name = "";
+    this._sourcePath = "";
     this._textContent = [];
     this._svgContent = "";
     this._tables = [];
@@ -36,11 +38,31 @@ export class SvgContent {
 
   /**
    * SVG要素の名前を取得する
-   * 
+   *
    * @returns SVG要素の名前
    */
   getName(): string {
     return this._name;
+  }
+
+  /**
+   * 変換元hcpファイルのパスを設定する
+   *
+   * @param sourcePath - 変換元ファイルのフルパス
+   * @returns このインスタンスへの参照（メソッドチェーン用）
+   */
+  setSourcePath(sourcePath: string): SvgContent {
+    this._sourcePath = sourcePath;
+    return this;
+  }
+
+  /**
+   * 変換元hcpファイルのパスを取得する
+   *
+   * @returns 変換元ファイルのフルパス。未設定なら空文字
+   */
+  getSourcePath(): string {
+    return this._sourcePath;
   }
 
   /**

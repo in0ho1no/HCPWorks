@@ -50,7 +50,7 @@ export class HCPController {
     // 初期化
     this.moduleTreeProvider = new ModuleTreeProvider();
     this.numberInputViewProvider = new NumberInputViewProvider(context.extensionUri);
-    this.previewManager = new PreviewManager();
+    this.previewManager = new PreviewManager(context.extensionUri);
   }
 
   /**
@@ -309,6 +309,7 @@ export class HCPController {
     // コンテンツを新規作成
     const svgContent = new SvgContent()
       .setName(selectedElement.name)
+      .setSourcePath(selectedElement.filePath)
       .setTextContent(cleanTextLines(remainingLines))
       .setTables(tables);
 
