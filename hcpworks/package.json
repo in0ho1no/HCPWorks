@@ -1,13 +1,22 @@
 {
   "name": "hcpworks",
   "displayName": "HCPWorks",
-  "description": "This extension displays HCP chart.",
+  "description": "Preview HCP charts (.hcp) and export them as PNG / SVG / WebP / JPEG images in VS Code.",
   "version": "0.1.2",
   "engines": {
     "vscode": "^1.125.0"
   },
   "categories": [
-    "Other"
+    "Programming Languages",
+    "Visualization"
+  ],
+  "keywords": [
+    "hcp",
+    "hcp chart",
+    "chart",
+    "diagram",
+    "flowchart",
+    "preview"
   ],
   "publisher": "in0ho1no",
   "icon": "resources/icon/icon_128px_light.png",
@@ -16,9 +25,10 @@
     "type": "git",
     "url": "https://github.com/in0ho1no/HCPWorks"
   },
-  "activationEvents": [
-    "onLanguage:hcp"
-  ],
+  "bugs": {
+    "url": "https://github.com/in0ho1no/HCPWorks/issues"
+  },
+  "homepage": "https://github.com/in0ho1no/HCPWorks#readme",
   "main": "./dist/extension.js",
   "contributes": {
     "menus": {
