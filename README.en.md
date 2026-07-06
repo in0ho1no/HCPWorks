@@ -19,7 +19,7 @@ You can list modules, preview HCP charts side by side, and export them as images
 - Change the preview level
 - Use syntax highlighting, folding, file icons, and bracket completion
 
-![previewHCPCharts](hcpworks/resources/videos/previewHCPCharts.gif)
+![previewHCPCharts](https://raw.githubusercontent.com/in0ho1no/HCPWorks/main/hcpworks/resources/videos/previewHCPCharts.gif)
 
 ## Quick Start
 
@@ -132,4 +132,4 @@ See [GitHub issues](https://github.com/in0ho1no/HCPWorks/issues) for known probl
 
 ## Release Notes
 
-See [CHANGELOG](hcpworks/CHANGELOG.md).
+See [CHANGELOG](https://github.com/in0ho1no/HCPWorks/blob/main/hcpworks/CHANGELOG.md).

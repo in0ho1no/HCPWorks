@@ -27,7 +27,7 @@ HCPWorks は、HCP チャート形式の .hcp ファイルを VS Code 上で扱�
 1. 画像として保存したい場合は、プレビューパネルの保存ボタンを使います。
 1. 表示レベルを変えたい場合は HCP Preview Level から数値を指定します。
 
-![previewHCPCharts](hcpworks/resources/videos/previewHCPCharts.gif)
+![previewHCPCharts](https://raw.githubusercontent.com/in0ho1no/HCPWorks/main/hcpworks/resources/videos/previewHCPCharts.gif)
 ### 画像保存について
 
 - PNG: 標準的な出力向け
@@ -131,4 +131,4 @@ VS Code の設定で HCPWorks を検索すると、次の項目を変更でき�
 
 ## リリースノート
 
-[CHANGELOG](hcpworks/CHANGELOG.md) を参照してください。
+[CHANGELOG](https://github.com/in0ho1no/HCPWorks/blob/main/hcpworks/CHANGELOG.md) を参照してください。
