@@ -19,6 +19,13 @@ exports.window = {
 exports.ViewColumn = {
   Beside: -2,
 };
+exports.Uri = {
+  file: (p) => ({ fsPath: p, path: p, toString: () => `file://${p}` }),
+  joinPath: (base, ...segments) => {
+    const joined = [base.path, ...segments].join('/');
+    return { fsPath: joined, path: joined, toString: () => `file://${joined}` };
+  },
+};
 exports.workspace = {
   getConfiguration: () => ({
     get: (_key, defaultValue) => defaultValue,

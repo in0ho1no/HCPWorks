@@ -219,3 +219,100 @@ suite('SvgFigureLines - Method - drawLevelStep', () => {
     assert.ok(result.includes(`x1="${hLineLShift}"`));
   });
 });
+
+suite('SvgFigureLines - Method - buildHPathD', () => {
+  test('should produce a straight path for no jumps', () => {
+    const d = SvgFigureLines.buildHPathD(10, 50, 100, [], 4);
+    assert.strictEqual(d, 'M 10 50 L 100 50');
+  });
+
+  test('should insert a semicircular arc for a single jump', () => {
+    const d = SvgFigureLines.buildHPathD(10, 50, 100, [{ startX: 46, endX: 54 }], 4);
+    assert.strictEqual(d, 'M 10 50 L 46 50 A 4 4 0 0 1 54 50 L 100 50');
+  });
+
+  test('should widen the arc for a merged bridge', () => {
+    const d = SvgFigureLines.buildHPathD(10, 50, 100, [{ startX: 46, endX: 64 }], 4);
+    assert.strictEqual(d, 'M 10 50 L 46 50 A 9 4 0 0 1 64 50 L 100 50');
+  });
+
+  test('should handle multiple jumps in order', () => {
+    const jumps = [{ startX: 20, endX: 28 }, { startX: 60, endX: 68 }];
+    const d = SvgFigureLines.buildHPathD(10, 50, 100, jumps, 4);
+    assert.strictEqual(d,
+      'M 10 50 L 20 50 A 4 4 0 0 1 28 50 L 60 50 A 4 4 0 0 1 68 50 L 100 50');
+  });
+
+  test('should omit leading/trailing L when jump touches the segment ends', () => {
+    const d = SvgFigureLines.buildHPathD(10, 50, 100, [{ startX: 10, endX: 18 }], 4);
+    assert.strictEqual(d, 'M 10 50 A 4 4 0 0 1 18 50 L 100 50');
+  });
+});
+
+suite('SvgFigureLines - Method - drawLineHWithJumps', () => {
+  test('should delegate to drawLineH when no jumps', () => {
+    const result = SvgFigureLines.drawLineHWithJumps(10, 20, 50, [], 'FF0000');
+    assert.strictEqual(result, SvgFigureLines.drawLineH(10, 20, 50, 'FF0000'));
+  });
+
+  test('should produce a <path element with fill none for jumps', () => {
+    const result = SvgFigureLines.drawLineHWithJumps(10, 20, 90, [{ startX: 46, endX: 54 }], 'FF0000');
+    assert.ok(result.startsWith('<path d="'));
+    assert.ok(result.includes('A 4 4 0 0 1 54 20'));
+    assert.ok(result.includes('stroke="#FF0000"'));
+    assert.ok(result.includes('fill="none"'));
+    assert.ok(!result.includes('<line '));
+  });
+});
+
+suite('SvgFigureLines - Method - drawArrowRWithJumps', () => {
+  test('should delegate to drawArrowR when no jumps', () => {
+    const result = SvgFigureLines.drawArrowRWithJumps(10, 20, 50, [], 'FF0000');
+    assert.strictEqual(result, SvgFigureLines.drawArrowR(10, 20, 50, 'FF0000'));
+  });
+
+  test('should keep the arrow head at endX with jumps', () => {
+    const result = SvgFigureLines.drawArrowRWithJumps(10, 20, 90, [{ startX: 46, endX: 54 }], 'FF0000');
+    assert.ok(result.includes('fill="none"'), 'jumped line should not be filled');
+    assert.ok(result.includes(`M 100 20 `), 'arrow head should start at endX');
+    assert.ok(result.includes('fill="#FF0000"'), 'arrow head keeps its fill');
+  });
+});
+
+suite('SvgFigureLines - Method - drawArrowLWithJumps', () => {
+  test('should delegate to drawArrowL when no jumps', () => {
+    const result = SvgFigureLines.drawArrowLWithJumps(10, 20, 50, [], 'FF0000');
+    assert.strictEqual(result, SvgFigureLines.drawArrowL(10, 20, 50, 'FF0000'));
+  });
+
+  test('should keep the arrow head at startX with jumps', () => {
+    const result = SvgFigureLines.drawArrowLWithJumps(10, 20, 90, [{ startX: 46, endX: 54 }], 'FF0000');
+    assert.ok(result.includes('fill="none"'), 'jumped line should not be filled');
+    assert.ok(result.includes(`M 10 20 `), 'arrow head should start at startX');
+    assert.ok(result.includes('fill="#FF0000"'), 'arrow head keeps its fill');
+  });
+});
+
+suite('SvgFigureLines - Regression - arrow output unchanged after helper extraction', () => {
+  test('drawArrowR output should keep the exact legacy format', () => {
+    const result = SvgFigureLines.drawArrowR(10, 20, 50, 'FF0000');
+    const arrowHead = SvgFigureDefine.ARROW_HEAD;
+    const half = Math.ceil(arrowHead / 2);
+    const expected =
+      `<line x1="10" y1="20" x2="60" y2="20" stroke="#FF0000"/>${SvgFigureDefine.LINE_BREAK}` +
+      `<path d="M 60 20 L ${60 - arrowHead} ${20 - half} M 60 20 L ${60 - arrowHead} ${20 + half}" ` +
+      `stroke="#FF0000" fill="#FF0000" />${SvgFigureDefine.LINE_BREAK}`;
+    assert.strictEqual(result, expected);
+  });
+
+  test('drawArrowL output should keep the exact legacy format', () => {
+    const result = SvgFigureLines.drawArrowL(10, 20, 50, 'FF0000');
+    const arrowHead = SvgFigureDefine.ARROW_HEAD;
+    const half = Math.ceil(arrowHead / 2);
+    const expected =
+      `<line x1="10" y1="20" x2="60" y2="20" stroke="#FF0000"/>${SvgFigureDefine.LINE_BREAK}` +
+      `<path d="M 10 20 L ${10 + arrowHead} ${20 - half} M 10 20 L ${10 + arrowHead} ${20 + half}" ` +
+      `stroke="#FF0000" fill="#FF0000" />${SvgFigureDefine.LINE_BREAK}`;
+    assert.strictEqual(result, expected);
+  });
+});

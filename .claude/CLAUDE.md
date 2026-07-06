@@ -43,4 +43,6 @@ WebviewのHTML（CSS・JS・レイアウト含む）はすべて `src/svg_conten
 
 ### テスト実行の注意
 
-`npm test` は VSCode の GUI（GTK3）を必要とする。ヘッドレス環境では実行できない。コードの正当性確認は `npm run compile-tests && npm run compile && npm run lint` で代替する。
+- `npm run test:unit` はヘッドレス環境で実行できる（mocha + vscodeモック `src/test/__mocks__/setup.js`）。ユニットテストの実行はこれを使う
+- `npm test`（vscode-test）は VSCode の GUI（GTK3）を必要とし、ヘッドレス環境では実行できない
+- コンパイル・lint の確認は `npm run pretest`（compile-tests + compile + lint）で行う
