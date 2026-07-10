@@ -13,6 +13,8 @@ updates:
       day: "friday"
       time: "17:15"
       timezone: "Asia/Tokyo"
+    cooldown: 
+      default-days: 7
     open-pull-requests-limit: 10
     assignees:
       - "in0ho1no"
@@ -30,6 +32,8 @@ updates:
       day: "friday"
       time: "17:15"
       timezone: "Asia/Tokyo"
+    cooldown: 
+      default-days: 7
     open-pull-requests-limit: 10
     assignees:
       - "in0ho1no"
@@ -47,6 +51,8 @@ updates:
       day: "friday"
       time: "17:15"
       timezone: "Asia/Tokyo"
+    cooldown: 
+      default-days: 7
     assignees:
       - "in0ho1no"
     labels:
