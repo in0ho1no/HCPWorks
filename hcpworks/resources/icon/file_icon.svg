@@ -1,21 +1,21 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" shape-rendering="geometricPrecision" text-rendering="geometricPrecision">
   <defs>
     <style type="text/css">
-      /* 背景色：視認性の高い鮮やかなイエロー */
+      /* 背景色 */
       .bg-rect { fill: #FFD700; }
       
-      /* 文字色：黄色に映える深みのあるブルー（太字） */
+      /* 文字 */
       .text-char { 
-        font-family: 'Arial-BoldMT', 'Arial', sans-serif; 
-        font-weight: 900; 
+        font-family: 'Impact', 'Arial', sans-serif; 
+        font-weight: 500; 
         fill: #003399; 
       }
     </style>
   </defs>
 
-  <rect class="bg-rect" x="64" y="64" width="896" height="896" rx="100" ry="100" />
+  <rect class="bg-rect" x="64" y="64" width="896" height="896" rx="80" ry="80" />
 
-  <text x="100" y="570" class="text-char" font-size="600">H</text>
+  <text x="90" y="784" class="text-char" font-size="800">H</text>
 
-  <text x="520" y="900" class="text-char" font-size="500">C</text>
+  <text x="500" y="904" class="text-char" font-size="800">C</text>
 </svg>
