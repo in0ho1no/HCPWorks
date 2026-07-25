@@ -2,6 +2,15 @@
 
 All notable changes to the "hcpworks" extension will be documented in this file.
 
+## [0.1.3]
+
+Patch
+
+- vulnerability fix
+    - Updated dependencies (brace-expansion, fast-uri, linkify-it, etc.)
+    - Removed the fast-uri version override since the fixed version is now provided upstream
+- update icon images (file icon / preview icon)
+
 ## [0.1.2]
 
 Minor
