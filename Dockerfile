@@ -15,7 +15,7 @@ RUN apt-get update && \
 
 RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash && \
     apt-get install -y nodejs && \
-    npm install -g npm@11.2.0 && \
+    npm install -g npm@12.0.1 && \
     npm install -g yo generator-code @vscode/vsce && \
     rm -rf /var/lib/apt/lists/*
 
