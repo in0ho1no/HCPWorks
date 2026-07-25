@@ -15,18 +15,12 @@ const threshold = SEVERITY_RANK[auditLevel] ?? SEVERITY_RANK.high;
 
 // 上流(devDependencies の推移的依存)が対応するまで許容する advisory。
 // 対応版が出たら該当行を削除して、監査が通ることを確認する。
-const defaultAllowlist = [
+// 何を見送ったかを差分として残すため、ここだけで管理する(環境変数からは渡さない)。
+const allowlist = new Set([
   // brace-expansion の DoS。mocha -> glob -> minimatch -> brace-expansion の経路で high として伝播する。
   // @vscode/test-cli の依存チェーン上にあり、こちらでは解決できない。
   'GHSA-mh99-v99m-4gvg',
-];
-
-const extraAllowlist = (process.env.AUDIT_ALLOWLIST || '')
-  .split(',')
-  .map((s) => s.trim())
-  .filter(Boolean);
-
-const allowlist = new Set([...defaultAllowlist, ...extraAllowlist]);
+]);
 
 const filePath = process.argv[2] || 'audit.json';
 const raw = fs.readFileSync(filePath, 'utf8');

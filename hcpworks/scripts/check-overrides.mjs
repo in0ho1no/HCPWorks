@@ -29,7 +29,6 @@ if (names.length === 0) {
 const workDir = fs.mkdtempSync(path.join(os.tmpdir(), 'check-overrides-'));
 process.on('exit', () => fs.rmSync(workDir, { recursive: true, force: true }));
 
-fs.copyFileSync(path.join(projectDir, 'package-lock.json'), path.join(workDir, 'package-lock.json'));
 fs.mkdirSync(path.join(workDir, 'scripts'));
 fs.copyFileSync(path.join(scriptDir, 'check-audit.mjs'), path.join(workDir, 'scripts', 'check-audit.mjs'));
 
@@ -57,6 +56,10 @@ function evaluate(nextOverrides) {
     delete nextPkg.overrides;
   }
   fs.writeFileSync(path.join(workDir, 'package.json'), JSON.stringify(nextPkg, null, 2));
+
+  // 前回の試行が解決した package-lock.json を引き継ぐと、npm がそこに記録済みの
+  // バージョンを温存して結果が実行順に依存しうる。毎回コミット済みの lock から始める。
+  fs.copyFileSync(path.join(projectDir, 'package-lock.json'), path.join(workDir, 'package-lock.json'));
 
   try {
     execFileSync('npm', ['install', '--package-lock-only', '--ignore-scripts', '--no-audit', '--no-fund'], {
