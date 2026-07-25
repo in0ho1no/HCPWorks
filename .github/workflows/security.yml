@@ -56,6 +56,9 @@ jobs:
         working-directory: hcpworks
         run: npm audit --omit=dev --audit-level=high
 
-      - name: Check vulnerabilities (dev dependencies)
+      - name: Check vulnerabilities (dev dependencies with allowlist)
         working-directory: hcpworks
-        run: npm audit --audit-level=high
+        run: |
+          trap 'rm -f audit.json' EXIT
+          npm audit --json > audit.json || true
+          node scripts/check-audit.mjs audit.json

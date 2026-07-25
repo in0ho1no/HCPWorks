@@ -1,0 +1,53 @@
+name: Overrides Review
+
+# 注意: このワークフローはブランチ保護の required status check には指定しないこと。
+# 下記 paths に該当しない PR ではジョブがスキップされ、必須チェックが未完了扱いになってマージがブロックされる。
+
+on:
+  # 依存の宣言が変わったときだけ確認する
+  pull_request:
+    branches:
+      - develop
+      - main
+    paths:
+      - 'hcpworks/package.json'
+      - 'hcpworks/package-lock.json'
+      - 'hcpworks/scripts/check-overrides.mjs'
+      - '.github/workflows/check-overrides.yml'
+  schedule:
+    # Dependabot の週次実行の翌朝。上流が追いついて override が不要になっていないか確認する
+    - cron: '0 0 * * 6'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  overrides:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: hcpworks/package-lock.json
+
+      # 判定は package.json / package-lock.json だけで完結するため npm ci は不要。
+      # PR では Job Summary への出力だけに留める。ここで失敗させると Dependabot の auto-merge が止まるため。
+      - name: Review overrides (report only)
+        if: github.event_name == 'pull_request'
+        working-directory: hcpworks
+        run: node scripts/check-overrides.mjs
+
+      # 定期実行と手動実行では、削除できる override が残っていたら失敗させて気付けるようにする。
+      - name: Review overrides (fail if removable)
+        if: github.event_name != 'pull_request'
+        working-directory: hcpworks
+        run: node scripts/check-overrides.mjs --fail-on-removable
