@@ -2,20 +2,20 @@
   <defs>
     <style type="text/css">
       /* 背景色 */
-      .bg-rect { fill: #FFD700; }
+      .bg-rect { fill: #EFC33A; }
       
       /* 文字 */
       .text-char { 
         font-family: 'Impact', 'Arial', sans-serif; 
         font-weight: 500; 
-        fill: #003399; 
+        fill: #204A87; 
       }
     </style>
   </defs>
 
-  <rect class="bg-rect" x="64" y="64" width="896" height="896" rx="80" ry="80" />
+  <rect class="bg-rect" x="32" y="32" width="928" height="928" rx="80" ry="80" />
 
-  <text x="90" y="784" class="text-char" font-size="800">H</text>
+  <text x="74" y="784" class="text-char" font-size="800">H</text>
 
-  <text x="500" y="904" class="text-char" font-size="800">C</text>
+  <text x="484" y="804" class="text-char" font-size="800">C</text>
 </svg>
