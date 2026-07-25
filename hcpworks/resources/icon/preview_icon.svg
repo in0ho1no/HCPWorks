@@ -1,16 +1,33 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<svg xmlns="http://www.w3.org/2000/svg"
-     xmlns:svg="http://www.w3.org/2000/svg"
-     version="1.1"
-     width="0.106667in" height="0.106667in"
-     viewBox="0 0 32 32">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" shape-rendering="geometricPrecision">
   <defs>
+    <style type="text/css">
+      /* 背景色 */
+      .bg-rect { fill: #EFC33A; }
+      
+      /* 線 */
+      .link {
+        stroke: #204A87;
+        stroke-width: 60;
+        stroke-linecap: round;
+      }
+      
+      /* 円 */
+      .node {
+        fill: #FFFFFF;
+        stroke: #204A87;
+        stroke-width: 60;
+      }
+    </style>
   </defs>
-  <image id="raster0"
-         x="0"
-         y="0"
-         width="32"
-         height="32"
-         opacity="1.000000"
-         href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAH8mVYSWZJSSoACAAAAAAADgAAAAkA/gAEAAEAAAABAAAAAAEEAAEAAAAAAQAAAQEEAAEAAAAAAQAAAgEDAAMAAACAAAAAAwEDAAEAAAAGAAAABgEDAAEAAAAGAAAAFQEDAAEAAAADAAAAAQIEAAEAAACGAAAAAgIEAAEAAABsBwAAAAAAAAgACAAIAP/Y/+AAEEpGSUYAAQEAAAEAAQAA/9sAQwAIBgYHBgUIBwcHCQkICgwUDQwLCwwZEhMPFB0aHx4dGhwcICQuJyAiLCMcHCg3KSwwMTQ0NB8nOT04MjwuMzQy/9sAQwEJCQkMCwwYDQ0YMiEcITIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIy/8AAEQgBAAEAAwEiAAIRAQMRAf/EAB8AAAEFAQEBAQEBAAAAAAAAAAABAgMEBQYHCAkKC//EALUQAAIBAwMCBAMFBQQEAAABfQECAwAEEQUSITFBBhNRYQcicRQygZGhCCNCscEVUtHwJDNicoIJChYXGBkaJSYnKCkqNDU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6g4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2drh4uPk5ebn6Onq8fLz9PX29/j5+v/EAB8BAAMBAQEBAQEBAQEAAAAAAAABAgMEBQYHCAkKC//EALURAAIBAgQEAwQHBQQEAAECdwABAgMRBAUhMQYSQVEHYXETIjKBCBRCkaGxwQkjM1LwFWJy0QoWJDThJfEXGBkaJicoKSo1Njc4OTpDREVGR0hJSlNUVVZXWFlaY2RlZmdoaWpzdHV2d3h5eoKDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uLj5OXm5+jp6vLz9PX29/j5+v/aAAwDAQACEQMRAD8A+f6KKKACiiigAoor6WoA+aaK+lqKAPmmivpaigD5pooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigArq6K9roAKKKKACivaaKAPFqK9prxagArxmvZqKAPD65muwqCgDlq+lq+aa+lqACvmmvpavmmgAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKK+lqACiiigAr2miigAooooAKKKKAPFqK9prxagArxSva6KAPmmvpavmmvpagAr5pr6Wr5poAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACvpavmmvpagAr2mvFq9poAKKKKACiiigAooooAKKKKAPFqKKKAPmmvpavmmvpagAr5pr6Wr5poAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACvpavmmvpagAr2mvFqKAPaaKKKACiiigAooooAKKK8WoAKKKKAPmmvpavmmvpagAr5pr6Wr5poAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigD6WorxmvZqACvaa8WooA9pooooAKKK8WoAKKKKACvEqt1XoA5OvpavmmvpagAr5pr6Wr5poAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigDpqtVx9dTQB7bRXile10AFFFFABRRRQAV47VSn0ALVaiuboAK+lq+aa+lqACvmmvpaigD5por6WooA+aaK+lqKAPmmivpaigD5por6Wr5poAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACvpavmmigD6Wor5pooA+lqK+aaKAPpaivmmigD6Wor5pr6WoAK+aa+lq+aaACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAK+lq+aa+lqACvmmvpavmmgAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKK6uva6ACiiigAooooAK+aa+lqKAPmmiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAK6uuUr6WoAKKKKACvaaKKACiiigDxaivaa8WoAK+aa+lqKAPEq5aiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigD6WooooAK9poooAKKKKACiiigAooooA8Wor2mvFqACvmmvpavmmgAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigD6WooooA9pooooAKKKKACiiigAooooAK8Wr2mvFqACvmmvpavmmgAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigD6Wor5pr6WoAK9prxaigD2miiigAooooAKKK8WoAKKKKACvmmiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooA+lqK+aa+lqACvaa8WooA9porxaigAooooAK+aaKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKAPpaivmmigD6Wor5pooA+lq+aaKKACiiigAooooA/9lLK6cXAAAAAXNSR0IB2cksfwAAAARnQU1BAACxjwv8YQUAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAPtJREFUWMPtlm0KwyAMhhvXE/QW4smq99GjeYrdYNj9WUcWjFMa5zYaKMUv8vCibzJNgwNyk977jc5Za6EHgMIDY8wll5yD8t5v3P5mAGPM4py77eN1XZ8fhdBaK3EFnHNXnBwHhYgxJlEALCNNzkF0uQNc8tr1wwAj4rsAQgjFzWRdiQFgk+Eg8PxjfxJVoASRSS4WM7Xb/YnllOhhx4dqQa0flMDnygOA/tv0K1FTrE4jgp7y11xGcQVamxoQTr5wfQU1M621ijEm6CV7rnTnHBU+lZyDEL8DrU3N6QPiAK1Nzf+8gncQXFPTxYpLFZDa8fBaMKLwvUDcAfjzlTxIC49wAAAAAElFTkSuQmCCAA==" />
+
+  <rect class="bg-rect" x="32" y="32" width="928" height="928" rx="80" ry="80" />
+
+  <!-- 接続線 -->
+  <path class="link" d="M 550 110 L 550 400" />
+  <path class="link" d="M 550 400 L 700 400" />
+  <path class="link" d="M 710 400 L 710 710" />
+
+  <!-- 円 -->
+  <circle class="node" cx="280" cy="280" r="180" />
+  <circle class="node" cx="710" cy="710" r="180" />
 </svg>
