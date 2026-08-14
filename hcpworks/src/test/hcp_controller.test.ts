@@ -52,6 +52,15 @@ interface ControllerHarness {
   /** 設定変更イベントを発火する */
   fireConfigurationChange(affectedSection: string): void;
 
+  /** 登録済みコマンドを実行する */
+  runCommand(command: string, ...args: unknown[]): void;
+
+  /** 登録されたコマンド名の一覧 */
+  registeredCommands(): string[];
+
+  /** Webviewへ送られたメッセージ */
+  postedMessages(): { command?: string }[];
+
   /** Webviewへ設定されたHTMLの回数(=プレビュー更新回数) */
   htmlUpdateCount(): number;
 
@@ -69,8 +78,9 @@ function setupController(): ControllerHarness {
   const filePath = path.join(tmpDir, 'sample.hcp');
   fs.writeFileSync(filePath, HCP_SOURCE, 'utf8');
 
-  // Webviewへのhtml代入回数を数えるパネルスタブ
+  // Webviewへのhtml代入回数と送信メッセージを記録するパネルスタブ
   let htmlUpdateCount = 0;
+  const postedMessages: { command?: string }[] = [];
   const panel = {
     title: '',
     iconPath: undefined as vscode.Uri | undefined,
@@ -79,7 +89,10 @@ function setupController(): ControllerHarness {
       get html(): string { return this._html; },
       set html(value: string) { this._html = value; htmlUpdateCount++; },
       onDidReceiveMessage: () => ({ dispose: () => undefined }),
-      postMessage: () => Promise.resolve(true),
+      postMessage: (message: { command?: string }) => {
+        postedMessages.push(message);
+        return Promise.resolve(true);
+      },
     },
     onDidChangeViewState: () => ({ dispose: () => undefined }),
     onDidDispose: () => ({ dispose: () => undefined }),
@@ -132,6 +145,11 @@ function setupController(): ControllerHarness {
         handler(makeConfigurationChangeEvent(affectedSection));
       }
     },
+    runCommand: (command: string, ...args: unknown[]) => {
+      commandHandlers.get(command)?.(...args);
+    },
+    registeredCommands: () => [...commandHandlers.keys()],
+    postedMessages: () => postedMessages,
     htmlUpdateCount: () => htmlUpdateCount,
     dispose: () => {
       // 実VSCode上ではイベント購読などが実際に登録されるため、テストごとに破棄する
@@ -145,6 +163,38 @@ function setupController(): ControllerHarness {
     },
   };
 }
+
+suite('HCPController - Command - registration', () => {
+  let harness: ControllerHarness;
+
+  setup(() => {
+    harness = setupController();
+  });
+
+  teardown(() => {
+    harness.dispose();
+  });
+
+  test('should register every command contributed in package.json', () => {
+    const packageJsonPath = path.join(__dirname, '..', '..', 'package.json');
+    const contributed: string[] = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'))
+      .contributes.commands.map((entry: { command: string }) => entry.command);
+
+    assert.ok(contributed.length > 0, 'package.json should contribute commands');
+    for (const command of contributed) {
+      assert.ok(
+        harness.registeredCommands().includes(command),
+        `${command} is contributed in package.json but never registered`
+      );
+    }
+  });
+
+  test('should ask the webview to reset the view', () => {
+    harness.runCommand('hcpworks.resetPreviewView');
+
+    assert.deepStrictEqual(harness.postedMessages(), [{ command: 'resetView' }]);
+  });
+});
 
 suite('HCPController - Event - onDidChangeConfiguration', () => {
   let harness: ControllerHarness;

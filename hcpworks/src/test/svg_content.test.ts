@@ -167,6 +167,15 @@ suite('SvgContent - Method - getHtmlWrappedSvg', () => {
     assert.ok(html.includes('dblclick'), 'HTML should include dblclick handler');
   });
 
+  test('should handle the resetView request from the extension', () => {
+    const content = new SvgContent();
+    content.setSvgContent('');
+    const html = content.getHtmlWrappedSvg();
+
+    assert.ok(html.includes("message.command === 'resetView'"), 'HTML should handle the resetView command');
+    assert.ok(html.includes('const resetView ='), 'HTML should define the resetView handler');
+  });
+
   test('should acquire the vscode api for messaging', () => {
     const content = new SvgContent();
     content.setSvgContent('');

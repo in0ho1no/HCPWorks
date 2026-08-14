@@ -42,6 +42,11 @@
           "when": "hcpworks.webviewActive",
           "command": "hcpworks.savePreview",
           "group": "navigation"
+        },
+        {
+          "when": "hcpworks.webviewActive",
+          "command": "hcpworks.resetPreviewView",
+          "group": "navigation"
         }
       ],
       "view/title": [
@@ -93,6 +98,11 @@
           "light": "resources/icon/save-light.svg",
           "dark": "resources/icon/save-dark.svg"
         }
+      },
+      {
+        "command": "hcpworks.resetPreviewView",
+        "title": "HCPWorks: Reset Preview Zoom and Position",
+        "icon": "$(screen-normal)"
       }
     ],
     "views": {

@@ -28,6 +28,7 @@ You can list modules, preview HCP charts side by side, and export them as images
 1. The preview opens beside the editor and updates automatically when you save the file.
 1. To export an image, use the save button in the preview panel.
 1. To change the rendered level, use HCP Preview Level.
+1. Zoom the preview with Ctrl + wheel. If you lose track of where you are while zoomed in, use the reset button in the preview panel (or double-click the chart) to return to the original view.
 
 ### Export Formats
 

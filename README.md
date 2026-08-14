@@ -26,6 +26,7 @@ HCPWorks は、HCP チャート形式の .hcp ファイルを VS Code 上で扱�
 1. プレビューはエディタ横に表示され、ファイル保存時に自動更新されます。
 1. 画像として保存したい場合は、プレビューパネルの保存ボタンを使います。
 1. 表示レベルを変えたい場合は HCP Preview Level から数値を指定します。
+1. プレビューは Ctrl + ホイールで拡大縮小できます。拡大したまま位置を見失った場合は、プレビューパネルのリセットボタン（またはチャート上のダブルクリック）で元の表示に戻せます。
 
 ![previewHCPCharts](https://raw.githubusercontent.com/in0ho1no/HCPWorks/main/hcpworks/resources/videos/previewHCPCharts.gif)
 ### 画像保存について

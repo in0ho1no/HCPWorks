@@ -330,10 +330,20 @@ export class SvgContent {
         // 拡張機能との通信用API
         const vscode = acquireVsCodeApi();
 
-        // 拡張機能からのエクスポート要求を受けて画像へラスタライズする
+        // 拡張機能からの要求を受け付ける
         window.addEventListener('message', (event) => {
           const message = event.data;
-          if (!message || message.command !== 'exportImage') {
+          if (!message) {
+            return;
+          }
+
+          // 表示状態を初期化して全体を見渡せる状態へ戻す
+          if (message.command === 'resetView') {
+            resetView();
+            return;
+          }
+
+          if (message.command !== 'exportImage') {
             return;
           }
 
@@ -426,6 +436,16 @@ export class SvgContent {
           tablePane.addEventListener('scroll', savePreviewState);
         }
         window.addEventListener('beforeunload', savePreviewState);
+
+        // ズーム倍率とスクロール位置を初期状態へ戻す
+        // 拡大したまま位置を見失った場合の復帰手段として用いる
+        const resetView = () => {
+          scale = 1;
+          container.style.transform = 'scale(1)';
+          restoreScrollPosition(svgPane, { left: 0, top: 0 });
+          restoreScrollPosition(tablePane, { left: 0, top: 0 });
+          savePreviewState();
+        };
 
         // SVGペインのみCtrl+Wheelでズーム（テーブルペインのスクロールと干渉しない）
         svgPane.addEventListener('wheel', (event) => {

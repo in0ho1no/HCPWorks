@@ -9,6 +9,9 @@ Patch
 - Fixed the image save path being truncated at the first dot found anywhere in the source file path
     - A `.hcp` file under a directory whose name contains a dot (e.g. `my.project/`) was saved outside of its own folder
     - A file name containing a dot (e.g. `foo.v2.hcp`) lost everything after that dot, so `foo.v1.hcp` and `foo.v2.hcp` overwrote each other's output
+- Added a "Reset Preview Zoom and Position" button to the preview panel title bar
+    - Restores the zoom to 100% and scrolls back to the top-left, as a way out of being lost while zoomed in
+    - Double-clicking the chart still resets the zoom only, leaving the scroll position untouched
 - Added `\#` as an escape for the comment marker, so a `#` can now be used as a literal character
     - `#` still starts a comment that runs to the end of the line, which previously made text such as `\mod C#で実装する` lose everything after the `#`
     - Works the same way in process lines, data lines, `\kind` / `\scope` values, and `\table` captions and cells
