@@ -5,8 +5,6 @@ import { ConfigManager } from './utils/config_manager';
 import { FileManager } from './utils/file_manager';
 
 export const TIMEOUT = 300;
-export const HCP_ID = "hcp";
-export const HCP_SUFFIX = `.${HCP_ID}`;
 
 export function activate(context: vscode.ExtensionContext) {
   console.log('"hcpworks" is now active!');

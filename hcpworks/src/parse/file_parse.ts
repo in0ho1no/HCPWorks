@@ -26,6 +26,54 @@ const KIND_MARKER = '\\kind';   // 変更種別(新規作成/既存変更/既存
 const SCOPE_MARKER = '\\scope'; // 公開種別(公開関数/非公開関数 など)
 
 /**
+ * コメントの開始文字
+ * これ以降、行末までをコメントとして扱う
+ */
+const COMMENT_MARKER = '#';
+
+/**
+ * コメント開始文字のエスケープ記号
+ * 記法プレフィックス(\module など)と同じ文字を用いる
+ */
+const ESCAPE_MARKER = '\\';
+
+/**
+ * 行末コメントを除去する
+ *
+ * `#` から行末までをコメントとみなして取り除く。
+ * `\#` はエスケープとみなし、コメント開始とせずリテラルの `#` へ戻す。
+ *
+ * `\` 自体のエスケープは用意していないため、
+ * 「コメントの `#` の直前にリテラルの `\` を置く」表現はできない。
+ *
+ * @param line - 対象の行
+ * @returns コメントを除去し、エスケープを解決した文字列
+ */
+export function removeComment(line: string): string {
+  let result = '';
+
+  for (let index = 0; index < line.length; index++) {
+    const char = line[index];
+
+    // エスケープされた # はリテラルとして残し、エスケープ記号は捨てる
+    if (char === ESCAPE_MARKER && line[index + 1] === COMMENT_MARKER) {
+      result += COMMENT_MARKER;
+      index++;
+      continue;
+    }
+
+    // エスケープされていない # 以降は行末までコメント
+    if (char === COMMENT_MARKER) {
+      break;
+    }
+
+    result += char;
+  }
+
+  return result;
+}
+
+/**
  * モジュール情報を表すインターフェース
  */
 export interface Module {
@@ -49,7 +97,8 @@ export function parseModules(fileContent: string): Module[] {
   let currentModule: Module | null = null;
 
   for (const line of lines) {
-    const trimmedLine = line.trim();
+    // モジュール名にコメントを含めないよう、判定前にコメントを除去する
+    const trimmedLine = removeComment(line).trim();
 
     // モジュール開始行を検出
     if (trimmedLine.startsWith(MODULE_PREFIX)) {
@@ -70,7 +119,9 @@ export function parseModules(fileContent: string): Module[] {
 
     } else {
       if (currentModule !== null) {
-        // 現在のモジュールにコンテンツを追加
+        // 現在のモジュールにコンテンツを追加する
+        // コメント除去は後段(extractModuleMeta / extractTables / cleanTextLines)が行うため、
+        // ここでは生の行のまま保持する(二重にエスケープを解決してしまうのを避ける)
         currentModule.content.push(line);
       } else {
         // MODULE_PREFIXを保持する前に現れた文字列は無視する
@@ -106,7 +157,7 @@ export function cleanTextLines(textLines: string[]): string[] {
 
   for (const text of textLines) {
     // コメントを削除する
-    const uncommentedLine = text.split("#")[0];
+    const uncommentedLine = removeComment(text);
 
     // trimした文字列(判定用(保持する行は、行頭のタブ・空白を残す必要があるのでtrimした文字列は再利用しない))
     const trimmedLine = uncommentedLine.trim();
@@ -170,7 +221,7 @@ export function extractModuleMeta(textLines: string[]): { meta: ModuleMeta; rema
 
   for (const line of textLines) {
     // コメントを除去して判定する
-    const trimmedLine = line.split("#")[0].trim();
+    const trimmedLine = removeComment(line).trim();
 
     const kindValue = getMarkerValue(trimmedLine, KIND_MARKER);
     if (kindValue !== null) {
@@ -322,7 +373,7 @@ export function extractTables(textLines: string[]): { tables: TableData[]; remai
 
   for (const line of textLines) {
     // コメントを除去して判定する(保持する行も同様に除去後の文字列を使う)
-    const uncommentedLine = line.split("#")[0];
+    const uncommentedLine = removeComment(line);
     const trimmedLine = uncommentedLine.trim();
 
     // 表マーカー行を検出したら新しい表を開始する
