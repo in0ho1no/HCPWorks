@@ -42,7 +42,16 @@ interface WebviewHarness {
   /** #svgContainer 内のSVG要素 */
   svgElement(): Element;
 
-  close(): void;
+  /**
+   * ここまでにスクリプトが例外を投げていないことを確認する
+   *
+   * イベントハンドラ内の例外は握り潰されて表示上の変化が出ないことがあるため、
+   * 操作の直後に呼べるようにしておく。teardown からも必ず呼ばれる。
+   */
+  assertNoErrors(): void;
+
+  /** 例外の有無を確認したうえで後始末する */
+  dispose(): void;
 }
 
 /**
@@ -79,7 +88,10 @@ function createWebview(options: { tables?: TableData[]; previousState?: unknown 
     },
   });
 
-  assert.deepStrictEqual(scriptErrors, [], 'webview script should run without errors');
+  const assertNoErrors = (): void => {
+    assert.deepStrictEqual(scriptErrors, [], 'webview script should run without errors');
+  };
+  assertNoErrors();
 
   const window = dom.window;
   return {
@@ -101,7 +113,15 @@ function createWebview(options: { tables?: TableData[]; previousState?: unknown 
       assert.ok(found, 'svg element should exist');
       return found as Element;
     },
-    close: () => window.close(),
+    assertNoErrors,
+    dispose: () => {
+      // 例外を検出した場合でも requestAnimationFrame のループは止める
+      try {
+        assertNoErrors();
+      } finally {
+        window.close();
+      }
+    },
   };
 }
 
@@ -133,6 +153,19 @@ function zoom(harness: WebviewHarness, times: number, direction: 'in' | 'out'): 
   }
 }
 
+/** スタブしたCanvasの記録 */
+interface RecordedCanvas {
+  width: number;
+  height: number;
+  mime?: string;
+
+  /** drawImage に渡された描画寸法 */
+  drawn?: { width: number; height: number };
+
+  getContext(): { drawImage(image: unknown, x: number, y: number, width: number, height: number): void };
+  toDataURL(mime: string): string;
+}
+
 /**
  * ラスタライズに必要なブラウザAPIを差し替える
  *
@@ -144,7 +177,7 @@ function zoom(harness: WebviewHarness, times: number, direction: 'in' | 'out'): 
 function stubRasterization(
   harness: WebviewHarness,
   size: { width: number; height: number }
-): { width: number; height: number; mime?: string }[] {
+): RecordedCanvas[] {
   const svg = harness.svgElement();
   Object.defineProperty(svg, 'width', { value: { baseVal: { value: size.width } }, configurable: true });
   Object.defineProperty(svg, 'height', { value: { baseVal: { value: size.height } }, configurable: true });
@@ -153,18 +186,24 @@ function stubRasterization(
     configurable: true,
   });
 
-  const canvases: { width: number; height: number; mime?: string }[] = [];
+  const canvases: RecordedCanvas[] = [];
   const document = harness.window.document;
   const createElement = document.createElement.bind(document);
   document.createElement = ((tagName: string) => {
     if (tagName !== 'canvas') {
       return createElement(tagName);
     }
-    const canvas = {
+    const canvas: RecordedCanvas = {
       width: 0,
       height: 0,
-      mime: undefined as string | undefined,
-      getContext: () => ({ drawImage: () => undefined }),
+      mime: undefined,
+      drawn: undefined,
+      getContext: () => ({
+        // 描画に使われた寸法を記録する(Canvas寸法と食い違っていないかの検証用)
+        drawImage: (_image: unknown, _x: number, _y: number, width: number, height: number) => {
+          canvas.drawn = { width, height };
+        },
+      }),
       toDataURL: (mime: string) => {
         canvas.mime = mime;
         return `data:${mime};base64,AAAA`;
@@ -189,7 +228,7 @@ function stubRasterization(
 suite('SvgContent - Webview runtime - scroll state', () => {
   let harness: WebviewHarness;
 
-  teardown(() => harness?.close());
+  teardown(() => harness?.dispose());
 
   test('should save the scroll position of both panes', () => {
     harness = createWebview({ tables: [SAMPLE_TABLE] });
@@ -238,7 +277,7 @@ suite('SvgContent - Webview runtime - zoom', () => {
     harness = createWebview();
   });
 
-  teardown(() => harness.close());
+  teardown(() => harness.dispose());
 
   test('should zoom in and out with ctrl + wheel', () => {
     const container = harness.element('svgContainer');
@@ -286,7 +325,7 @@ suite('SvgContent - Webview runtime - zoom', () => {
 suite('SvgContent - Webview runtime - resetView', () => {
   let harness: WebviewHarness;
 
-  teardown(() => harness.close());
+  teardown(() => harness.dispose());
 
   test('should reset both the zoom and the scroll position', () => {
     harness = createWebview({ tables: [SAMPLE_TABLE] });
@@ -335,42 +374,67 @@ suite('SvgContent - Webview runtime - splitter', () => {
     harness = createWebview({ tables: [SAMPLE_TABLE] });
   });
 
-  teardown(() => harness.close());
+  teardown(() => harness.dispose());
 
-  /** スプリッタをY方向に移動させる */
-  function drag(deltaY: number): void {
+  /**
+   * テーブルペインの現在の高さを固定する
+   *
+   * jsdom はレイアウトを持たず getBoundingClientRect() が常に0を返すため、
+   * 「現在の高さ + 移動量」で計算していることを検証するには寸法の注入が要る。
+   */
+  function stubPaneHeight(height: number): void {
+    const tablePane = harness.element('tablePane');
+    tablePane.getBoundingClientRect = () => ({ height } as DOMRect);
+  }
+
+  /** スプリッタを掴んで移動させる */
+  function drag(from: number, to: number): void {
     const splitter = harness.element('splitter');
     const window = harness.window;
-    splitter.dispatchEvent(new window.MouseEvent('mousedown', { clientY: 0, bubbles: true }));
-    window.document.dispatchEvent(new window.MouseEvent('mousemove', { clientY: deltaY, bubbles: true }));
+    splitter.dispatchEvent(new window.MouseEvent('mousedown', { clientY: from, bubbles: true }));
+    window.document.dispatchEvent(new window.MouseEvent('mousemove', { clientY: to, bubbles: true }));
     window.document.dispatchEvent(new window.MouseEvent('mouseup', { bubbles: true }));
   }
 
-  test('should resize the table pane while dragging', () => {
-    drag(200);
+  test('should add the drag distance to the current height', () => {
+    stubPaneHeight(300);
 
-    assert.strictEqual(harness.element('tablePane').style.flex, '0 0 200px');
+    drag(100, 150);
+
+    assert.strictEqual(harness.element('tablePane').style.flex, '0 0 350px');
+  });
+
+  test('should shrink the pane when dragged upwards', () => {
+    stubPaneHeight(300);
+
+    drag(150, 100);
+
+    assert.strictEqual(harness.element('tablePane').style.flex, '0 0 250px');
   });
 
   test('should keep a minimum height for the table pane', () => {
-    drag(-500);
+    stubPaneHeight(300);
+
+    drag(100, -500);
 
     assert.strictEqual(harness.element('tablePane').style.flex, '0 0 60px');
   });
 
   test('should stop resizing after the button is released', () => {
-    drag(200);
+    stubPaneHeight(300);
+    drag(100, 150);
+
     const window = harness.window;
     window.document.dispatchEvent(new window.MouseEvent('mousemove', { clientY: 400, bubbles: true }));
 
-    assert.strictEqual(harness.element('tablePane').style.flex, '0 0 200px');
+    assert.strictEqual(harness.element('tablePane').style.flex, '0 0 350px');
   });
 });
 
 suite('SvgContent - Webview runtime - exportImage', () => {
   let harness: WebviewHarness;
 
-  teardown(() => harness.close());
+  teardown(() => harness.dispose());
 
   test('should rasterize at 2x for a chart within the size limit', async () => {
     harness = createWebview();
@@ -382,6 +446,7 @@ suite('SvgContent - Webview runtime - exportImage', () => {
     assert.strictEqual(canvases.length, 1);
     assert.strictEqual(canvases[0].width, 1600);
     assert.strictEqual(canvases[0].height, 1200);
+    assert.deepStrictEqual(canvases[0].drawn, { width: 1600, height: 1200 });
     assert.deepStrictEqual(plain(harness.posted), [
       { command: 'exportImageResult', requestId: 'r1', dataUrl: 'data:image/png;base64,AAAA' },
     ]);
@@ -398,6 +463,13 @@ suite('SvgContent - Webview runtime - exportImage', () => {
     assert.ok(canvases[0].height <= SvgContent.MAX_EXPORT_PIXELS);
     // 縦横比が保たれること(6000:1000 = 6:1)
     assert.strictEqual(canvases[0].height, Math.round(SvgContent.MAX_EXPORT_PIXELS / 6));
+
+    // 倍率が小数になるため、Canvas寸法と描画寸法がずれやすいのはこのケース
+    assert.deepStrictEqual(
+      canvases[0].drawn,
+      { width: canvases[0].width, height: canvases[0].height },
+      'the drawn size must match the canvas size'
+    );
   });
 
   test('should scale down a chart that exceeds the limit at 1x', async () => {
