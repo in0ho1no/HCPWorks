@@ -20,7 +20,8 @@ import { SVGRenderer } from './render/render_main';
 
 import { HCPFoldingRangeProvider } from './provider/folding_provider';
 
-import { HCP_ID, HCP_SUFFIX, TIMEOUT } from './extension';
+import { TIMEOUT } from './extension';
+import { HCP_ID, isHcpDocument } from './utils/hcp_document';
 
 /**
  * アプリケーション全体を制御するコントローラ
@@ -104,10 +105,8 @@ export class HCPController {
           return;
         }
 
-        // 拡張子判定
-        const fileFullPath = editor.document.fileName;
-        const fileExtension = fileFullPath.split('.').pop()?.toLowerCase();
-        if (fileExtension !== HCP_ID) {
+        // HCPファイル判定
+        if (!isHcpDocument(editor.document)) {
           vscode.window.showWarningMessage(`Current file is not ${HCP_ID.toUpperCase()} file`);
           return;
         }
@@ -224,7 +223,7 @@ export class HCPController {
     this.context.subscriptions.push(
       vscode.workspace.onDidOpenTextDocument((e) => {
         setTimeout(() => {
-          if (e.languageId === HCP_ID || e.fileName.endsWith(HCP_SUFFIX)) {
+          if (isHcpDocument(e)) {
             vscode.commands.executeCommand('hcpworks.listingModule');
           }
         }, TIMEOUT);    // イベント発生直後は状態が完全でないため、一定時間待機する
@@ -234,7 +233,7 @@ export class HCPController {
     // エディタ切り替え時のイベント登録
     this.context.subscriptions.push(
       vscode.window.onDidChangeActiveTextEditor((e) => {
-        if (e && (e.document.languageId === HCP_ID || e.document.fileName.endsWith(HCP_SUFFIX))) {
+        if (e && isHcpDocument(e.document)) {
           vscode.commands.executeCommand('hcpworks.listingModule');
         }
       })
@@ -244,7 +243,7 @@ export class HCPController {
     this.context.subscriptions.push(
       vscode.workspace.onDidSaveTextDocument((document) => {
         // .hcp ファイルのみを対象とする
-        if (document.languageId === HCP_ID || document.fileName.endsWith(HCP_SUFFIX)) {
+        if (isHcpDocument(document)) {
           // モジュールツリーを更新する
           const filePath = document.uri.fsPath;
           this.updateModuleTreeProvider(filePath);
@@ -289,7 +288,7 @@ export class HCPController {
 
     // 起動時にhcpファイルが開いている場合はモジュールツリーを更新
     const editor = vscode.window.activeTextEditor;
-    if (editor && (editor.document.languageId === HCP_ID || editor.document.fileName.endsWith(HCP_SUFFIX))) {
+    if (editor && isHcpDocument(editor.document)) {
       vscode.commands.executeCommand('hcpworks.listingModule');
     }
   }

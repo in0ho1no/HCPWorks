@@ -125,12 +125,21 @@ HCPWorks の実装方針のうち、コードを読むだけでは意図が分�
 
 ### 判断
 
-`isHcpDocument(document)` を用意して4箇所すべてを置き換える。
+`isHcpDocument(document)` を用意して5箇所すべてを置き換える
+（コマンド1箇所・イベントハンドラ3箇所・起動時チェック1箇所）。
 判定式は `languageId === HCP_ID || fileName.toLowerCase().endsWith(HCP_SUFFIX)` とする。
+
+置き場所は `src/utils/hcp_document.ts` とし、`HCP_ID` と `HCP_SUFFIX` も
+`extension.ts` からこのモジュールへ移す。`TIMEOUT` は HCP ファイル判定と無関係なので
+`extension.ts` に残す。
 
 ### 理由
 
 - 判定ロジックが1箇所に集まり、対象拡張子を増やす際の変更漏れが起きない
+- 定数を一緒に移したのは循環参照を避けるため。`extension.ts` に定数を残したまま
+  `utils/hcp_document.ts` から参照すると
+  `extension → hcp_controller → utils/hcp_document → extension` の循環ができる。
+  定数はいずれも `hcp_controller.ts` からしか使われていないため、移動による影響もない
 - 大小文字を無視する側に揃えたのは、Windows・macOS の既定のファイルシステムが
   大小文字を区別せず、`FOO.HCP` を別物として扱う理由が無いため。
   イベントハンドラ側は判定がわずかに広がるが、`languageId` による判定が先に効くため
