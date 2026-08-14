@@ -2,6 +2,14 @@
 
 All notable changes to the "hcpworks" extension will be documented in this file.
 
+## [Unreleased]
+
+Patch
+
+- Fixed the image save path being truncated at the first dot found anywhere in the source file path
+    - A `.hcp` file under a directory whose name contains a dot (e.g. `my.project/`) was saved outside of its own folder
+    - A file name containing a dot (e.g. `foo.v2.hcp`) lost everything after that dot, so `foo.v1.hcp` and `foo.v2.hcp` overwrote each other's output
+
 ## [0.1.3]
 
 Patch

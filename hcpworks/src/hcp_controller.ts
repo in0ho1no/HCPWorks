@@ -9,6 +9,7 @@ import { PreviewManager } from './preview_manager';
 
 import { ConfigManager } from './utils/config_manager';
 import { FileManager } from './utils/file_manager';
+import { buildSavePathBase } from './utils/save_path';
 
 import { ParseInfo4Render } from './parse/parse_info_4_render';
 import { ProcessLineProcessor } from './parse/line_info_list_process';
@@ -172,8 +173,10 @@ export class HCPController {
         }
 
         // 拡張子を除いた共通の保存ベースパスを作成する
-        const savePathBase = this.selectedItem.filePath.split('.')[0] + '_' +
-          this.currentSvgContent.getName();
+        const savePathBase = buildSavePathBase(
+          this.selectedItem.filePath,
+          this.currentSvgContent.getName()
+        );
 
         if (picked.format === 'svg') {
           const svgContent = this.currentSvgContent.getSvgContent();
