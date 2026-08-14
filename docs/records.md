@@ -176,3 +176,49 @@ HCPWorks の実装方針のうち、コードを読むだけでは意図が分�
 - 再描画は冪等なので二重実行でも表示は壊れないが、
   「フラグを立ててから最後に1回実行する」という元の構造の意図に反しており、
   読み手に例外的な処理があると誤解させる
+
+---
+
+## 2026-08-14 vscode API のスタブはディスクリプタごと差し替える
+
+### 背景
+
+`hcp_controller.test.ts` は `vscode.window.activeTextEditor` などを単純代入で
+差し替えていた。`npm run test:unit`（mocha + `src/test/__mocks__/vscode.js`）では通るが、
+CI が実行する `npm test`（vscode-test / 実 VSCode 上）では
+
+```
+TypeError: Cannot set property activeTextEditor of #<Object> which has only a getter
+```
+
+で `setup()` ごと失敗する。実 VSCode の `window` 名前空間では `activeTextEditor` が
+**getter のみのアクセサ**として定義されており、コンパイル後のテストは `"use strict"` のため
+setter の無いプロパティへの代入が例外になる。
+モック側は同じ名前を**データプロパティ**として持つので、この差異がユニットテストでは表面化しない。
+
+### 判断
+
+`stubProperty()` を用意し、`Object.getOwnPropertyDescriptor()` で元のディスクリプタを保存 →
+`Object.defineProperty()` で差し替え → 後始末で元のディスクリプタへ復元する方式に統一する。
+
+### 理由
+
+- アクセサ／データプロパティのどちらでも同じ手順で差し替えられ、モックと実 VSCode の差異を
+  テストコード側が意識しなくて済む
+- 復元もディスクリプタ単位で行うため、getter を「値」で上書きしたまま元に戻せなくなる事故が起きない
+- `window.createWebviewPanel` などのメソッドは実 VSCode でも代入可能だが、
+  同一ファイル内で方式が混在すると「なぜここだけ違うのか」を毎回確認することになるため揃える
+
+### 注意点
+
+- 実 VSCode では拡張機能自体が activate 済みのため、テストから `initialize()` を呼ぶと
+  `registerWebviewViewProvider` が `View provider for '...' already registered` で例外になる。
+  `createTreeView` / `registerWebviewViewProvider` もスタブへ差し替えること
+  （`createTreeView` は重複登録でも例外を投げないが、方式を揃える意味で同様に扱う）
+- `checkOnStartup()` が `executeCommand('hcpworks.listingModule')` を呼ぶため、
+  実 VSCode では**実拡張側に登録済みのコマンド**が動いて描画回数が変わりうる。
+  `commands.executeCommand` もスタブ化する
+- 実 VSCode ではイベント購読が実際に登録されるので、`context.subscriptions` を
+  テストごとに `dispose()` すること
+- ヘッドレス環境では `npm test` を実行できない（GTK3 が必要）。
+  実 VSCode 側でしか起きない差異は、この記録を手掛かりに判断する

@@ -18,6 +18,36 @@ function makeConfigurationChangeEvent(affectedSection: string): vscode.Configura
   };
 }
 
+/** 何もしないDisposableを返す */
+function makeDisposableStub(): vscode.Disposable {
+  return { dispose: () => undefined };
+}
+
+/**
+ * vscode APIのプロパティを一時的に差し替え、元に戻す関数を返す
+ *
+ * 実VSCodeの window.activeTextEditor などはgetterのみで定義されているため、
+ * 単純な代入はstrict modeでTypeErrorになる。ディスクリプタごと差し替える。
+ */
+function stubProperty(target: object, key: string, value: unknown): () => void {
+  const original = Object.getOwnPropertyDescriptor(target, key);
+
+  Object.defineProperty(target, key, {
+    value,
+    writable: true,
+    enumerable: true,
+    configurable: true,
+  });
+
+  return () => {
+    if (original) {
+      Object.defineProperty(target, key, original);
+    } else {
+      delete (target as Record<string, unknown>)[key];
+    }
+  };
+}
+
 interface ControllerHarness {
   /** 設定変更イベントを発火する */
   fireConfigurationChange(affectedSection: string): void;
@@ -35,13 +65,6 @@ interface ControllerHarness {
  * 実ファイルを読ませてモジュールツリーを構築するため、一時ディレクトリに .hcp を書き出す。
  */
 function setupController(): ControllerHarness {
-  const original = {
-    createWebviewPanel: vscode.window.createWebviewPanel,
-    registerCommand: vscode.commands.registerCommand,
-    onDidChangeConfiguration: vscode.workspace.onDidChangeConfiguration,
-    activeTextEditor: vscode.window.activeTextEditor,
-  };
-
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'hcpworks-ctrl-'));
   const filePath = path.join(tmpDir, 'sample.hcp');
   fs.writeFileSync(filePath, HCP_SOURCE, 'utf8');
@@ -67,20 +90,33 @@ function setupController(): ControllerHarness {
   const commandHandlers = new Map<string, (...args: unknown[]) => unknown>();
   const configHandlers: ((event: vscode.ConfigurationChangeEvent) => void)[] = [];
 
-  (vscode.window as any).createWebviewPanel = () => panel;
-  (vscode.commands as any).registerCommand = (command: string, callback: (...args: unknown[]) => unknown) => {
-    commandHandlers.set(command, callback);
-    return { dispose: () => undefined };
-  };
-  (vscode.workspace as any).onDidChangeConfiguration = (listener: (event: vscode.ConfigurationChangeEvent) => void) => {
-    configHandlers.push(listener);
-    return { dispose: () => undefined };
-  };
-  (vscode.window as any).activeTextEditor = {
-    document: { fileName: filePath, languageId: 'hcp', uri: { fsPath: filePath } },
+  const restoreStubs: (() => void)[] = [];
+  const stub = (target: object, key: string, value: unknown): void => {
+    restoreStubs.push(stubProperty(target, key, value));
   };
 
-  const context ={ subscriptions: [], extensionUri: vscode.Uri.file('/ext') } as unknown as vscode.ExtensionContext;
+  stub(vscode.window, 'createWebviewPanel', () => panel);
+  stub(vscode.commands, 'registerCommand', (command: string, callback: (...args: unknown[]) => unknown) => {
+    commandHandlers.set(command, callback);
+    return makeDisposableStub();
+  });
+  stub(vscode.workspace, 'onDidChangeConfiguration', (listener: (event: vscode.ConfigurationChangeEvent) => void) => {
+    configHandlers.push(listener);
+    return makeDisposableStub();
+  });
+  stub(vscode.window, 'activeTextEditor', {
+    document: { fileName: filePath, languageId: 'hcp', uri: { fsPath: filePath } },
+  });
+
+  // 実VSCode上ではビューの二重登録が例外になるため、登録もスタブに差し替える
+  stub(vscode.window, 'createTreeView', makeDisposableStub);
+  stub(vscode.window, 'registerWebviewViewProvider', makeDisposableStub);
+
+  // 起動時チェックから実コマンドが動いて描画回数が変わらないようにする
+  stub(vscode.commands, 'executeCommand', () => Promise.resolve(undefined));
+
+  const subscriptions: vscode.Disposable[] = [];
+  const context = { subscriptions, extensionUri: vscode.Uri.file('/ext') } as unknown as vscode.ExtensionContext;
   const controller = new HCPController(context, new ConfigManager(), new FileManager());
   controller.initialize();
 
@@ -98,10 +134,13 @@ function setupController(): ControllerHarness {
     },
     htmlUpdateCount: () => htmlUpdateCount,
     dispose: () => {
-      (vscode.window as any).createWebviewPanel = original.createWebviewPanel;
-      (vscode.commands as any).registerCommand = original.registerCommand;
-      (vscode.workspace as any).onDidChangeConfiguration = original.onDidChangeConfiguration;
-      (vscode.window as any).activeTextEditor = original.activeTextEditor;
+      // 実VSCode上ではイベント購読などが実際に登録されるため、テストごとに破棄する
+      for (const subscription of subscriptions) {
+        subscription.dispose();
+      }
+      for (const restore of restoreStubs.reverse()) {
+        restore();
+      }
       fs.rmSync(tmpDir, { recursive: true, force: true });
     },
   };
