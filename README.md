@@ -36,7 +36,7 @@ HCPWorks は、HCP チャート形式の .hcp ファイルを VS Code 上で扱�
 - WebP: 軽量化向け
 - JPEG: 写真向け。文字や細線はにじみやすい
 
-PNG / WebP / JPEG は 2 倍解像度でラスタライズされます。保存ファイル名は <fileName>_<moduleName>.<extension> です。
+PNG / WebP / JPEG は 2 倍解像度でラスタライズされます。ただし長辺が 8192 ピクセルを超える場合は、収まるように倍率を下げます。保存ファイル名は <fileName>_<moduleName>.<extension> です。
 
 ## HCPチャートの記法
 

@@ -37,7 +37,7 @@ You can list modules, preview HCP charts side by side, and export them as images
 - WebP: good for smaller files
 - JPEG: better for photo-like content; thin text and lines may blur
 
-PNG, WebP, and JPEG are rasterized at 2x resolution. Saved files use the name <fileName>_<moduleName>.<extension>.
+PNG, WebP, and JPEG are rasterized at 2x resolution, except that the scale is reduced when the longer side would exceed 8192 pixels. Saved files use the name <fileName>_<moduleName>.<extension>.
 
 ## HCP Notation
 

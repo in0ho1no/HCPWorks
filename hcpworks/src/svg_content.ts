@@ -8,6 +8,14 @@ import { SvgFigureText } from './render/svg_figure_text';
  * このクラスはSVG要素の名前、変換元のテキスト、変換後のSVGを管理します。
  */
 export class SvgContent {
+  /**
+   * ラスタライズ後の画像の長辺の上限(ピクセル)
+   *
+   * Canvasには寸法の上限があり、超えると例外を投げないまま空の画像が出力される。
+   * 上限値はブラウザ・GPUに依存するため、広く安全とされる値を採用する。
+   */
+  public static readonly MAX_EXPORT_PIXELS = 8192;
+
   private _name: string;
   private _sourcePath: string;
   private _textContent: string[];
@@ -364,7 +372,11 @@ export class SvgContent {
             const height = svgElement.height.baseVal.value || svgElement.viewBox.baseVal.height;
 
             // 粗さを抑えるため2倍解像度でラスタライズする
-            const scale = 2;
+            // ただしCanvasには寸法の上限があり、超えると例外も出ないまま空の画像になる。
+            // 長辺が上限を超える場合は倍率を下げ、等倍でも超えるなら縮小する
+            const maxPixels = ${SvgContent.MAX_EXPORT_PIXELS};
+            const longerSide = Math.max(width, height);
+            const scale = longerSide > 0 ? Math.min(2, maxPixels / longerSide) : 2;
 
             // 形式に応じたMIMEタイプを決定する(未知の形式はPNG扱い)
             const mimeMap = { png: 'image/png', jpeg: 'image/jpeg', webp: 'image/webp' };
@@ -374,10 +386,11 @@ export class SvgContent {
             image.onload = () => {
               try {
                 const canvas = document.createElement('canvas');
-                canvas.width = width * scale;
-                canvas.height = height * scale;
+                // canvas.width は整数へ切り捨てられるため、描画側と食い違わないよう丸めた値を使う
+                canvas.width = Math.max(1, Math.round(width * scale));
+                canvas.height = Math.max(1, Math.round(height * scale));
                 const ctx = canvas.getContext('2d');
-                ctx.drawImage(image, 0, 0, width * scale, height * scale);
+                ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
                 const dataUrl = canvas.toDataURL(mime);
                 vscode.postMessage({ command: 'exportImageResult', requestId, dataUrl });
               } catch (err) {
