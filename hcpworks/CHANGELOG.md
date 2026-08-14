@@ -12,6 +12,8 @@ Patch
 - Added `\#` as an escape for the comment marker, so a `#` can now be used as a literal character
     - `#` still starts a comment that runs to the end of the line, which previously made text such as `\mod C#で実装する` lose everything after the `#`
     - Works the same way in process lines, data lines, `\kind` / `\scope` values, and `\table` captions and cells
+- A trailing comment on a `\module` line is no longer taken as part of the module name
+    - `\module foo # note` was listed as `foo # note` in the module list and used as-is in the exported image file name
 - The preview now refreshes immediately when a header display setting (`hcpworks.headerDisplay.showName` / `showScope` / `showKind`) is changed
     - Previously the new setting was not applied until the file was saved or the preview was refreshed manually
 

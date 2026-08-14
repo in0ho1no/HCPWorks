@@ -97,7 +97,8 @@ export function parseModules(fileContent: string): Module[] {
   let currentModule: Module | null = null;
 
   for (const line of lines) {
-    const trimmedLine = line.trim();
+    // モジュール名にコメントを含めないよう、判定前にコメントを除去する
+    const trimmedLine = removeComment(line).trim();
 
     // モジュール開始行を検出
     if (trimmedLine.startsWith(MODULE_PREFIX)) {
@@ -118,7 +119,9 @@ export function parseModules(fileContent: string): Module[] {
 
     } else {
       if (currentModule !== null) {
-        // 現在のモジュールにコンテンツを追加
+        // 現在のモジュールにコンテンツを追加する
+        // コメント除去は後段(extractModuleMeta / extractTables / cleanTextLines)が行うため、
+        // ここでは生の行のまま保持する(二重にエスケープを解決してしまうのを避ける)
         currentModule.content.push(line);
       } else {
         // MODULE_PREFIXを保持する前に現れた文字列は無視する

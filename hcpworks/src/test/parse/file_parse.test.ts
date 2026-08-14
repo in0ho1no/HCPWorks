@@ -74,6 +74,32 @@ suite('file_parse - Function - parseModules', () => {
 		assert.deepStrictEqual(parseModules(input), expected);
 	});
 
+	test('Should strip a trailing comment from the module name', () => {
+		const input = '\\module test # メモ\nline1';
+		const expected: Module[] = [
+			{
+				name: 'test',
+				content: ['line1']
+			}
+		];
+
+		assert.deepStrictEqual(parseModules(input), expected);
+	});
+
+	test('Should keep an escaped # in the module name', () => {
+		const input = '\\module C\\#test\nline1';
+
+		assert.strictEqual(parseModules(input)[0].name, 'C#test');
+	});
+
+	test('Should keep module content raw so escapes are resolved only once downstream', () => {
+		const input = '\\module test\n\t\\mod C\\#で実装する';
+
+		// ここでアンエスケープすると、後段のコメント除去で # 以降が失われてしまう
+		assert.deepStrictEqual(parseModules(input)[0].content, ['\t\\mod C\\#で実装する']);
+		assert.deepStrictEqual(cleanTextLines(parseModules(input)[0].content), ['\t\\mod C#で実装する']);
+	});
+
 });
 
 suite('file_parse - Function - removeComment', () => {
