@@ -9,6 +9,8 @@ Patch
 - Fixed the image save path being truncated at the first dot found anywhere in the source file path
     - A `.hcp` file under a directory whose name contains a dot (e.g. `my.project/`) was saved outside of its own folder
     - A file name containing a dot (e.g. `foo.v2.hcp`) lost everything after that dot, so `foo.v1.hcp` and `foo.v2.hcp` overwrote each other's output
+- The preview now refreshes immediately when a header display setting (`hcpworks.headerDisplay.showName` / `showScope` / `showKind`) is changed
+    - Previously the new setting was not applied until the file was saved or the preview was refreshed manually
 
 ## [0.1.3]
 

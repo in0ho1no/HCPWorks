@@ -269,6 +269,11 @@ export class HCPController {
           isUpdatePreview = true;
         }
 
+        // 個別キーではなくセクション単位で監視し、表示項目が増えても追従不要にする
+        if (event.affectsConfiguration('hcpworks.headerDisplay')) {
+          isUpdatePreview = true;
+        }
+
         if (isUpdatePreview) {
           this.updatePreviewByTree();
         }
