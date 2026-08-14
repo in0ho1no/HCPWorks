@@ -1,5 +1,8 @@
 {
     "hcpworks.ShowKind": false,
     "hcpworks.ShowName": true,
-    "hcpworks.ShowScope": false
+    "hcpworks.ShowScope": false,
+    "hcpworks.headerDisplay.showKind": true,
+    "hcpworks.headerDisplay.showName": true,
+    "hcpworks.headerDisplay.showScope": true
 }
