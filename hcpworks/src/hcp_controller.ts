@@ -261,7 +261,6 @@ export class HCPController {
         let isUpdatePreview = false;
 
         if (event.affectsConfiguration('hcpworks.SvgBgColor')) {
-          this.updatePreviewByTree();
           isUpdatePreview = true;
         }
 

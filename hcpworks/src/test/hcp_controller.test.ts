@@ -122,24 +122,20 @@ suite('HCPController - Event - onDidChangeConfiguration', () => {
     assert.strictEqual(harness.htmlUpdateCount(), 1);
   });
 
-  test('should refresh the preview when a headerDisplay setting changes', () => {
-    const before = harness.htmlUpdateCount();
+  test('should refresh the preview exactly once for each preview-affecting setting', () => {
+    const sections = ['hcpworks.SvgBgColor', 'hcpworks.WireColorTable', 'hcpworks.headerDisplay'];
 
-    harness.fireConfigurationChange('hcpworks.headerDisplay');
-
-    assert.ok(
-      harness.htmlUpdateCount() > before,
-      'changing hcpworks.headerDisplay should refresh the preview'
-    );
-  });
-
-  test('should refresh the preview when SvgBgColor or WireColorTable changes', () => {
-    for (const section of ['hcpworks.SvgBgColor', 'hcpworks.WireColorTable']) {
+    for (const section of sections) {
       const before = harness.htmlUpdateCount();
 
       harness.fireConfigurationChange(section);
 
-      assert.ok(harness.htmlUpdateCount() > before, `changing ${section} should refresh the preview`);
+      // 2回描画されると、パースからSVG生成までが丸ごと二重に走る
+      assert.strictEqual(
+        harness.htmlUpdateCount(),
+        before + 1,
+        `changing ${section} should refresh the preview exactly once`
+      );
     }
   });
 
