@@ -42,7 +42,8 @@ PNG, WebP, and JPEG are rasterized at 2x resolution. Saved files use the name <f
 
 - Indentation level is represented by tabs or 4 spaces
 - Leading keywords (such as \module) determine line semantics
-- Lines starting with # are treated as comments
+- Everything from `#` to the end of the line is a comment. Placing it at the start of a line comments out the whole line
+- To use `#` as a literal character instead of starting a comment, write `\#` (the `\` is not rendered)
 
 ```text
 \module sampleModule
