@@ -213,8 +213,8 @@ HCPWorks の実装方針のうち、コードを読むだけでは意図が分�
   `canvas.width` は整数へ切り捨てられるため、倍率が小数になると描画サイズと1ピクセルずれる
 - 上限は `SvgContent.MAX_EXPORT_PIXELS` として公開し、Webview のテンプレートへ埋め込む。
   倍率計算そのものは Webview 内のインラインスクリプトにあるため、
-  現状のテストは「生成HTMLに式が含まれること」と「同じ式の計算結果」の検証に留まる。
-  実行時の挙動は jsdom 導入後に直接検証する
+  実行時の検証には SVG の寸法プロパティと Canvas のスタブが要る
+  （後述の「Webview の挙動は jsdom 上で検証する」を参照）
 
 ---
 
@@ -298,3 +298,54 @@ setter の無いプロパティへの代入が例外になる。
   テストごとに `dispose()` すること
 - ヘッドレス環境では `npm test` を実行できない（GTK3 が必要）。
   実 VSCode 側でしか起きない差異は、この記録を手掛かりに判断する
+
+---
+
+## 2026-08-14 Webview の挙動は jsdom 上で検証する
+
+### 背景
+
+Webview の HTML・CSS・JavaScript は `svg_content.ts` の `getHtmlWrappedSvg()` が
+テンプレート文字列として生成する。そのため従来のテストは
+「生成された文字列に特定の記述が含まれるか」しか検証できず、
+スクロール位置の復元・ズーム・スプリッタ・エクスポートといった**実行時の挙動には
+自動テストが一切無かった**。
+
+### 判断
+
+`jsdom` を devDependency に追加し、生成HTMLを実際に実行して検証する。
+文字列検査（`svg_content.test.ts`）と実行時検証（`svg_content_runtime.test.ts`）は
+ファイルを分ける。
+
+### 理由
+
+- `@vscode/test-electron` では Webview が iframe で隔離されており、中の DOM に手が届かない。
+  そのうえ GUI が必要でヘッドレス環境では実行できない
+- Playwright なら実レイアウトまで検証できるが、CI でのブラウザ取得を含めて重く、
+  得られる範囲に対して割に合わない
+- `tsconfig.json` の変更は不要だった。`lib` に `"DOM"` を足すと拡張機能側のコードで
+  誤って `document` を使ってもエラーにならなくなるが、jsdom の型は自己完結しているため
+  その心配がない
+
+### ハーネスを書くときの注意点
+
+- `runScripts: 'dangerously'` を指定しないとインラインスクリプトが実行されない
+- `pretendToBeVisual: true` が必要。スクロール位置の復元が `requestAnimationFrame` を使う
+- `beforeParse` で `acquireVsCodeApi` をスタブする。スクリプトの先頭で呼ばれるため、
+  パース後では間に合わない
+- jsdom は**別の realm** で動くため、`postMessage` や `setState` で受け取った
+  オブジェクトはプロトタイプが Node 側と異なる。`deepStrictEqual` は構造が同じでも
+  不一致になるので、比較前に `JSON.parse(JSON.stringify(...))` で変換する
+- `window.close()` をテストごとに呼ぶ。`pretendToBeVisual` は
+  `requestAnimationFrame` のループを回し続ける
+
+### 検証できない範囲
+
+- **見た目**。ツールバーの重なり、テーマごとの視認性、折り返しの崩れは目視でしか確認できない
+- **レイアウト計算**。jsdom にレイアウトエンジンが無く `getBoundingClientRect()` は常に 0 を返す。
+  スプリッタのテストが「ドラッグ量がそのまま高さになる」形で書けているのはこのため
+- **Canvas と SVG の寸法プロパティ**。どちらも jsdom は未実装なので、
+  エクスポート処理の検証にはスタブが要る。したがって検証できるのは
+  「倍率計算と Canvas への寸法指定が正しいか」までで、実際に描画された画素は確認できない
+- **クリップボード**。`navigator.clipboard` も `ClipboardItem` も存在しないため、
+  将来コピー機能を入れる場合も「正しい引数で API を呼んだか」までしか検証できない

@@ -295,6 +295,7 @@
   },
   "devDependencies": {
     "@types/encoding-japanese": "^2.2.1",
+    "@types/jsdom": "^30.0.0",
     "@types/mocha": "^10.0.10",
     "@types/node": "26.x",
     "@types/vscode": "^1.125.0",
@@ -304,6 +305,7 @@
     "@vscode/test-electron": "^3.1.0",
     "@vscode/vsce": "^3.9.2",
     "eslint": "^10.8.0",
+    "jsdom": "^30.0.1",
     "mocha-junit-reporter": "^2.2.1",
     "ts-loader": "^9.6.2",
     "typescript": "^6.0.3",
