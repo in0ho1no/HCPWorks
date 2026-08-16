@@ -164,6 +164,13 @@ interface RecordedCanvas {
 
   getContext(): { drawImage(image: unknown, x: number, y: number, width: number, height: number): void };
   toDataURL(mime: string): string;
+  toBlob(callback: (blob: unknown) => void, mime: string): void;
+}
+
+/** クリップボードへ書き込まれた内容の記録 */
+interface RecordedClipboard {
+  /** navigator.clipboard.write に渡された ClipboardItem の中身 */
+  written: { mime: string; blobType: string }[];
 }
 
 /**
@@ -208,6 +215,10 @@ function stubRasterization(
         canvas.mime = mime;
         return `data:${mime};base64,AAAA`;
       },
+      toBlob: (callback: (blob: unknown) => void, mime: string) => {
+        canvas.mime = mime;
+        callback(new harness.window.Blob(['AAAA'], { type: mime }));
+      },
     };
     canvases.push(canvas);
     return canvas;
@@ -223,6 +234,45 @@ function stubRasterization(
   };
 
   return canvases;
+}
+
+/**
+ * クリップボードAPIを差し替える
+ *
+ * jsdom は `navigator.clipboard` も `ClipboardItem` も実装していない。
+ * 実際に画像が載ったかは検証できないため、
+ * 「正しいMIMEタイプのBlobを渡して呼んだか」までを記録する。
+ *
+ * @param options.fail - true なら書き込みを失敗させる
+ * @returns 書き込まれた内容の記録
+ */
+function stubClipboard(harness: WebviewHarness, options: { fail?: boolean } = {}): RecordedClipboard {
+  const recorded: RecordedClipboard = { written: [] };
+  const global = harness.window as unknown as Record<string, unknown>;
+
+  // 「MIMEタイプ → Blob」の対応を保持するだけの最小実装
+  global.ClipboardItem = class {
+    public readonly items: Record<string, { type: string }>;
+    constructor(items: Record<string, { type: string }>) {
+      this.items = items;
+    }
+  };
+
+  Object.defineProperty(harness.window.navigator, 'clipboard', {
+    configurable: true,
+    value: {
+      write: (items: { items: Record<string, { type: string }> }[]) => {
+        for (const item of items) {
+          for (const [mime, blob] of Object.entries(item.items)) {
+            recorded.written.push({ mime, blobType: blob.type });
+          }
+        }
+        return options.fail ? Promise.reject(new Error('denied')) : Promise.resolve();
+      },
+    },
+  });
+
+  return recorded;
 }
 
 suite('SvgContent - Webview runtime - scroll state', () => {
@@ -364,6 +414,114 @@ suite('SvgContent - Webview runtime - resetView', () => {
     harness.send({ command: 'somethingElse' });
 
     assert.strictEqual(harness.element('svgPane').scrollTop, 300);
+  });
+});
+
+suite('SvgContent - Webview runtime - toolbar', () => {
+  let harness: WebviewHarness;
+
+  teardown(() => harness.dispose());
+
+  /** ツールバーのボタンを押す */
+  function click(id: string): void {
+    harness.element(id).dispatchEvent(new harness.window.MouseEvent('click', { bubbles: true }));
+  }
+
+  /**
+   * コピーボタンを押し、処理が終わるまで待つ
+   *
+   * ラスタライズの完了(Image の onload)とクリップボード書き込みのPromiseを跨ぐため、
+   * タイマーの解決を2回待つ必要がある。
+   */
+  async function clickCopy(): Promise<void> {
+    click('copyImageButton');
+    await harness.settle();
+    await harness.settle();
+  }
+
+  /** トーストに表示されている文字列(非表示なら空文字) */
+  function toastText(): string {
+    const toast = harness.element('previewToast');
+    return toast.hidden ? '' : (toast.textContent ?? '');
+  }
+
+  test('should place the toolbar outside of the exported container', () => {
+    harness = createWebview();
+
+    // エクスポートは #svgContainer 内のSVGを直列化するため、
+    // ツールバーが内側にあると出力画像へ写り込む
+    assert.ok(!harness.element('svgContainer').contains(harness.element('previewToolbar')));
+    assert.ok(!harness.element('svgContainer').contains(harness.element('previewToast')));
+  });
+
+  test('should reset both the zoom and the scroll position from the toolbar', () => {
+    harness = createWebview({ tables: [SAMPLE_TABLE] });
+    const svgPane = harness.element('svgPane');
+    svgPane.scrollTop = 300;
+    svgPane.scrollLeft = 40;
+    harness.element('tablePane').scrollTop = 25;
+    zoom(harness, 5, 'in');
+
+    click('resetViewButton');
+
+    assert.strictEqual(currentScale(harness.element('svgContainer')), 1);
+    assert.strictEqual(svgPane.scrollTop, 0);
+    assert.strictEqual(svgPane.scrollLeft, 0);
+    assert.strictEqual(harness.element('tablePane').scrollTop, 0);
+  });
+
+  test('should write the chart to the clipboard as a png', async () => {
+    harness = createWebview();
+    stubRasterization(harness, { width: 800, height: 600 });
+    const clipboard = stubClipboard(harness);
+
+    await clickCopy();
+
+    assert.deepStrictEqual(clipboard.written, [{ mime: 'image/png', blobType: 'image/png' }]);
+    assert.strictEqual(toastText(), 'Copied to clipboard');
+    // コピーは拡張機能を経由せずWebview内で完結する
+    assert.deepStrictEqual(harness.posted, []);
+  });
+
+  test('should share the size limit with the image export', async () => {
+    harness = createWebview();
+    const canvases = stubRasterization(harness, { width: 500, height: 20000 });
+    stubClipboard(harness);
+
+    await clickCopy();
+
+    assert.strictEqual(canvases[0].height, SvgContent.MAX_EXPORT_PIXELS);
+    assert.ok(canvases[0].width < 500, 'the shorter side should shrink as well');
+  });
+
+  test('should report a failed clipboard write', async () => {
+    harness = createWebview();
+    stubRasterization(harness, { width: 800, height: 600 });
+    stubClipboard(harness, { fail: true });
+
+    await clickCopy();
+
+    assert.strictEqual(toastText(), 'Copy failed');
+  });
+
+  test('should report a failed rasterization', async () => {
+    harness = createWebview();
+    stubRasterization(harness, { width: 800, height: 600 });
+    stubClipboard(harness);
+    harness.svgElement().remove();
+
+    await clickCopy();
+
+    assert.strictEqual(toastText(), 'Copy failed');
+  });
+
+  test('should report when the clipboard api is unavailable', async () => {
+    harness = createWebview();
+    stubRasterization(harness, { width: 800, height: 600 });
+
+    await clickCopy();
+
+    assert.strictEqual(toastText(), 'Clipboard is not available');
   });
 });
 

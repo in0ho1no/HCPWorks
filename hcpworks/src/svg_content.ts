@@ -228,13 +228,71 @@ export class SvgContent {
             padding: 0;
             overflow: hidden;
             height: 100vh;
+            display: flex;
+            flex-direction: column;
+          }
+
+          /* ツールバーは #svgContainer の外に置くこと。
+             エクスポートは #svgContainer 内のSVGを直列化する方式のため、
+             外にある限り出力画像へ写り込まない */
+          .preview-toolbar {
+            flex: none;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 6px;
+            border-bottom: 1px solid var(--vscode-panel-border, rgba(128, 128, 128, 0.35));
+          }
+
+          .toolbar-button {
+            font-family: inherit;
+            font-size: 12px;
+            line-height: 18px;
+            padding: 1px 10px;
+            border: none;
+            border-radius: 2px;
+            cursor: pointer;
+            color: var(--vscode-button-secondaryForeground, var(--vscode-foreground, #ccc));
+            background-color: var(--vscode-button-secondaryBackground, rgba(128, 128, 128, 0.25));
+          }
+
+          .toolbar-button:hover {
+            background-color: var(--vscode-button-secondaryHoverBackground, rgba(128, 128, 128, 0.4));
+          }
+
+          .toolbar-button:focus-visible {
+            outline: 1px solid var(--vscode-focusBorder, #0078d4);
+            outline-offset: 1px;
+          }
+
+          /* 操作の成否を伝える一時表示。クリップボード書き込みは失敗しうるため、
+             無反応に見えないよう Webview 内で完結して通知する */
+          .preview-toast {
+            position: fixed;
+            left: 50%;
+            bottom: 16px;
+            transform: translateX(-50%);
+            max-width: 90%;
+            padding: 4px 12px;
+            font-size: 12px;
+            border-radius: 4px;
+            pointer-events: none;
+            z-index: 10;
+            color: var(--vscode-notifications-foreground, var(--vscode-foreground, #ccc));
+            background-color: var(--vscode-notifications-background, var(--vscode-editor-background, #252526));
+            border: 1px solid var(--vscode-notifications-border, rgba(128, 128, 128, 0.35));
+          }
+
+          .preview-toast[hidden] {
+            display: none;
           }
 
           .split-container {
             display: flex;
             flex-direction: column;
-            height: 100vh;
-            width: 100vw;
+            flex: 1;
+            min-height: 0;
+            width: 100%;
           }
 
           .table-pane {
@@ -320,6 +378,11 @@ export class SvgContent {
         </style>
       </head>
       <body>
+      <div class="preview-toolbar" id="previewToolbar">
+        <button type="button" class="toolbar-button" id="resetViewButton" title="Reset the zoom and scroll position">Reset View</button>
+        <button type="button" class="toolbar-button" id="copyImageButton" title="Copy the chart to the clipboard as a PNG image">Copy Image</button>
+      </div>
+      <div class="preview-toast" id="previewToast" role="status" aria-live="polite" hidden></div>
       <div class="split-container">
         <div class="table-pane" id="tablePane" style="${hasTables ? '' : hiddenStyle}">
           <div class="hcp-tables">
@@ -337,6 +400,62 @@ export class SvgContent {
       <script>
         // 拡張機能との通信用API
         const vscode = acquireVsCodeApi();
+
+        /**
+         * 表示中のチャートをCanvasへラスタライズする
+         *
+         * 画像保存とクリップボードへのコピーで同じ倍率計算を共有するため、
+         * 「Canvasを作るところまで」を切り出してある。
+         * 出力形式の違いは呼び出し側が描画済みCanvasから作る。
+         *
+         * @param onSuccess - 描画済みCanvasを受け取る関数
+         * @param onError - 失敗理由(文字列)を受け取る関数
+         */
+        const rasterize = (onSuccess, onError) => {
+          try {
+            const svgElement = document.querySelector('#svgContainer svg');
+            if (!svgElement) {
+              onError('SVG element not found.');
+              return;
+            }
+
+            // SVGを文字列化してdata URL化する
+            const svgString = new XMLSerializer().serializeToString(svgElement);
+            const svgDataUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgString);
+
+            // SVGのwidth/heightを取得する
+            const width = svgElement.width.baseVal.value || svgElement.viewBox.baseVal.width;
+            const height = svgElement.height.baseVal.value || svgElement.viewBox.baseVal.height;
+
+            // 粗さを抑えるため2倍解像度でラスタライズする
+            // ただしCanvasには寸法の上限があり、超えると例外も出ないまま空の画像になる。
+            // 長辺が上限を超える場合は倍率を下げ、等倍でも超えるなら縮小する
+            const maxPixels = ${SvgContent.MAX_EXPORT_PIXELS};
+            const longerSide = Math.max(width, height);
+            const scale = longerSide > 0 ? Math.min(2, maxPixels / longerSide) : 2;
+
+            const image = new Image();
+            image.onload = () => {
+              try {
+                const canvas = document.createElement('canvas');
+                // canvas.width は整数へ切り捨てられるため、描画側と食い違わないよう丸めた値を使う
+                canvas.width = Math.max(1, Math.round(width * scale));
+                canvas.height = Math.max(1, Math.round(height * scale));
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+                onSuccess(canvas);
+              } catch (err) {
+                onError(String(err));
+              }
+            };
+            image.onerror = () => {
+              onError('Failed to load SVG image.');
+            };
+            image.src = svgDataUrl;
+          } catch (err) {
+            onError(String(err));
+          }
+        };
 
         // 拡張機能からの要求を受け付ける
         window.addEventListener('message', (event) => {
@@ -356,54 +475,24 @@ export class SvgContent {
           }
 
           const requestId = message.requestId;
-          try {
-            const svgElement = document.querySelector('#svgContainer svg');
-            if (!svgElement) {
-              vscode.postMessage({ command: 'exportImageResult', requestId, error: 'SVG element not found.' });
-              return;
-            }
 
-            // SVGを文字列化してdata URL化する
-            const svgString = new XMLSerializer().serializeToString(svgElement);
-            const svgDataUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgString);
+          // 形式に応じたMIMEタイプを決定する(未知の形式はPNG扱い)
+          const mimeMap = { png: 'image/png', jpeg: 'image/jpeg', webp: 'image/webp' };
+          const mime = mimeMap[message.format] || 'image/png';
 
-            // SVGのwidth/heightを取得する
-            const width = svgElement.width.baseVal.value || svgElement.viewBox.baseVal.width;
-            const height = svgElement.height.baseVal.value || svgElement.viewBox.baseVal.height;
-
-            // 粗さを抑えるため2倍解像度でラスタライズする
-            // ただしCanvasには寸法の上限があり、超えると例外も出ないまま空の画像になる。
-            // 長辺が上限を超える場合は倍率を下げ、等倍でも超えるなら縮小する
-            const maxPixels = ${SvgContent.MAX_EXPORT_PIXELS};
-            const longerSide = Math.max(width, height);
-            const scale = longerSide > 0 ? Math.min(2, maxPixels / longerSide) : 2;
-
-            // 形式に応じたMIMEタイプを決定する(未知の形式はPNG扱い)
-            const mimeMap = { png: 'image/png', jpeg: 'image/jpeg', webp: 'image/webp' };
-            const mime = mimeMap[message.format] || 'image/png';
-
-            const image = new Image();
-            image.onload = () => {
+          rasterize(
+            (canvas) => {
               try {
-                const canvas = document.createElement('canvas');
-                // canvas.width は整数へ切り捨てられるため、描画側と食い違わないよう丸めた値を使う
-                canvas.width = Math.max(1, Math.round(width * scale));
-                canvas.height = Math.max(1, Math.round(height * scale));
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
                 const dataUrl = canvas.toDataURL(mime);
                 vscode.postMessage({ command: 'exportImageResult', requestId, dataUrl });
               } catch (err) {
                 vscode.postMessage({ command: 'exportImageResult', requestId, error: String(err) });
               }
-            };
-            image.onerror = () => {
-              vscode.postMessage({ command: 'exportImageResult', requestId, error: 'Failed to load SVG image.' });
-            };
-            image.src = svgDataUrl;
-          } catch (err) {
-            vscode.postMessage({ command: 'exportImageResult', requestId, error: String(err) });
-          }
+            },
+            (error) => {
+              vscode.postMessage({ command: 'exportImageResult', requestId, error });
+            }
+          );
         });
 
         // 初期ズームレベル
@@ -459,6 +548,48 @@ export class SvgContent {
           restoreScrollPosition(tablePane, { left: 0, top: 0 });
           savePreviewState();
         };
+
+        // 操作の結果を一定時間だけ表示する
+        const toast = document.getElementById('previewToast');
+        let toastTimer = 0;
+        const showToast = (text) => {
+          toast.textContent = text;
+          toast.hidden = false;
+          clearTimeout(toastTimer);
+          toastTimer = setTimeout(() => { toast.hidden = true; }, 2500);
+        };
+
+        /**
+         * 表示中のチャートをPNGとしてクリップボードへ書き込む
+         *
+         * クリップボードへの書き込みは「文書がフォーカスされていること」と
+         * 「ユーザー操作起点であること」を要求するため、タイトルバーのコマンドからではなく
+         * Webview内のボタンから直接呼ぶ必要がある。
+         */
+        const copyImageToClipboard = () => {
+          if (!navigator.clipboard || typeof ClipboardItem === 'undefined') {
+            showToast('Clipboard is not available');
+            return;
+          }
+
+          rasterize(
+            (canvas) => {
+              canvas.toBlob((blob) => {
+                if (!blob) {
+                  showToast('Copy failed');
+                  return;
+                }
+                navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })])
+                  .then(() => showToast('Copied to clipboard'))
+                  .catch(() => showToast('Copy failed'));
+              }, 'image/png');
+            },
+            () => showToast('Copy failed')
+          );
+        };
+
+        document.getElementById('resetViewButton').addEventListener('click', resetView);
+        document.getElementById('copyImageButton').addEventListener('click', copyImageToClipboard);
 
         // SVGペインのみCtrl+Wheelでズーム（テーブルペインのスクロールと干渉しない）
         svgPane.addEventListener('wheel', (event) => {

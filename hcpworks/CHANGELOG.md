@@ -12,9 +12,12 @@ Patch
 - Limited the rasterized image size so a large chart no longer exports as a blank image
     - The longer side is capped at 8192 pixels; the 2x scale is reduced only when it would exceed that
     - A chart of roughly 150 process lines or more was already large enough to hit the canvas limit
-- Added a "Reset Preview Zoom and Position" button to the preview panel title bar
-    - Restores the zoom to 100% and scrolls back to the top-left, as a way out of being lost while zoomed in
+- Added a toolbar at the top of the preview with "Reset View" and "Copy Image"
+    - Reset View restores the zoom to 100% and scrolls back to the top-left, as a way out of being lost while zoomed in
+    - Copy Image copies the chart to the clipboard as a PNG, so it can be pasted straight into another application
+    - The copied image follows the same 8192 pixel limit as the exported image
     - Double-clicking the chart still resets the zoom only, leaving the scroll position untouched
+    - "HCPWorks: Reset Preview Zoom and Position" is still available from the Command Palette
 - Added `\#` as an escape for the comment marker, so a `#` can now be used as a literal character
     - `#` still starts a comment that runs to the end of the line, which previously made text such as `\mod C#で実装する` lose everything after the `#`
     - Works the same way in process lines, data lines, `\kind` / `\scope` values, and `\table` captions and cells

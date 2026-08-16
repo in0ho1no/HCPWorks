@@ -42,11 +42,6 @@
           "when": "hcpworks.webviewActive",
           "command": "hcpworks.savePreview",
           "group": "navigation"
-        },
-        {
-          "when": "hcpworks.webviewActive",
-          "command": "hcpworks.resetPreviewView",
-          "group": "navigation"
         }
       ],
       "view/title": [

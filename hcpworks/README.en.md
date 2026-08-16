@@ -16,6 +16,7 @@ You can list modules, preview HCP charts side by side, and export them as images
 - Preview the selected module beside the editor
 - Refresh the preview automatically on save
 - Export charts as PNG, SVG, WebP, or JPEG
+- Copy the chart to the clipboard
 - Change the preview level
 - Use syntax highlighting, folding, file icons, and bracket completion
 
@@ -28,7 +29,8 @@ You can list modules, preview HCP charts side by side, and export them as images
 1. The preview opens beside the editor and updates automatically when you save the file.
 1. To export an image, use the save button in the preview panel.
 1. To change the rendered level, use HCP Preview Level.
-1. Zoom the preview with Ctrl + wheel. If you lose track of where you are while zoomed in, use the reset button in the preview panel (or double-click the chart) to return to the original view.
+1. Zoom the preview with Ctrl + wheel. If you lose track of where you are while zoomed in, use Reset View in the toolbar at the top of the preview (or double-click the chart) to return to the original view.
+1. To paste the chart into another application, use Copy Image in the toolbar to copy it to the clipboard as a PNG.
 
 ### Export Formats
 
@@ -38,6 +40,7 @@ You can list modules, preview HCP charts side by side, and export them as images
 - JPEG: better for photo-like content; thin text and lines may blur
 
 PNG, WebP, and JPEG are rasterized at 2x resolution, except that the scale is reduced when the longer side would exceed 8192 pixels. Saved files use the name <fileName>_<moduleName>.<extension>.
+Copying to the clipboard produces a PNG at the same scale.
 
 ## HCP Notation
 
