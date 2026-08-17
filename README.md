@@ -17,6 +17,7 @@ HCPWorks は、HCP チャート形式の .hcp ファイルを VS Code 上で扱�
 - 保存時の自動再描画
 - PNG / SVG / WebP / JPEG での画像保存
 - チャートをクリップボードへコピー
+- モジュールごとの表示状態（拡大率・スクロール位置・表領域の高さ）の記憶
 - 描画レベルの切り替え
 - シンタックスハイライト、折り畳み、ファイルアイコン、括弧補完
 
@@ -29,6 +30,7 @@ HCPWorks は、HCP チャート形式の .hcp ファイルを VS Code 上で扱�
 1. 表示レベルを変えたい場合は HCP Preview Level から数値を指定します。
 1. プレビューは Ctrl + ホイールで拡大縮小できます。拡大したまま位置を見失った場合は、プレビュー上部のツールバーにある Reset View（またはチャート上のダブルクリック）で元の表示に戻せます。
 1. チャートを他のアプリケーションへ貼り付けたい場合は、ツールバーの Copy Image で PNG としてクリップボードへコピーできます。
+1. 拡大率・スクロール位置・表領域の高さはモジュールごとに記憶され、同じモジュールを開き直すと復元されます。記憶するのは直近 20 モジュールまでです。
 
 ![previewHCPCharts](https://raw.githubusercontent.com/in0ho1no/HCPWorks/main/hcpworks/resources/videos/previewHCPCharts.gif)
 ### 画像保存について

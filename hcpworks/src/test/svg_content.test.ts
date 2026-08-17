@@ -66,6 +66,30 @@ suite('SvgContent - Method - setSourcePath / getSourcePath', () => {
   });
 });
 
+suite('SvgContent - Method - getStateKey', () => {
+  /** 元ファイルとモジュール名からキーを組み立てる */
+  function keyOf(sourcePath: string, name: string): string {
+    return new SvgContent().setSourcePath(sourcePath).setName(name).getStateKey();
+  }
+
+  test('should separate modules within the same file', () => {
+    assert.notStrictEqual(keyOf('/work/a.hcp', 'first'), keyOf('/work/a.hcp', 'second'));
+  });
+
+  test('should separate the same module name in different files', () => {
+    assert.notStrictEqual(keyOf('/work/a.hcp', 'main'), keyOf('/work/b.hcp', 'main'));
+  });
+
+  test('should not collide when a path and a module name join differently', () => {
+    // 区切り文字がファイルパスにもモジュール名にも現れないことを確かめる
+    assert.notStrictEqual(keyOf('/work/a.hcp main', ''), keyOf('/work/a.hcp', 'main'));
+  });
+
+  test('should be stable for the same target', () => {
+    assert.strictEqual(keyOf('/work/a.hcp', 'main'), keyOf('/work/a.hcp', 'main'));
+  });
+});
+
 suite('SvgContent - Method - setTextContent / getTextContent', () => {
   test('should set and get text content array', () => {
     const content = new SvgContent();

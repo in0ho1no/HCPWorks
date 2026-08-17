@@ -19,6 +19,27 @@ const SAMPLE_TABLE: TableData = {
 /** Webview へ渡す SVG。寸法はテスト側で上書きするため見た目は問わない */
 const SAMPLE_SVG = '<svg width="100" height="50"><rect width="10" height="10"/></svg>';
 
+/** 検証用のプレビュー対象 */
+const SAMPLE_SOURCE = '/work/sample.hcp';
+const SAMPLE_MODULE = 'module';
+
+/** jsdom の既定のウィンドウ高さ(ペイン高さのクランプ計算に使う) */
+const WINDOW_HEIGHT = 768;
+
+/**
+ * 表示状態の保存キーを組み立てる
+ *
+ * 本体と同じ組み立てを使うことで、キーの書式を変えてもテストが追従する。
+ */
+function stateKeyOf(name = SAMPLE_MODULE, sourcePath = SAMPLE_SOURCE): string {
+  return new SvgContent().setName(name).setSourcePath(sourcePath).getStateKey();
+}
+
+/** 保存済み状態を1件だけ持つ値を組み立てる */
+function stateWith(entry: Record<string, unknown>, key = stateKeyOf()): unknown {
+  return { entries: [{ key, ...entry }] };
+}
+
 interface WebviewHarness {
   window: DOMWindow;
 
@@ -27,6 +48,15 @@ interface WebviewHarness {
 
   /** vscode.setState に保存された値 */
   savedState(): unknown;
+
+  /** 表示中のモジュールについて保存された表示状態 */
+  savedEntry(): Record<string, unknown> | undefined;
+
+  /** vscode.setState が呼ばれた回数(保存の間引きを見るために数える) */
+  saveCount(): number;
+
+  /** 間引かれた保存が実行されるまで待つ */
+  waitForSave(): Promise<void>;
 
   /** 拡張機能からのメッセージを Webview へ届ける */
   send(message: Record<string, unknown>): void;
@@ -60,15 +90,22 @@ interface WebviewHarness {
  * @param options.tables - 表データ(省略時は表なし)
  * @param options.previousState - 読み込み時に getState が返す値
  */
-function createWebview(options: { tables?: TableData[]; previousState?: unknown } = {}): WebviewHarness {
-  const content = new SvgContent().setName('module').setSvgContent(SAMPLE_SVG);
+function createWebview(
+  options: { tables?: TableData[]; previousState?: unknown; name?: string } = {}
+): WebviewHarness {
+  const content = new SvgContent()
+    .setName(options.name ?? SAMPLE_MODULE)
+    .setSourcePath(SAMPLE_SOURCE)
+    .setSvgContent(SAMPLE_SVG);
   if (options.tables) {
     content.setTables(options.tables);
   }
   const html = content.getHtmlWrappedSvg();
+  const stateKey = content.getStateKey();
 
   const posted: Record<string, unknown>[] = [];
   let state: unknown = options.previousState;
+  let saveCount = 0;
 
   // 未実装APIの警告は捨て、スクリプトの実行時エラーだけ拾う
   const virtualConsole = new VirtualConsole();
@@ -82,7 +119,7 @@ function createWebview(options: { tables?: TableData[]; previousState?: unknown 
     beforeParse(window) {
       (window as unknown as Record<string, unknown>).acquireVsCodeApi = () => ({
         postMessage: (message: Record<string, unknown>) => posted.push(message),
-        setState: (value: unknown) => { state = value; },
+        setState: (value: unknown) => { state = value; saveCount++; },
         getState: () => state,
       });
     },
@@ -98,6 +135,14 @@ function createWebview(options: { tables?: TableData[]; previousState?: unknown 
     window,
     posted,
     savedState: () => state,
+    savedEntry: () => {
+      const entries = (state as { entries?: Record<string, unknown>[] } | undefined)?.entries;
+      return entries?.find((entry) => entry.key === stateKey);
+    },
+    saveCount: () => saveCount,
+    waitForSave: () => new Promise<void>((resolve) => {
+      window.setTimeout(resolve, SvgContent.SAVE_DEBOUNCE_MS + 20);
+    }),
     send: (message) => {
       window.dispatchEvent(new window.MessageEvent('message', { data: message }));
     },
@@ -280,15 +325,19 @@ suite('SvgContent - Webview runtime - scroll state', () => {
 
   teardown(() => harness?.dispose());
 
-  test('should save the scroll position of both panes', () => {
+  test('should save the scroll position of both panes', async () => {
     harness = createWebview({ tables: [SAMPLE_TABLE] });
 
     const svgPane = harness.element('svgPane');
     svgPane.scrollTop = 120;
     svgPane.scrollLeft = 34;
     svgPane.dispatchEvent(new harness.window.Event('scroll'));
+    await harness.waitForSave();
 
-    assert.deepStrictEqual(plain(harness.savedState()), {
+    assert.deepStrictEqual(plain(harness.savedEntry()), {
+      key: stateKeyOf(),
+      scale: 1,
+      tablePaneHeight: null,
       scroll: {
         svgPane: { left: 34, top: 120 },
         tablePane: { left: 0, top: 0 },
@@ -299,7 +348,9 @@ suite('SvgContent - Webview runtime - scroll state', () => {
   test('should restore the saved scroll position on load', async () => {
     harness = createWebview({
       tables: [SAMPLE_TABLE],
-      previousState: { scroll: { svgPane: { left: 12, top: 340 }, tablePane: { left: 0, top: 56 } } },
+      previousState: stateWith({
+        scroll: { svgPane: { left: 12, top: 340 }, tablePane: { left: 0, top: 56 } },
+      }),
     });
 
     await harness.nextFrame();
@@ -315,8 +366,157 @@ suite('SvgContent - Webview runtime - scroll state', () => {
     harness.element('svgPane').scrollTop = 80;
     harness.window.dispatchEvent(new harness.window.Event('beforeunload'));
 
-    const state = harness.savedState() as { scroll: { svgPane: { top: number } } };
-    assert.strictEqual(state.scroll.svgPane.top, 80);
+    // 破棄時は間引きの完了を待てないため、その場で保存されている必要がある
+    const entry = harness.savedEntry() as { scroll: { svgPane: { top: number } } };
+    assert.strictEqual(entry.scroll.svgPane.top, 80);
+  });
+
+  test('should flush a pending save when the webview is hidden', () => {
+    harness = createWebview();
+
+    harness.element('svgPane').scrollTop = 42;
+    harness.element('svgPane').dispatchEvent(new harness.window.Event('scroll'));
+    harness.window.dispatchEvent(new harness.window.Event('pagehide'));
+
+    const entry = harness.savedEntry() as { scroll: { svgPane: { top: number } } };
+    assert.strictEqual(entry.scroll.svgPane.top, 42);
+  });
+
+  test('should save at most once for a burst of scroll events', async () => {
+    harness = createWebview();
+    const svgPane = harness.element('svgPane');
+
+    for (let i = 1; i <= 5; i++) {
+      svgPane.scrollTop = i * 10;
+      svgPane.dispatchEvent(new harness.window.Event('scroll'));
+    }
+
+    assert.strictEqual(harness.saveCount(), 0, 'should not save while the events keep coming');
+
+    await harness.waitForSave();
+
+    assert.strictEqual(harness.saveCount(), 1);
+    const entry = harness.savedEntry() as { scroll: { svgPane: { top: number } } };
+    assert.strictEqual(entry.scroll.svgPane.top, 50, 'the last position should win');
+  });
+});
+
+suite('SvgContent - Webview runtime - preview state', () => {
+  let harness: WebviewHarness;
+
+  teardown(() => harness.dispose());
+
+  /** テーブルペインの高さ指定を取り出す */
+  function paneFlex(): string {
+    return harness.element('tablePane').style.flex;
+  }
+
+  test('should ignore the state saved for another module', async () => {
+    harness = createWebview({
+      tables: [SAMPLE_TABLE],
+      previousState: stateWith(
+        { scale: 4, tablePaneHeight: 300, scroll: { svgPane: { left: 0, top: 250 } } },
+        stateKeyOf('otherModule')
+      ),
+    });
+
+    await harness.nextFrame();
+
+    assert.strictEqual(harness.element('svgContainer').style.transform, '');
+    assert.strictEqual(paneFlex(), '', 'the pane height of another module should not apply');
+    assert.strictEqual(harness.element('svgPane').scrollTop, 0);
+  });
+
+  test('should restore the zoom of the matching module', () => {
+    harness = createWebview({ previousState: stateWith({ scale: 2.5 }) });
+
+    assert.strictEqual(currentScale(harness.element('svgContainer')), 2.5);
+  });
+
+  test('should clamp a restored zoom to the allowed range', () => {
+    harness = createWebview({ previousState: stateWith({ scale: 50 }) });
+
+    assert.strictEqual(currentScale(harness.element('svgContainer')), 10);
+  });
+
+  test('should fall back to 1x for a broken zoom value', () => {
+    harness = createWebview({ previousState: stateWith({ scale: 'huge' }) });
+
+    assert.strictEqual(harness.element('svgContainer').style.transform, '');
+  });
+
+  test('should restore the table pane height', () => {
+    harness = createWebview({ tables: [SAMPLE_TABLE], previousState: stateWith({ tablePaneHeight: 300 }) });
+
+    assert.strictEqual(paneFlex(), '0 0 300px');
+  });
+
+  test('should clamp a restored pane height to the current window', () => {
+    // 保存時より小さいウィンドウで開いた場合、そのまま適用すると画面を占有する
+    harness = createWebview({ tables: [SAMPLE_TABLE], previousState: stateWith({ tablePaneHeight: 5000 }) });
+
+    assert.strictEqual(paneFlex(), `0 0 ${WINDOW_HEIGHT * 0.85}px`);
+  });
+
+  test('should keep the minimum height for a restored pane height', () => {
+    harness = createWebview({ tables: [SAMPLE_TABLE], previousState: stateWith({ tablePaneHeight: -100 }) });
+
+    assert.strictEqual(paneFlex(), '0 0 60px');
+  });
+
+  test('should save the zoom and the pane height together', async () => {
+    harness = createWebview({ tables: [SAMPLE_TABLE] });
+    const window = harness.window;
+    harness.element('tablePane').getBoundingClientRect = () => ({ height: 200 } as DOMRect);
+
+    zoom(harness, 2, 'in');
+    harness.element('splitter').dispatchEvent(new window.MouseEvent('mousedown', { clientY: 100, bubbles: true }));
+    window.document.dispatchEvent(new window.MouseEvent('mousemove', { clientY: 150, bubbles: true }));
+    window.document.dispatchEvent(new window.MouseEvent('mouseup', { bubbles: true }));
+    await harness.waitForSave();
+
+    const entry = harness.savedEntry() as { scale: number; tablePaneHeight: number };
+    assert.strictEqual(entry.tablePaneHeight, 250);
+    assert.ok(entry.scale > 1, `the zoom should be saved as well: ${entry.scale}`);
+  });
+
+  test('should keep the newest entries up to the limit', async () => {
+    // 上限ちょうどまで別モジュールの記録で埋めておく
+    const entries = Array.from({ length: SvgContent.MAX_STATE_ENTRIES }, (_, index) => ({
+      key: stateKeyOf(`module${index}`),
+      scale: 1,
+    }));
+    harness = createWebview({ previousState: { entries } });
+
+    harness.element('svgPane').scrollTop = 10;
+    harness.window.dispatchEvent(new harness.window.Event('beforeunload'));
+
+    const saved = harness.savedState() as { entries: { key: string }[] };
+    assert.strictEqual(saved.entries.length, SvgContent.MAX_STATE_ENTRIES);
+    assert.strictEqual(saved.entries[0].key, stateKeyOf(), 'the current module comes first');
+    assert.ok(
+      !saved.entries.some((entry) => entry.key === stateKeyOf(`module${SvgContent.MAX_STATE_ENTRIES - 1}`)),
+      'the oldest entry should be dropped'
+    );
+  });
+
+  test('should replace the entry of the same module instead of adding one', () => {
+    harness = createWebview({ previousState: stateWith({ scale: 2 }) });
+
+    harness.element('svgPane').scrollTop = 10;
+    harness.window.dispatchEvent(new harness.window.Event('beforeunload'));
+
+    const saved = harness.savedState() as { entries: unknown[] };
+    assert.strictEqual(saved.entries.length, 1);
+  });
+
+  test('should start from scratch when the saved state is broken', async () => {
+    harness = createWebview({ previousState: { entries: 'not an array' } });
+
+    await harness.nextFrame();
+
+    assert.strictEqual(harness.element('svgContainer').style.transform, '');
+    harness.assertNoErrors();
   });
 });
 
@@ -394,12 +594,16 @@ suite('SvgContent - Webview runtime - resetView', () => {
   });
 
   test('should persist the reset position so it survives the next refresh', () => {
-    harness = createWebview();
+    harness = createWebview({ previousState: stateWith({ scale: 3 }) });
     harness.element('svgPane').scrollTop = 300;
 
+    // 単発の操作なので、間引きを待たずにその場で保存される
     harness.send({ command: 'resetView' });
 
-    assert.deepStrictEqual(plain(harness.savedState()), {
+    assert.deepStrictEqual(plain(harness.savedEntry()), {
+      key: stateKeyOf(),
+      scale: 1,
+      tablePaneHeight: null,
       scroll: {
         svgPane: { left: 0, top: 0 },
         tablePane: { left: 0, top: 0 },

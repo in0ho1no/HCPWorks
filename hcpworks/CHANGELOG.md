@@ -18,6 +18,11 @@ Patch
     - The copied image follows the same 8192 pixel limit as the exported image
     - Double-clicking the chart still resets the zoom only, leaving the scroll position untouched
     - "HCPWorks: Reset Preview Zoom and Position" is still available from the Command Palette
+- The preview now remembers the zoom, the scroll position, and the table pane height
+    - The state is kept per module (source file + module name), so switching modules no longer applies the view of the previous one
+    - Restored values are clamped to the current window, so a pane height saved in a larger window no longer fills the preview
+    - The 20 most recently viewed modules are kept; older ones are dropped
+    - Use Reset View in the toolbar to get back to the whole chart when a restored zoom leaves you lost
 - Added `\#` as an escape for the comment marker, so a `#` can now be used as a literal character
     - `#` still starts a comment that runs to the end of the line, which previously made text such as `\mod C#で実装する` lose everything after the `#`
     - Works the same way in process lines, data lines, `\kind` / `\scope` values, and `\table` captions and cells
