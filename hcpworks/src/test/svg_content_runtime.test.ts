@@ -382,6 +382,30 @@ suite('SvgContent - Webview runtime - scroll state', () => {
     assert.strictEqual(entry.scroll.svgPane.top, 42);
   });
 
+  test('should flush a pending save when the webview loses focus', () => {
+    harness = createWebview();
+
+    harness.element('svgPane').scrollTop = 64;
+    harness.element('svgPane').dispatchEvent(new harness.window.Event('scroll'));
+    // モジュールを切り替えるにはプレビュー外をクリックする必要があるため、
+    // フォーカスが外れた時点で確定していないと、差し替え後のページに追い越される
+    harness.window.dispatchEvent(new harness.window.Event('blur'));
+
+    const entry = harness.savedEntry() as { scroll: { svgPane: { top: number } } };
+    assert.strictEqual(entry.scroll.svgPane.top, 64);
+  });
+
+  test('should not save the same state twice after a flush', async () => {
+    harness = createWebview();
+
+    harness.element('svgPane').scrollTop = 64;
+    harness.element('svgPane').dispatchEvent(new harness.window.Event('scroll'));
+    harness.window.dispatchEvent(new harness.window.Event('blur'));
+    await harness.waitForSave();
+
+    assert.strictEqual(harness.saveCount(), 1, 'the pending save should be cancelled by the flush');
+  });
+
   test('should save at most once for a burst of scroll events', async () => {
     harness = createWebview();
     const svgPane = harness.element('svgPane');

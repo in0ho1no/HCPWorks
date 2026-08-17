@@ -599,8 +599,15 @@ export class SvgContent {
           return stored && Array.isArray(stored.entries) ? stored.entries : [];
         };
 
-        /** 表示中のモジュールの表示状態を保存する */
+        // 間引き待ちの保存を保持するタイマー
+        let saveTimer = 0;
+
+        /** 表示中のモジュールの表示状態を、間引かずにその場で保存する */
         const savePreviewStateNow = () => {
+          // 間引き待ちが残っていると同じ内容をもう一度書くことになるため取り消す
+          clearTimeout(saveTimer);
+          saveTimer = 0;
+
           // 同じキーの記録を除いてから先頭へ入れ直し、上限を超えた古い分を捨てる
           const entries = loadStateEntries().filter((entry) => entry && entry.key !== stateKey);
           entries.unshift({
@@ -617,7 +624,6 @@ export class SvgContent {
 
         // スクロールとズームは1操作で何度もイベントが飛ぶため、保存を間引く
         // 単発の操作(リセット・ドラッグ完了・破棄前)は savePreviewStateNow を直接呼ぶこと
-        let saveTimer = 0;
         const savePreviewState = () => {
           clearTimeout(saveTimer);
           saveTimer = setTimeout(savePreviewStateNow, saveDebounceMs);
@@ -658,6 +664,15 @@ export class SvgContent {
             savePreviewStateNow();
           }
         });
+
+        // フォーカスが外れた時点でも書き出す
+        //
+        // モジュールを切り替えるにはモジュール一覧をクリックする必要があり、
+        // その時点でこのWebviewはフォーカスを失う。HTMLの差し替えより確実に前なので、
+        // 間引き待ちの変更が切り替えに追い越されるのを防げる。
+        // getState()は「iframe生成時のスナップショット」を返すため、
+        // 差し替え後のページは、こちらの遅れた保存を読み取れない
+        window.addEventListener('blur', savePreviewStateNow);
 
         // ズーム倍率とスクロール位置を初期状態へ戻す
         // 拡大したまま位置を見失った場合の復帰手段として用いる
