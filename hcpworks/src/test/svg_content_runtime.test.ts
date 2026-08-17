@@ -395,6 +395,18 @@ suite('SvgContent - Webview runtime - scroll state', () => {
     assert.strictEqual(entry.scroll.svgPane.top, 64);
   });
 
+  test('should flush a pending save when the pointer leaves the preview', () => {
+    harness = createWebview();
+
+    // パネルは preserveFocus: true で開くため、ホイール操作だけではフォーカスが移らず
+    // blur が発火しない。マウスでモジュールを切り替える経路はこちらで拾う
+    zoom(harness, 3, 'in');
+    harness.window.document.documentElement.dispatchEvent(new harness.window.Event('pointerleave'));
+
+    const entry = harness.savedEntry() as { scale: number };
+    assert.ok(entry.scale > 1, `the zoom should be saved without focus: ${entry.scale}`);
+  });
+
   test('should not save the same state twice after a flush', async () => {
     harness = createWebview();
 
