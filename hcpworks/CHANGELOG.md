@@ -22,6 +22,7 @@ Patch
     - The state is kept per module (source file + module name), so switching modules no longer applies the view of the previous one
     - Restored values are clamped to the current window, so a pane height saved in a larger window no longer fills the preview
     - The 20 most recently viewed modules are kept; older ones are dropped
+    - The state lives as long as the preview panel does; closing the panel discards it
     - Use Reset View in the toolbar to get back to the whole chart when a restored zoom leaves you lost
 - Added `\#` as an escape for the comment marker, so a `#` can now be used as a literal character
     - `#` still starts a comment that runs to the end of the line, which previously made text such as `\mod C#で実装する` lose everything after the `#`

@@ -510,6 +510,25 @@ suite('SvgContent - Webview runtime - preview state', () => {
     assert.strictEqual(saved.entries.length, 1);
   });
 
+  test('should not let a module name break out of the script tag', async () => {
+    // .hcp の内容は利用者が書くとは限らないため、モジュール名は信用できない入力として扱う
+    const attack = '</script><script>window.injected = true;</script>';
+    harness = createWebview({ name: attack });
+
+    await harness.nextFrame();
+
+    assert.strictEqual(
+      (harness.window as unknown as Record<string, unknown>).injected,
+      undefined,
+      'the injected script must not run'
+    );
+    // キーとしては元の文字列がそのまま使えること
+    harness.element('svgPane').scrollTop = 10;
+    harness.window.dispatchEvent(new harness.window.Event('beforeunload'));
+    const saved = harness.savedState() as { entries: { key: string }[] };
+    assert.strictEqual(saved.entries[0].key, stateKeyOf(attack));
+  });
+
   test('should start from scratch when the saved state is broken', async () => {
     harness = createWebview({ previousState: { entries: 'not an array' } });
 

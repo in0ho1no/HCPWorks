@@ -142,6 +142,26 @@ export class SvgContent {
   }
 
   /**
+   * 値を `<script>` 内へ安全に埋め込めるJSONリテラルへ変換する
+   *
+   * `JSON.stringify()` は `<` をエスケープしないため、そのまま埋め込むと
+   * モジュール名やファイルパスに `</script>` を含めるだけでスクリプトを抜け出せる。
+   * `.hcp` ファイルの内容は利用者が書くとは限らないため、任意のコードが動く経路になる。
+   *
+   * @param value - 埋め込む値
+   * @returns スクリプト内へそのまま置けるJSON文字列
+   */
+  private toScriptLiteral(value: unknown): string {
+    return JSON.stringify(value)
+      .replace(/</g, '\\u003c')
+      .replace(/>/g, '\\u003e')
+      .replace(/&/g, '\\u0026')
+      // 行区切り文字。古いJavaScriptパーサでは文字列リテラル中に置けない
+      .replace(/\u2028/g, '\\u2028')
+      .replace(/\u2029/g, '\\u2029');
+  }
+
+  /**
    * HTMLとして安全に埋め込めるよう文字列をエスケープする
    *
    * @param text - エスケープ対象の文字列
@@ -537,7 +557,7 @@ export class SvgContent {
         const maxPaneHeightRatio = 0.85;
 
         // 表示状態の保存キー。パネルは使い回されるためモジュール単位で分ける
-        const stateKey = ${JSON.stringify(this.getStateKey())};
+        const stateKey = ${this.toScriptLiteral(this.getStateKey())};
         const maxStateEntries = ${SvgContent.MAX_STATE_ENTRIES};
         const saveDebounceMs = ${SvgContent.SAVE_DEBOUNCE_MS};
 
