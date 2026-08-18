@@ -8,6 +8,29 @@ import { SvgFigureText } from './render/svg_figure_text';
  * このクラスはSVG要素の名前、変換元のテキスト、変換後のSVGを管理します。
  */
 export class SvgContent {
+  /**
+   * ラスタライズ後の画像の長辺の上限(ピクセル)
+   *
+   * Canvasには寸法の上限があり、超えると例外を投げないまま空の画像が出力される。
+   * 上限値はブラウザ・GPUに依存するため、広く安全とされる値を採用する。
+   */
+  public static readonly MAX_EXPORT_PIXELS = 8192;
+
+  /**
+   * 表示状態を保持するモジュールの上限件数
+   *
+   * Webviewの状態はパネルが生きている間ずっと残るため、上限が無いと際限なく増える。
+   * 超えた分は最後に見たものから遠い順に捨てる。
+   */
+  public static readonly MAX_STATE_ENTRIES = 20;
+
+  /**
+   * 表示状態の保存を間引く間隔(ミリ秒)
+   *
+   * スクロールとズームは1操作で何度もイベントが飛ぶため、そのたびに保存すると頻度が高すぎる。
+   */
+  public static readonly SAVE_DEBOUNCE_MS = 200;
+
   private _name: string;
   private _sourcePath: string;
   private _textContent: string[];
@@ -103,6 +126,39 @@ export class SvgContent {
    */
   getTables(): TableData[] {
     return this._tables;
+  }
+
+  /**
+   * 表示状態を保存する際のキーを組み立てる
+   *
+   * Webviewの状態はパネル単位で保持されるが、パネルはモジュールを切り替えても使い回される。
+   * パネル単位のまま保存すると、別のモジュールへ切り替えたときに
+   * 前のモジュールの倍率やスクロール位置がそのまま適用されてしまう。
+   *
+   * @returns 元ファイルパスとモジュール名から作ったキー
+   */
+  getStateKey(): string {
+    return `${this._sourcePath}\n${this._name}`;
+  }
+
+  /**
+   * 値を `<script>` 内へ安全に埋め込めるJSONリテラルへ変換する
+   *
+   * `JSON.stringify()` は `<` をエスケープしないため、そのまま埋め込むと
+   * モジュール名やファイルパスに `</script>` を含めるだけでスクリプトを抜け出せる。
+   * `.hcp` ファイルの内容は利用者が書くとは限らないため、任意のコードが動く経路になる。
+   *
+   * @param value - 埋め込む値
+   * @returns スクリプト内へそのまま置けるJSON文字列
+   */
+  private toScriptLiteral(value: unknown): string {
+    return JSON.stringify(value)
+      .replace(/</g, '\\u003c')
+      .replace(/>/g, '\\u003e')
+      .replace(/&/g, '\\u0026')
+      // 行区切り文字。古いJavaScriptパーサでは文字列リテラル中に置けない
+      .replace(/\u2028/g, '\\u2028')
+      .replace(/\u2029/g, '\\u2029');
   }
 
   /**
@@ -220,13 +276,71 @@ export class SvgContent {
             padding: 0;
             overflow: hidden;
             height: 100vh;
+            display: flex;
+            flex-direction: column;
+          }
+
+          /* ツールバーは #svgContainer の外に置くこと。
+             エクスポートは #svgContainer 内のSVGを直列化する方式のため、
+             外にある限り出力画像へ写り込まない */
+          .preview-toolbar {
+            flex: none;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 6px;
+            border-bottom: 1px solid var(--vscode-panel-border, rgba(128, 128, 128, 0.35));
+          }
+
+          .toolbar-button {
+            font-family: inherit;
+            font-size: 12px;
+            line-height: 18px;
+            padding: 1px 10px;
+            border: none;
+            border-radius: 2px;
+            cursor: pointer;
+            color: var(--vscode-button-secondaryForeground, var(--vscode-foreground, #ccc));
+            background-color: var(--vscode-button-secondaryBackground, rgba(128, 128, 128, 0.25));
+          }
+
+          .toolbar-button:hover {
+            background-color: var(--vscode-button-secondaryHoverBackground, rgba(128, 128, 128, 0.4));
+          }
+
+          .toolbar-button:focus-visible {
+            outline: 1px solid var(--vscode-focusBorder, #0078d4);
+            outline-offset: 1px;
+          }
+
+          /* 操作の成否を伝える一時表示。クリップボード書き込みは失敗しうるため、
+             無反応に見えないよう Webview 内で完結して通知する */
+          .preview-toast {
+            position: fixed;
+            left: 50%;
+            bottom: 16px;
+            transform: translateX(-50%);
+            max-width: 90%;
+            padding: 4px 12px;
+            font-size: 12px;
+            border-radius: 4px;
+            pointer-events: none;
+            z-index: 10;
+            color: var(--vscode-notifications-foreground, var(--vscode-foreground, #ccc));
+            background-color: var(--vscode-notifications-background, var(--vscode-editor-background, #252526));
+            border: 1px solid var(--vscode-notifications-border, rgba(128, 128, 128, 0.35));
+          }
+
+          .preview-toast[hidden] {
+            display: none;
           }
 
           .split-container {
             display: flex;
             flex-direction: column;
-            height: 100vh;
-            width: 100vw;
+            flex: 1;
+            min-height: 0;
+            width: 100%;
           }
 
           .table-pane {
@@ -312,6 +426,11 @@ export class SvgContent {
         </style>
       </head>
       <body>
+      <div class="preview-toolbar" id="previewToolbar">
+        <button type="button" class="toolbar-button" id="resetViewButton" title="Reset the zoom and scroll position">Reset View</button>
+        <button type="button" class="toolbar-button" id="copyImageButton" title="Copy the chart to the clipboard as a PNG image">Copy Image</button>
+      </div>
+      <div class="preview-toast" id="previewToast" role="status" aria-live="polite" hidden></div>
       <div class="split-container">
         <div class="table-pane" id="tablePane" style="${hasTables ? '' : hiddenStyle}">
           <div class="hcp-tables">
@@ -330,18 +449,21 @@ export class SvgContent {
         // 拡張機能との通信用API
         const vscode = acquireVsCodeApi();
 
-        // 拡張機能からのエクスポート要求を受けて画像へラスタライズする
-        window.addEventListener('message', (event) => {
-          const message = event.data;
-          if (!message || message.command !== 'exportImage') {
-            return;
-          }
-
-          const requestId = message.requestId;
+        /**
+         * 表示中のチャートをCanvasへラスタライズする
+         *
+         * 画像保存とクリップボードへのコピーで同じ倍率計算を共有するため、
+         * 「Canvasを作るところまで」を切り出してある。
+         * 出力形式の違いは呼び出し側が描画済みCanvasから作る。
+         *
+         * @param onSuccess - 描画済みCanvasを受け取る関数
+         * @param onError - 失敗理由(文字列)を受け取る関数
+         */
+        const rasterize = (onSuccess, onError) => {
           try {
             const svgElement = document.querySelector('#svgContainer svg');
             if (!svgElement) {
-              vscode.postMessage({ command: 'exportImageResult', requestId, error: 'SVG element not found.' });
+              onError('SVG element not found.');
               return;
             }
 
@@ -354,33 +476,71 @@ export class SvgContent {
             const height = svgElement.height.baseVal.value || svgElement.viewBox.baseVal.height;
 
             // 粗さを抑えるため2倍解像度でラスタライズする
-            const scale = 2;
-
-            // 形式に応じたMIMEタイプを決定する(未知の形式はPNG扱い)
-            const mimeMap = { png: 'image/png', jpeg: 'image/jpeg', webp: 'image/webp' };
-            const mime = mimeMap[message.format] || 'image/png';
+            // ただしCanvasには寸法の上限があり、超えると例外も出ないまま空の画像になる。
+            // 長辺が上限を超える場合は倍率を下げ、等倍でも超えるなら縮小する
+            const maxPixels = ${SvgContent.MAX_EXPORT_PIXELS};
+            const longerSide = Math.max(width, height);
+            const scale = longerSide > 0 ? Math.min(2, maxPixels / longerSide) : 2;
 
             const image = new Image();
             image.onload = () => {
               try {
                 const canvas = document.createElement('canvas');
-                canvas.width = width * scale;
-                canvas.height = height * scale;
+                // canvas.width は整数へ切り捨てられるため、描画側と食い違わないよう丸めた値を使う
+                canvas.width = Math.max(1, Math.round(width * scale));
+                canvas.height = Math.max(1, Math.round(height * scale));
                 const ctx = canvas.getContext('2d');
-                ctx.drawImage(image, 0, 0, width * scale, height * scale);
+                ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+                onSuccess(canvas);
+              } catch (err) {
+                onError(String(err));
+              }
+            };
+            image.onerror = () => {
+              onError('Failed to load SVG image.');
+            };
+            image.src = svgDataUrl;
+          } catch (err) {
+            onError(String(err));
+          }
+        };
+
+        // 拡張機能からの要求を受け付ける
+        window.addEventListener('message', (event) => {
+          const message = event.data;
+          if (!message) {
+            return;
+          }
+
+          // 表示状態を初期化して全体を見渡せる状態へ戻す
+          if (message.command === 'resetView') {
+            resetView();
+            return;
+          }
+
+          if (message.command !== 'exportImage') {
+            return;
+          }
+
+          const requestId = message.requestId;
+
+          // 形式に応じたMIMEタイプを決定する(未知の形式はPNG扱い)
+          const mimeMap = { png: 'image/png', jpeg: 'image/jpeg', webp: 'image/webp' };
+          const mime = mimeMap[message.format] || 'image/png';
+
+          rasterize(
+            (canvas) => {
+              try {
                 const dataUrl = canvas.toDataURL(mime);
                 vscode.postMessage({ command: 'exportImageResult', requestId, dataUrl });
               } catch (err) {
                 vscode.postMessage({ command: 'exportImageResult', requestId, error: String(err) });
               }
-            };
-            image.onerror = () => {
-              vscode.postMessage({ command: 'exportImageResult', requestId, error: 'Failed to load SVG image.' });
-            };
-            image.src = svgDataUrl;
-          } catch (err) {
-            vscode.postMessage({ command: 'exportImageResult', requestId, error: String(err) });
-          }
+            },
+            (error) => {
+              vscode.postMessage({ command: 'exportImageResult', requestId, error });
+            }
+          );
         });
 
         // 初期ズームレベル
@@ -391,9 +551,22 @@ export class SvgContent {
         // スケーリング速度
         const scaleSpeed = 0.1;
 
+        // テーブルペインの高さの下限(ピクセル)と、ウィンドウ高さに対する上限の割合
+        // CSSの min-height / max-height と揃えること
+        const minPaneHeight = 60;
+        const maxPaneHeightRatio = 0.85;
+
+        // 表示状態の保存キー。パネルは使い回されるためモジュール単位で分ける
+        const stateKey = ${this.toScriptLiteral(this.getStateKey())};
+        const maxStateEntries = ${SvgContent.MAX_STATE_ENTRIES};
+        const saveDebounceMs = ${SvgContent.SAVE_DEBOUNCE_MS};
+
         const container = document.getElementById('svgContainer');
         const svgPane = document.getElementById('svgPane');
         const tablePane = document.getElementById('tablePane');
+
+        // ドラッグで指定されたテーブルペインの高さ(未指定ならCSSの既定に任せる)
+        let tablePaneHeight = null;
 
         const restoreScrollPosition = (element, position) => {
           if (!element || !position) { return; }
@@ -406,16 +579,73 @@ export class SvgContent {
           top: element ? element.scrollTop : 0,
         });
 
-        const savePreviewState = () => {
-          vscode.setState({
+        /**
+         * 数値として妥当なら範囲へ収めて返す
+         *
+         * 保存値はウィンドウの大きさが変わった後でも読み出されるため、
+         * そのまま適用すると画面を占有したり、操作不能な倍率になったりする。
+         *
+         * @returns 範囲へ収めた数値。数値として解釈できなければ null
+         */
+        const clampNumber = (value, min, max) => {
+          const number = Number(value);
+          if (!Number.isFinite(number)) { return null; }
+          return Math.min(max, Math.max(min, number));
+        };
+
+        /** 保存済みの表示状態を配列として取り出す(未保存や壊れていれば空配列) */
+        const loadStateEntries = () => {
+          const stored = vscode.getState();
+          return stored && Array.isArray(stored.entries) ? stored.entries : [];
+        };
+
+        // 間引き待ちの保存を保持するタイマー
+        let saveTimer = 0;
+
+        /** 表示中のモジュールの表示状態を、間引かずにその場で保存する */
+        const savePreviewStateNow = () => {
+          // 間引き待ちが残っていると同じ内容をもう一度書くことになるため取り消す
+          clearTimeout(saveTimer);
+          saveTimer = 0;
+
+          // 同じキーの記録を除いてから先頭へ入れ直し、上限を超えた古い分を捨てる
+          const entries = loadStateEntries().filter((entry) => entry && entry.key !== stateKey);
+          entries.unshift({
+            key: stateKey,
+            scale,
+            tablePaneHeight,
             scroll: {
               svgPane: getScrollPosition(svgPane),
               tablePane: getScrollPosition(tablePane),
             },
           });
+          vscode.setState({ entries: entries.slice(0, maxStateEntries) });
         };
 
-        const previousState = vscode.getState() || {};
+        // スクロールとズームは1操作で何度もイベントが飛ぶため、保存を間引く
+        // 単発の操作(リセット・ドラッグ完了・破棄前)は savePreviewStateNow を直接呼ぶこと
+        const savePreviewState = () => {
+          clearTimeout(saveTimer);
+          saveTimer = setTimeout(savePreviewStateNow, saveDebounceMs);
+        };
+
+        const previousState = loadStateEntries().find((entry) => entry && entry.key === stateKey) || {};
+
+        // 倍率は保存時と同じ範囲へ収める。解釈できない値は等倍として扱う
+        scale = clampNumber(previousState.scale, minScale, maxScale) ?? 1;
+        if (scale !== 1) {
+          container.style.transform = \`scale(\${scale})\`;
+        }
+
+        // ペイン高さは絶対ピクセルで保存されるため、ウィンドウが当時より小さいと収まらない
+        if (tablePane && previousState.tablePaneHeight != null) {
+          const paneLimit = Math.max(minPaneHeight, window.innerHeight * maxPaneHeightRatio);
+          tablePaneHeight = clampNumber(previousState.tablePaneHeight, minPaneHeight, paneLimit);
+          if (tablePaneHeight !== null) {
+            tablePane.style.flex = \`0 0 \${tablePaneHeight}px\`;
+          }
+        }
+
         requestAnimationFrame(() => {
           restoreScrollPosition(svgPane, previousState.scroll && previousState.scroll.svgPane);
           restoreScrollPosition(tablePane, previousState.scroll && previousState.scroll.tablePane);
@@ -425,7 +655,82 @@ export class SvgContent {
         if (tablePane) {
           tablePane.addEventListener('scroll', savePreviewState);
         }
-        window.addEventListener('beforeunload', savePreviewState);
+        // 間引き待ちのまま破棄・非表示になると保存が実行されないため、その場で書き出す
+        // プレビューの更新やモジュールの切り替えはHTMLごと差し替わるので、ここが最後の機会になる
+        window.addEventListener('beforeunload', savePreviewStateNow);
+        window.addEventListener('pagehide', savePreviewStateNow);
+        document.addEventListener('visibilitychange', () => {
+          if (document.visibilityState === 'hidden') {
+            savePreviewStateNow();
+          }
+        });
+
+        // フォーカスが外れた時点、ポインタがプレビューから出た時点でも書き出す
+        //
+        // getState()は「iframe生成時のスナップショット」を返すため、差し替え後のページは
+        // 旧ページの遅れた保存を読み取れない。切り替えより前に確定させる機会を増やす。
+        //
+        // blurだけでは足りない。パネルは preserveFocus: true で開くため、
+        // ホイール操作だけではフォーカスが移らず、blurが一度も発火しないことがある。
+        // マウスでモジュールを切り替える経路は pointerleave で拾える。
+        //
+        // なお自動再描画のようにフォーカスもポインタも動かない経路は残る。
+        // 追い越しを完全に無くすには状態の所有を拡張機能ホストへ移す必要があり、
+        // ここまではあくまで競合を減らすための best-effort
+        window.addEventListener('blur', savePreviewStateNow);
+        document.documentElement.addEventListener('pointerleave', savePreviewStateNow);
+
+        // ズーム倍率とスクロール位置を初期状態へ戻す
+        // 拡大したまま位置を見失った場合の復帰手段として用いる
+        const resetView = () => {
+          scale = 1;
+          container.style.transform = 'scale(1)';
+          restoreScrollPosition(svgPane, { left: 0, top: 0 });
+          restoreScrollPosition(tablePane, { left: 0, top: 0 });
+          savePreviewStateNow();
+        };
+
+        // 操作の結果を一定時間だけ表示する
+        const toast = document.getElementById('previewToast');
+        let toastTimer = 0;
+        const showToast = (text) => {
+          toast.textContent = text;
+          toast.hidden = false;
+          clearTimeout(toastTimer);
+          toastTimer = setTimeout(() => { toast.hidden = true; }, 2500);
+        };
+
+        /**
+         * 表示中のチャートをPNGとしてクリップボードへ書き込む
+         *
+         * クリップボードへの書き込みは「文書がフォーカスされていること」と
+         * 「ユーザー操作起点であること」を要求するため、タイトルバーのコマンドからではなく
+         * Webview内のボタンから直接呼ぶ必要がある。
+         */
+        const copyImageToClipboard = () => {
+          if (!navigator.clipboard || typeof ClipboardItem === 'undefined') {
+            showToast('Clipboard is not available');
+            return;
+          }
+
+          rasterize(
+            (canvas) => {
+              canvas.toBlob((blob) => {
+                if (!blob) {
+                  showToast('Copy failed');
+                  return;
+                }
+                navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })])
+                  .then(() => showToast('Copied to clipboard'))
+                  .catch(() => showToast('Copy failed'));
+              }, 'image/png');
+            },
+            () => showToast('Copy failed')
+          );
+        };
+
+        document.getElementById('resetViewButton').addEventListener('click', resetView);
+        document.getElementById('copyImageButton').addEventListener('click', copyImageToClipboard);
 
         // SVGペインのみCtrl+Wheelでズーム（テーブルペインのスクロールと干渉しない）
         svgPane.addEventListener('wheel', (event) => {
@@ -434,6 +739,7 @@ export class SvgContent {
             const delta = event.deltaY > 0 ? -scaleSpeed : scaleSpeed;
             scale = Math.max(minScale, Math.min(maxScale, scale + delta));
             container.style.transform = \`scale(\${scale})\`;
+            savePreviewState();
           }
         }, { passive: false });
 
@@ -441,6 +747,7 @@ export class SvgContent {
         container.addEventListener('dblclick', () => {
           scale = 1;
           container.style.transform = 'scale(1)';
+          savePreviewStateNow();
         });
 
         // スプリッターのドラッグでテーブルペインの幅を変更する
@@ -460,8 +767,8 @@ export class SvgContent {
 
           document.addEventListener('mousemove', (e) => {
             if (!isResizing) { return; }
-            const newHeight = Math.max(60, startHeight + e.clientY - startY);
-            tablePane.style.flex = \`0 0 \${newHeight}px\`;
+            tablePaneHeight = Math.max(minPaneHeight, startHeight + e.clientY - startY);
+            tablePane.style.flex = \`0 0 \${tablePaneHeight}px\`;
           });
 
           document.addEventListener('mouseup', () => {
@@ -469,6 +776,8 @@ export class SvgContent {
               isResizing = false;
               document.body.style.userSelect = '';
               document.body.style.cursor = '';
+              // ドラッグの終わりは単発の操作なので間引かずに保存する
+              savePreviewStateNow();
             }
           });
         }

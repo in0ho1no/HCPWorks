@@ -138,6 +138,12 @@ export class HCPController {
         }
       }),
 
+      vscode.commands.registerCommand('hcpworks.resetPreviewView', () => {
+        if (!this.previewManager.resetView()) {
+          vscode.window.showInformationMessage('No preview panel available to reset.');
+        }
+      }),
+
       vscode.commands.registerCommand('hcpworks.savePreview', async () => {
         if (!this.previewManager.getPreviewPanel()) {
           vscode.window.showInformationMessage('No preview panel available to save.');

@@ -14,11 +14,14 @@ const extensionUri = vscode.Uri.file('/ext');
 function stubCreateWebviewPanel(): {
   panel: { title: string; iconPath?: vscode.Uri; webview: { html: string } };
   showOptions: () => vscode.ViewColumn | { readonly viewColumn: vscode.ViewColumn; readonly preserveFocus?: boolean } | undefined;
+  postedMessages: () => { command?: string }[];
 } {
   let capturedShowOptions:
     | vscode.ViewColumn
     | { readonly viewColumn: vscode.ViewColumn; readonly preserveFocus?: boolean }
     | undefined;
+
+  const postedMessages: { command?: string }[] = [];
 
   const panel = {
     title: '',
@@ -26,7 +29,10 @@ function stubCreateWebviewPanel(): {
     webview: {
       html: '',
       onDidReceiveMessage: () => ({ dispose: () => undefined }),
-      postMessage: () => Promise.resolve(true),
+      postMessage: (message: { command?: string }) => {
+        postedMessages.push(message);
+        return Promise.resolve(true);
+      },
     },
     onDidChangeViewState: () => ({ dispose: () => undefined }),
     onDidDispose: () => ({ dispose: () => undefined }),
@@ -44,7 +50,7 @@ function stubCreateWebviewPanel(): {
     return panel as unknown as vscode.WebviewPanel;
   };
 
-  return { panel, showOptions: () => capturedShowOptions };
+  return { panel, showOptions: () => capturedShowOptions, postedMessages: () => postedMessages };
 }
 
 /**
@@ -74,6 +80,26 @@ suite('PreviewManager - focus behavior', () => {
       typeof captured === 'object' ? captured.preserveFocus : false,
       true
     );
+  });
+});
+
+suite('PreviewManager - Method - resetView', () => {
+  test('should report failure when no preview panel exists yet', () => {
+    stubCreateWebviewPanel();
+
+    const previewManager = new PreviewManager(extensionUri);
+
+    assert.strictEqual(previewManager.resetView(), false);
+  });
+
+  test('should ask the webview to reset the view', () => {
+    const { postedMessages } = stubCreateWebviewPanel();
+
+    const previewManager = new PreviewManager(extensionUri);
+    previewManager.updatePreview(makeContent('module', '/work/sample.hcp'));
+
+    assert.strictEqual(previewManager.resetView(), true);
+    assert.deepStrictEqual(postedMessages(), [{ command: 'resetView' }]);
   });
 });
 
