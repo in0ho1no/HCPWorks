@@ -9,6 +9,7 @@ import { PreviewManager } from './preview_manager';
 
 import { ConfigManager } from './utils/config_manager';
 import { FileManager } from './utils/file_manager';
+import { buildSavePathBase } from './utils/save_path';
 
 import { ParseInfo4Render } from './parse/parse_info_4_render';
 import { ProcessLineProcessor } from './parse/line_info_list_process';
@@ -19,7 +20,8 @@ import { SVGRenderer } from './render/render_main';
 
 import { HCPFoldingRangeProvider } from './provider/folding_provider';
 
-import { HCP_ID, HCP_SUFFIX, TIMEOUT } from './extension';
+import { TIMEOUT } from './extension';
+import { HCP_ID, isHcpDocument } from './utils/hcp_document';
 
 /**
  * アプリケーション全体を制御するコントローラ
@@ -103,10 +105,8 @@ export class HCPController {
           return;
         }
 
-        // 拡張子判定
-        const fileFullPath = editor.document.fileName;
-        const fileExtension = fileFullPath.split('.').pop()?.toLowerCase();
-        if (fileExtension !== HCP_ID) {
+        // HCPファイル判定
+        if (!isHcpDocument(editor.document)) {
           vscode.window.showWarningMessage(`Current file is not ${HCP_ID.toUpperCase()} file`);
           return;
         }
@@ -135,6 +135,12 @@ export class HCPController {
               this.updatePreviewByTree();
             }
           }
+        }
+      }),
+
+      vscode.commands.registerCommand('hcpworks.resetPreviewView', () => {
+        if (!this.previewManager.resetView()) {
+          vscode.window.showInformationMessage('No preview panel available to reset.');
         }
       }),
 
@@ -172,8 +178,10 @@ export class HCPController {
         }
 
         // 拡張子を除いた共通の保存ベースパスを作成する
-        const savePathBase = this.selectedItem.filePath.split('.')[0] + '_' +
-          this.currentSvgContent.getName();
+        const savePathBase = buildSavePathBase(
+          this.selectedItem.filePath,
+          this.currentSvgContent.getName()
+        );
 
         if (picked.format === 'svg') {
           const svgContent = this.currentSvgContent.getSvgContent();
@@ -221,7 +229,7 @@ export class HCPController {
     this.context.subscriptions.push(
       vscode.workspace.onDidOpenTextDocument((e) => {
         setTimeout(() => {
-          if (e.languageId === HCP_ID || e.fileName.endsWith(HCP_SUFFIX)) {
+          if (isHcpDocument(e)) {
             vscode.commands.executeCommand('hcpworks.listingModule');
           }
         }, TIMEOUT);    // イベント発生直後は状態が完全でないため、一定時間待機する
@@ -231,7 +239,7 @@ export class HCPController {
     // エディタ切り替え時のイベント登録
     this.context.subscriptions.push(
       vscode.window.onDidChangeActiveTextEditor((e) => {
-        if (e && (e.document.languageId === HCP_ID || e.document.fileName.endsWith(HCP_SUFFIX))) {
+        if (e && isHcpDocument(e.document)) {
           vscode.commands.executeCommand('hcpworks.listingModule');
         }
       })
@@ -241,7 +249,7 @@ export class HCPController {
     this.context.subscriptions.push(
       vscode.workspace.onDidSaveTextDocument((document) => {
         // .hcp ファイルのみを対象とする
-        if (document.languageId === HCP_ID || document.fileName.endsWith(HCP_SUFFIX)) {
+        if (isHcpDocument(document)) {
           // モジュールツリーを更新する
           const filePath = document.uri.fsPath;
           this.updateModuleTreeProvider(filePath);
@@ -258,11 +266,15 @@ export class HCPController {
         let isUpdatePreview = false;
 
         if (event.affectsConfiguration('hcpworks.SvgBgColor')) {
-          this.updatePreviewByTree();
           isUpdatePreview = true;
         }
 
         if (event.affectsConfiguration('hcpworks.WireColorTable')) {
+          isUpdatePreview = true;
+        }
+
+        // 個別キーではなくセクション単位で監視し、表示項目が増えても追従不要にする
+        if (event.affectsConfiguration('hcpworks.headerDisplay')) {
           isUpdatePreview = true;
         }
 
@@ -282,7 +294,7 @@ export class HCPController {
 
     // 起動時にhcpファイルが開いている場合はモジュールツリーを更新
     const editor = vscode.window.activeTextEditor;
-    if (editor && (editor.document.languageId === HCP_ID || editor.document.fileName.endsWith(HCP_SUFFIX))) {
+    if (editor && isHcpDocument(editor.document)) {
       vscode.commands.executeCommand('hcpworks.listingModule');
     }
   }

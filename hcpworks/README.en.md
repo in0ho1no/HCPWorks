@@ -16,6 +16,8 @@ You can list modules, preview HCP charts side by side, and export them as images
 - Preview the selected module beside the editor
 - Refresh the preview automatically on save
 - Export charts as PNG, SVG, WebP, or JPEG
+- Copy the chart to the clipboard
+- Remember the view state (zoom, scroll position, table pane height) per module while the preview stays open
 - Change the preview level
 - Use syntax highlighting, folding, file icons, and bracket completion
 
@@ -28,6 +30,9 @@ You can list modules, preview HCP charts side by side, and export them as images
 1. The preview opens beside the editor and updates automatically when you save the file.
 1. To export an image, use the save button in the preview panel.
 1. To change the rendered level, use HCP Preview Level.
+1. Zoom the preview with Ctrl + wheel. If you lose track of where you are while zoomed in, use Reset View in the toolbar at the top of the preview (or double-click the chart) to return to the original view.
+1. To paste the chart into another application, use Copy Image in the toolbar to copy it to the clipboard as a PNG.
+1. The zoom, the scroll position, and the table pane height are remembered per module **while the preview panel stays open**. The 20 most recently viewed modules are kept, so switching back to one of them restores its view. Closing the preview panel discards the state, and the next preview starts from the default view.
 
 ### Export Formats
 
@@ -36,13 +41,16 @@ You can list modules, preview HCP charts side by side, and export them as images
 - WebP: good for smaller files
 - JPEG: better for photo-like content; thin text and lines may blur
 
-PNG, WebP, and JPEG are rasterized at 2x resolution. Saved files use the name <fileName>_<moduleName>.<extension>.
+PNG, WebP, and JPEG are rasterized at 2x resolution, except that the scale is reduced when the longer side would exceed 8192 pixels. Saved files use the name <fileName>_<moduleName>.<extension>.
+Copying to the clipboard produces a PNG at the same scale.
 
 ## HCP Notation
 
 - Indentation level is represented by tabs or 4 spaces
 - Leading keywords (such as \module) determine line semantics
-- Lines starting with # are treated as comments
+- Separate a keyword from the text that follows it with a half-width space. A tab is not recognized as a separator (tabs are for indentation only)
+- Everything from `#` to the end of the line is a comment. Placing it at the start of a line comments out the whole line
+- To use `#` as a literal character instead of starting a comment, write `\#` (the `\` is not rendered)
 
 ```text
 \module sampleModule

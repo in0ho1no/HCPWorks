@@ -98,6 +98,20 @@ export class PreviewManager {
   }
 
   /**
+   * プレビューの表示状態(ズーム倍率とスクロール位置)を初期化する
+   *
+   * @returns 要求を送ったならtrue、プレビューが無ければfalse
+   */
+  public resetView(): boolean {
+    if (!this.previewPanel) {
+      return false;
+    }
+
+    this.previewPanel.webview.postMessage({ command: 'resetView' });
+    return true;
+  }
+
+  /**
    * プレビュー対象からタブタイトルを組み立てる
    *
    * ファイルそのものではないため拡張子は付けず、

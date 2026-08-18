@@ -66,6 +66,30 @@ suite('SvgContent - Method - setSourcePath / getSourcePath', () => {
   });
 });
 
+suite('SvgContent - Method - getStateKey', () => {
+  /** 元ファイルとモジュール名からキーを組み立てる */
+  function keyOf(sourcePath: string, name: string): string {
+    return new SvgContent().setSourcePath(sourcePath).setName(name).getStateKey();
+  }
+
+  test('should separate modules within the same file', () => {
+    assert.notStrictEqual(keyOf('/work/a.hcp', 'first'), keyOf('/work/a.hcp', 'second'));
+  });
+
+  test('should separate the same module name in different files', () => {
+    assert.notStrictEqual(keyOf('/work/a.hcp', 'main'), keyOf('/work/b.hcp', 'main'));
+  });
+
+  test('should not collide when a path and a module name join differently', () => {
+    // 区切り文字がファイルパスにもモジュール名にも現れないことを確かめる
+    assert.notStrictEqual(keyOf('/work/a.hcp main', ''), keyOf('/work/a.hcp', 'main'));
+  });
+
+  test('should be stable for the same target', () => {
+    assert.strictEqual(keyOf('/work/a.hcp', 'main'), keyOf('/work/a.hcp', 'main'));
+  });
+});
+
 suite('SvgContent - Method - setTextContent / getTextContent', () => {
   test('should set and get text content array', () => {
     const content = new SvgContent();
@@ -167,6 +191,15 @@ suite('SvgContent - Method - getHtmlWrappedSvg', () => {
     assert.ok(html.includes('dblclick'), 'HTML should include dblclick handler');
   });
 
+  test('should handle the resetView request from the extension', () => {
+    const content = new SvgContent();
+    content.setSvgContent('');
+    const html = content.getHtmlWrappedSvg();
+
+    assert.ok(html.includes("message.command === 'resetView'"), 'HTML should handle the resetView command');
+    assert.ok(html.includes('const resetView ='), 'HTML should define the resetView handler');
+  });
+
   test('should acquire the vscode api for messaging', () => {
     const content = new SvgContent();
     content.setSvgContent('');
@@ -188,6 +221,52 @@ suite('SvgContent - Method - getHtmlWrappedSvg', () => {
     const html = content.getHtmlWrappedSvg();
     assert.ok(html.includes('createElement(\'canvas\')'), 'HTML should create a canvas for rasterization');
     assert.ok(html.includes('toDataURL(mime)'), 'HTML should export the canvas using the requested mime type');
+  });
+
+  test('should clamp the rasterized size to MAX_EXPORT_PIXELS', () => {
+    const content = new SvgContent();
+    content.setSvgContent('');
+    const html = content.getHtmlWrappedSvg();
+
+    assert.ok(
+      html.includes(`const maxPixels = ${SvgContent.MAX_EXPORT_PIXELS};`),
+      'HTML should embed the export size limit'
+    );
+    assert.ok(
+      html.includes('Math.min(2, maxPixels / longerSide)'),
+      'HTML should reduce the scale so the longer side stays within the limit'
+    );
+    assert.ok(
+      html.includes('Math.round(width * scale)'),
+      'HTML should round the canvas size to match what canvas.width stores'
+    );
+  });
+
+  test('should compute a scale that keeps both sides within the limit', () => {
+    const limit = SvgContent.MAX_EXPORT_PIXELS;
+
+    // 生成されたスクリプトと同じ式で、代表的な寸法の結果を確認する
+    const calcScale = (width: number, height: number): number => {
+      const longerSide = Math.max(width, height);
+      return longerSide > 0 ? Math.min(2, limit / longerSide) : 2;
+    };
+
+    // 小さい図は2倍のまま
+    assert.strictEqual(calcScale(800, 600), 2);
+
+    // 2倍すると上限を超える図は、長辺がちょうど上限に収まる倍率へ下がる
+    const wide = calcScale(6000, 1000);
+    assert.ok(wide < 2 && wide > 1, 'scale should be reduced but still enlarge');
+    assert.strictEqual(Math.round(6000 * wide), limit);
+    assert.ok(1000 * wide <= limit, 'the shorter side must stay within the limit');
+
+    // 等倍でも上限を超える図は縮小される
+    const huge = calcScale(20000, 500);
+    assert.ok(huge < 1, 'an oversized chart should be scaled down');
+    assert.strictEqual(Math.round(20000 * huge), limit);
+
+    // 寸法が取得できない場合は既定の倍率へ戻す(0除算を避ける)
+    assert.strictEqual(calcScale(0, 0), 2);
   });
 
   test('should map png, jpeg and webp formats to mime types', () => {

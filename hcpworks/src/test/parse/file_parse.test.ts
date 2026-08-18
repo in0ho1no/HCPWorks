@@ -1,5 +1,5 @@
 import * as assert from 'assert';
-import { parseModules, cleanTextLines, extractTables, extractModuleMeta, Module, TableRow } from '../../parse/file_parse';
+import { parseModules, cleanTextLines, extractTables, extractModuleMeta, removeComment, Module, TableRow } from '../../parse/file_parse';
 
 /** 表の行配列からセルだけを取り出す(depthを無視して比較するためのヘルパー) */
 const cellsOf = (rows: TableRow[]): string[][] => rows.map(row => row.cells);
@@ -74,6 +74,56 @@ suite('file_parse - Function - parseModules', () => {
 		assert.deepStrictEqual(parseModules(input), expected);
 	});
 
+	test('Should strip a trailing comment from the module name', () => {
+		const input = '\\module test # メモ\nline1';
+		const expected: Module[] = [
+			{
+				name: 'test',
+				content: ['line1']
+			}
+		];
+
+		assert.deepStrictEqual(parseModules(input), expected);
+	});
+
+	test('Should keep an escaped # in the module name', () => {
+		const input = '\\module C\\#test\nline1';
+
+		assert.strictEqual(parseModules(input)[0].name, 'C#test');
+	});
+
+	test('Should keep module content raw so escapes are resolved only once downstream', () => {
+		const input = '\\module test\n\t\\mod C\\#で実装する';
+
+		// ここでアンエスケープすると、後段のコメント除去で # 以降が失われてしまう
+		assert.deepStrictEqual(parseModules(input)[0].content, ['\t\\mod C\\#で実装する']);
+		assert.deepStrictEqual(cleanTextLines(parseModules(input)[0].content), ['\t\\mod C#で実装する']);
+	});
+
+});
+
+suite('file_parse - Function - removeComment', () => {
+	test('Should remove everything from an unescaped # to the end of line', () => {
+		assert.strictEqual(removeComment('line1 # comment'), 'line1 ');
+		assert.strictEqual(removeComment('# comment only'), '');
+	});
+
+	test('Should keep an escaped # as a literal character', () => {
+		assert.strictEqual(removeComment('C\\#で実装する'), 'C#で実装する');
+		assert.strictEqual(removeComment('\\#'), '#');
+	});
+
+	test('Should treat only the escaped # as literal and still cut at a later one', () => {
+		assert.strictEqual(removeComment('手順\\#1を実行する # メモ'), '手順#1を実行する ');
+	});
+
+	test('Should not treat a # after an unescaped # as an escape target', () => {
+		assert.strictEqual(removeComment('a#b\\#c'), 'a');
+	});
+
+	test('Should leave a line without # untouched', () => {
+		assert.strictEqual(removeComment('\t\\mod 通常の行'), '\t\\mod 通常の行');
+	});
 });
 
 suite('file_parse - Function - cleanTextLines', () => {
@@ -108,6 +158,13 @@ suite('file_parse - Function - cleanTextLines', () => {
 	test('Should preserve leading whitespace', () => {
 		const input = ['  line1', '\tline2', ' \t line3'];
 		const expected = ['  line1', '\tline2', ' \t line3'];
+
+		assert.deepStrictEqual(cleanTextLines(input), expected);
+	});
+
+	test('Should keep an escaped # without losing the leading indent', () => {
+		const input = ['\t\\mod C\\#で実装する', '\t\t(補足\\#1)'];
+		const expected = ['\t\\mod C#で実装する', '\t\t\\supplement (補足#1)'];
 
 		assert.deepStrictEqual(cleanTextLines(input), expected);
 	});
@@ -186,6 +243,13 @@ suite('file_parse - Function - extractModuleMeta', () => {
 		const { meta } = extractModuleMeta(input);
 
 		assert.strictEqual(meta.kind, '既存変更');
+	});
+
+	test('Should keep an escaped # in a meta value', () => {
+		const input = ['\\scope C\\#公開'];
+		const { meta } = extractModuleMeta(input);
+
+		assert.strictEqual(meta.scope, 'C#公開');
 	});
 
 	test('Should accept free-form values such as extern/static', () => {
@@ -313,6 +377,14 @@ suite('file_parse - Function - extractTables', () => {
 		const { tables } = extractTables(input);
 
 		assert.deepStrictEqual(cellsOf(tables[0].rows), [['a', 'b'], ['c', 'd']]);
+	});
+
+	test('Should keep an escaped # in a caption and in a cell', () => {
+		const input = ['\\table 見出し\\#1', 'a, C\\# # コメント', 'c, d'];
+		const { tables } = extractTables(input);
+
+		assert.strictEqual(tables[0].caption, '見出し#1');
+		assert.deepStrictEqual(cellsOf(tables[0].rows), [['a', 'C#'], ['c', 'd']]);
 	});
 
 	test('Should record depth from leading indentation as struct hierarchy', () => {

@@ -15,6 +15,10 @@ exports.window = {
     onDidDispose: () => ({ dispose: () => undefined }),
     active: false,
   }),
+  createTreeView: () => ({ dispose: () => undefined }),
+  registerWebviewViewProvider: () => ({ dispose: () => undefined }),
+  onDidChangeActiveTextEditor: () => ({ dispose: () => undefined }),
+  activeTextEditor: undefined,
 };
 exports.ViewColumn = {
   Beside: -2,
@@ -30,9 +34,30 @@ exports.workspace = {
   getConfiguration: () => ({
     get: (_key, defaultValue) => defaultValue,
   }),
+  onDidOpenTextDocument: () => ({ dispose: () => undefined }),
+  onDidSaveTextDocument: () => ({ dispose: () => undefined }),
+  onDidChangeConfiguration: () => ({ dispose: () => undefined }),
 };
 exports.commands = {
   executeCommand: () => Promise.resolve(undefined),
+  registerCommand: () => ({ dispose: () => undefined }),
+};
+exports.EventEmitter = class EventEmitter {
+  constructor() {
+    this._listeners = [];
+    this.event = (listener) => {
+      this._listeners.push(listener);
+      return { dispose: () => undefined };
+    };
+  }
+  fire(data) {
+    for (const listener of this._listeners) {
+      listener(data);
+    }
+  }
+  dispose() {
+    this._listeners = [];
+  }
 };
 exports.FoldingRange = class FoldingRange {
   constructor(start, end, kind) {
