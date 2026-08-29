@@ -24,6 +24,13 @@ updates:
       prefix: "github-actions"
       include: "scope"
     target-branch: "develop"
+    groups:
+      # codeql-action は init と analyze でバージョンが異なると
+      # 「Loaded a configuration file for version X, but running version Y」で
+      # ジョブが落ちる(v3.30.4 以降の仕様)。必ず同一 PR で更新する。
+      codeql-action:
+        patterns:
+          - "github/codeql-action*"
 
   - package-ecosystem: "npm"
     directory: "/hcpworks/"
