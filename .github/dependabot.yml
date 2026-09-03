@@ -24,6 +24,13 @@ updates:
       prefix: "github-actions"
       include: "scope"
     target-branch: "develop"
+    groups:
+      # codeql-action は init と analyze でバージョンが異なると
+      # 「Loaded a configuration file for version X, but running version Y」で
+      # ジョブが落ちる(v3.30.4 以降の仕様)。必ず同一 PR で更新する。
+      codeql-action:
+        patterns:
+          - "github/codeql-action*"
 
   - package-ecosystem: "npm"
     directory: "/hcpworks/"
@@ -43,6 +50,12 @@ updates:
       prefix: "npm"
       include: "scope"
     target-branch: "develop"
+    ignore:
+      # @types/vscode のバージョンは「サポートする最低 VS Code バージョン」の宣言そのもの。
+      # engines.vscode より新しいと vsce package が失敗する。
+      # 型定義のみで脆弱性を持ちうるコードが存在しないため、自動更新の対象外とする。
+      # 最低サポートバージョンを引き上げるときは engines.vscode と併せて手動で更新すること。
+      - dependency-name: "@types/vscode"
 
   - package-ecosystem: "docker"
     directory: "/"

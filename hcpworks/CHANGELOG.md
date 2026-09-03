@@ -2,6 +2,14 @@
 
 All notable changes to the "hcpworks" extension will be documented in this file.
 
+## [0.1.5]
+
+Patch
+
+- vulnerability fix
+    - Updated dependencies (fast-uri, etc.)
+- No change to the behavior of the extension itself
+
 ## [0.1.4]
 
 Patch
