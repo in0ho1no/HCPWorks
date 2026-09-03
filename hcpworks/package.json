@@ -2,7 +2,7 @@
   "name": "hcpworks",
   "displayName": "HCPWorks",
   "description": "Preview HCP charts (.hcp) and export them as PNG / SVG / WebP / JPEG images in VS Code.",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "engines": {
     "vscode": "^1.125.0"
   },
