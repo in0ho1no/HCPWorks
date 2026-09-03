@@ -303,7 +303,7 @@
     "jsdom": "^30.0.1",
     "mocha-junit-reporter": "^2.2.1",
     "ts-loader": "^9.6.2",
-    "typescript": "^6.0.3",
+    "typescript": "^7.0.2",
     "webpack": "^5.109.2",
     "webpack-cli": "^7.2.2"
   },
