@@ -30,7 +30,8 @@ updates:
       # ジョブが落ちる(v3.30.4 以降の仕様)。必ず同一 PR で更新する。
       codeql-action:
         patterns:
-          - "github/codeql-action*"
+          - "github/codeql-action/init"
+          - "github/codeql-action/analyze"
 
   - package-ecosystem: "npm"
     directory: "/hcpworks/"
@@ -50,6 +51,11 @@ updates:
       prefix: "npm"
       include: "scope"
     target-branch: "develop"
+    groups:
+      typescript-eslint:
+        patterns:
+          - "@typescript-eslint/parser"
+          - "@typescript-eslint/eslint-plugin"
     ignore:
       # @types/vscode のバージョンは「サポートする最低 VS Code バージョン」の宣言そのもの。
       # engines.vscode より新しいと vsce package が失敗する。
