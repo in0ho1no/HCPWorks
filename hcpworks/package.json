@@ -289,7 +289,7 @@
     "serialize-javascript": ">=7.0.5"
   },
   "devDependencies": {
-    "@types/encoding-japanese": "^2.2.1",
+    "@types/encoding-japanese": "^2.4.0",
     "@types/jsdom": "^30.0.0",
     "@types/mocha": "^10.0.10",
     "@types/node": "26.x",
