@@ -133,6 +133,25 @@ VS Code の設定で HCPWorks を検索すると、次の項目を変更でき�
 - .hcp ファイル専用アイコン
 - 括弧やクォートの自動補完
 
+## リリース前の一括チェック
+
+リポジトリのルートで、次のコマンドを実行します。
+
+```bash
+bash ./39_release_check.sh
+```
+
+[39_release_check.sh](./39_release_check.sh) は、既存のスクリプトを変更せずに次の順で実行します。
+
+1. [20_check_vulnerabilities.sh](./20_check_vulnerabilities.sh)
+1. [21_update.sh](./21_update.sh)
+1. [22_check_overrides.sh](./22_check_overrides.sh)
+1. [30_pre-test.sh](./30_pre-test.sh)
+1. [31_test.sh](./31_test.sh)
+1. [32_build.sh](./32_build.sh)
+
+途中のスクリプトが失敗した場合は、その終了コードで停止します。脆弱性チェックの修正確認は従来どおり表示され、修正をスキップした場合の動作も既存スクリプトに従います。依存関係やロックファイルが更新される場合があるため、実行後に差分を確認してください。
+
 ## 既知の問題
 
 既知の問題は、[GitHub の issue](https://github.com/in0ho1no/HCPWorks/issues) を参照してください。

@@ -134,6 +134,25 @@ Search for HCPWorks in VS Code Settings to change these options.
 - Dedicated file icon for .hcp files
 - Auto-closing and auto-surrounding brackets and quotes
 
+## Pre-release Checks
+
+Run the following command from the repository root:
+
+```bash
+bash ./39_release_check.sh
+```
+
+[39_release_check.sh](./39_release_check.sh) runs the existing scripts unchanged in this order:
+
+1. [20_check_vulnerabilities.sh](./20_check_vulnerabilities.sh)
+1. [21_update.sh](./21_update.sh)
+1. [22_check_overrides.sh](./22_check_overrides.sh)
+1. [30_pre-test.sh](./30_pre-test.sh)
+1. [31_test.sh](./31_test.sh)
+1. [32_build.sh](./32_build.sh)
+
+If a script fails, execution stops with its exit code. The vulnerability fix prompt remains interactive, and skipping fixes retains the existing script's behavior. Review the diff afterward, as dependencies and the lockfile may be updated.
+
 ## Known Issues
 
 See [GitHub issues](https://github.com/in0ho1no/HCPWorks/issues) for known problems.
