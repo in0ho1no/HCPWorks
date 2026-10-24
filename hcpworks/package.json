@@ -286,7 +286,13 @@
     "package-ext": "vsce package --no-yarn"
   },
   "overrides": {
-    "serialize-javascript": ">=7.0.5"
+    "serialize-javascript": ">=7.0.5",
+    "@azure/identity": {
+      "@azure/msal-node": "^7.1.0"
+    },
+    "mocha": {
+      "diff": "^8.0.3"
+    }
   },
   "devDependencies": {
     "@types/encoding-japanese": "^2.4.0",
