@@ -26,6 +26,23 @@ if (names.length === 0) {
   process.exit(0);
 }
 
+function overrideTargets(name, value) {
+  const targets = new Set([name]);
+  if (value && typeof value === 'object' && !Array.isArray(value)) {
+    for (const [nestedName, nestedValue] of Object.entries(value)) {
+      if (nestedName !== '.') {
+        for (const target of overrideTargets(nestedName, nestedValue)) {
+          targets.add(target);
+        }
+      }
+    }
+  }
+  return targets;
+}
+
+const targetsByOverride = new Map(names.map((name) => [name, overrideTargets(name, overrides[name])]));
+const packageNames = new Set([...targetsByOverride.values()].flatMap((targets) => [...targets]));
+
 const workDir = fs.mkdtempSync(path.join(os.tmpdir(), 'check-overrides-'));
 process.on('exit', () => fs.rmSync(workDir, { recursive: true, force: true }));
 
@@ -34,11 +51,11 @@ fs.copyFileSync(path.join(scriptDir, 'check-audit.mjs'), path.join(workDir, 'scr
 
 function resolvedVersions() {
   const lock = JSON.parse(fs.readFileSync(path.join(workDir, 'package-lock.json'), 'utf8'));
-  const found = new Map(names.map((name) => [name, new Set()]));
+  const found = new Map([...packageNames].map((name) => [name, new Set()]));
 
   for (const [location, entry] of Object.entries(lock.packages || {})) {
     if (!entry.version) continue;
-    for (const name of names) {
+    for (const name of packageNames) {
       if (location === `node_modules/${name}` || location.endsWith(`/node_modules/${name}`)) {
         found.get(name).add(entry.version);
       }
@@ -46,6 +63,14 @@ function resolvedVersions() {
   }
 
   return new Map([...found].map(([name, versions]) => [name, [...versions].sort()]));
+}
+
+function changedVersions(before, after, targets) {
+  return [...targets].flatMap((name) => {
+    const previous = before.get(name).join(', ');
+    const current = after.get(name).join(', ');
+    return previous === current ? [] : [`${name} ${previous || 'none'} -> ${current || 'none'}`];
+  });
 }
 
 function evaluate(nextOverrides) {
@@ -114,9 +139,6 @@ for (const name of names) {
   delete withoutName[name];
   const trial = evaluate(withoutName);
 
-  const before = baseline.versions.get(name).join(', ');
-  const after = trial.resolvable ? trial.versions.get(name).join(', ') : '';
-
   let verdict;
   let detail;
   if (!trial.resolvable) {
@@ -125,12 +147,14 @@ for (const name of names) {
   } else if (!trial.auditPassed) {
     verdict = 'KEEP';
     detail = 'audit fails without it';
-  } else if (after === before) {
+  } else if (changedVersions(baseline.versions, trial.versions, targetsByOverride.get(name)).length === 0) {
+    const before = baseline.versions.get(name).join(', ');
     verdict = 'REMOVE';
     detail = `no longer changes anything (${before || 'not installed'})`;
   } else {
+    const changes = changedVersions(baseline.versions, trial.versions, targetsByOverride.get(name));
     verdict = 'REVIEW';
-    detail = `audit passes, but versions change: ${before || 'none'} -> ${after || 'none'}`;
+    detail = `audit passes, but versions change: ${changes.join('; ')}`;
   }
 
   results.push({ name, range: JSON.stringify(overrides[name]), verdict, detail });
@@ -162,7 +186,9 @@ if (removable.length > 1) {
   const stillFine =
     combined.resolvable &&
     combined.auditPassed &&
-    removable.every((item) => combined.versions.get(item.name).join(', ') === baseline.versions.get(item.name).join(', '));
+    removable.every(
+      (item) => changedVersions(baseline.versions, combined.versions, targetsByOverride.get(item.name)).length === 0,
+    );
 
   if (!stillFine) {
     console.log('They are NOT removable together (each one only looks redundant while the others remain).');
