@@ -50,7 +50,26 @@ jobs:
 
       - name: Verify package signatures
         working-directory: hcpworks
-        run: npm audit signatures
+        run: |
+          for attempt in 1 2 3; do
+            if output=$(npm audit signatures 2>&1); then
+              printf '%s\n' "$output"
+              exit 0
+            else
+              status=$?
+            fi
+
+            printf '%s\n' "$output"
+            if ! grep -q 'EMISSINGSIGNATUREKEY' <<< "$output"; then
+              exit "$status"
+            fi
+
+            if [ "$attempt" -lt 3 ]; then
+              echo "Registry did not return an attestation verification key; retrying ($attempt/3)..." >&2
+              sleep "$((attempt * 5))"
+            fi
+          done
+          exit "$status"
 
       - name: Check vulnerabilities (production dependencies)
         working-directory: hcpworks
