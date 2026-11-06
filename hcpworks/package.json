@@ -292,7 +292,9 @@
     },
     "mocha": {
       "diff": "^8.0.3"
-    }
+    },
+    "minimatch": "^11.0.1",
+    "glob": "^14.0.2"
   },
   "devDependencies": {
     "@types/encoding-japanese": "^2.4.0",
